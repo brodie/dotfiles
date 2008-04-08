@@ -1,0 +1,16 @@
+# Easier than remembering to always run from non-X
+unsetenv DISPLAY
+# Likewise, for charset
+setenv LANG en_US.UTF-8
+
+# 256 color xterm
+attrcolor b ".I"
+termcapinfo xterm 'Co#256:AB=\E[48;5;%dm:AF=\E[38;5;%dm'
+defbce "on"
+
+# If a window goes unresponsive, don't block the whole session waiting for it.
+nonblock on
+
+# Fix backspace under OS X terminal
+bindkey ^? stuff ^H
+bindkey -k kb stuff ^H

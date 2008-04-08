@@ -1,0 +1,24 @@
+#!/bin/sh
+
+case "$1" in
+    *.S|*.[1234567]|*.as|*.aux|*.b|*.bas|*.bat|*.befunge|*.bf|*.boo|*.c|\
+    *.c++|*.c++-objdump|*.c-objdump|*.cfg|*.cl|*.cmd|*.cpp|*.cpp-objdump|\
+    *.cs|*.css|*.cw|*.cxx-objdump|*.d|*.d-objdump|*.di|*.diff|*.dylan|*.el|\
+    *.erl|*.gemspec|*.h|*.h++|*.hpp|*.hrl|*.hs|*.htm|*.htm|*.html|*.html|\
+    *.ini|*.java|*.js|*.jsp|*.kid|*.lhs|*.lisp|*.ll|*.lua|*.m|*.mak|*.man|\
+    *.mao|*.md|*.ml|*.mli|*.mll|*.mly|*.moo|*.mu|*.myt|*.objdump|*.pas|\
+    *.patch|*.php|*.php[345]|*.phtml|*.pl|*.pm|*.po|*.pot|*.py|*.pytb|*.pyw|\
+    *.rake|*.raw|*.raw|*.rb|*.rbw|*.rbx|*.rest|*.rhtml|*.rss|*.rst|*.rtf|\
+    *.s|*.sc|*.scm|*.sh|*.sql|*.svg|*.tex|*.tex|*.toc|*.tpl|*.txt|*.txt|\
+    *.vb|*.vim|*.weechatlog|*.xhtml|*.xml|*.xsl|*.xslt|*.xslt|\
+    *.htaccess|*apache.conf|*apache2.conf|*[Mm]akefile|*autodelegate|\
+    *SConstruct|*SConscript|*Rakefile|*sources.list|*squid.conf|*.vimrc)
+        pygmentize "$1"
+        ;;
+    *.gz)
+        gunzip -c "$1"
+        ;;
+    *.bz2)
+        bzcat "$1"
+        ;;
+esac
