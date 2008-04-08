@@ -75,7 +75,7 @@ LESS_TERMCAP_mb=${fg_bold[red]}; export LESS_TERMCAP_mb
 LESS_TERMCAP_md=${fg_bold[blue]}; export LESS_TERMCAP_md
 LESS_TERMCAP_me=$reset_color; export LESS_TERMCAP_me
 LESS_TERMCAP_se=$reset_color; export LESS_TERMCAP_se
-LESS_TERMCAP_so="$lc${color[bold]};${color[bg-blue]};${color[yellow]}$rc"
+LESS_TERMCAP_so=$'\e['"${color[bold]};${color[bg-blue]};${color[yellow]}m"
 export LESS_TERMCAP_so
 LESS_TERMCAP_ue=$reset_color; export LESS_TERMCAP_ue
 LESS_TERMCAP_us=${fg_bold[green]}; export LESS_TERMCAP_us
