@@ -58,7 +58,7 @@ export ZLS_COLORS
 alias ll='ls -l' \
       la='ls -A' \
       l='ls -CF' \
-      grep='grep --color=auto'
+      grep='grep --color=always'
 
 function beep()
 {
@@ -136,7 +136,8 @@ bindkey '^[[5C' forward-word \
         '^[[1;5D' backward-word \
         '^P' up-line-or-search-all \
         '^N' down-line-or-search-all \
-        '^W' vi-backward-kill-word
+        '^W' vi-backward-kill-word \
+        '^U' vi-kill-line
 
 # Completion
 
