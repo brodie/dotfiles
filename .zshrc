@@ -65,17 +65,20 @@ function beep()
     echo -n '\a'
 }
 
+autoload -U colors && colors
+
 # less niceties
 
 LESS='-R'; export LESS
 LESSOPEN="| $HOME/bin/lesspipe %s"; export LESSOPEN
-LESS_TERMCAP_mb=$'\e[01;31m'; export LESS_TERMCAP_mb
-LESS_TERMCAP_md=$'\e[01;34m'; export LESS_TERMCAP_md
-LESS_TERMCAP_me=$'\e[0m'; export LESS_TERMCAP_me
-LESS_TERMCAP_se=$'\e[0m'; export LESS_TERMCAP_se
-LESS_TERMCAP_so=$'\e[01;44;33m'; export LESS_TERMCAP_so
-LESS_TERMCAP_ue=$'\e[0m'; export LESS_TERMCAP_ue
-LESS_TERMCAP_us=$'\e[01;32m'; export LESS_TERMCAP_us
+LESS_TERMCAP_mb=${fg_bold[red]}; export LESS_TERMCAP_mb
+LESS_TERMCAP_md=${fg_bold[blue]}; export LESS_TERMCAP_md
+LESS_TERMCAP_me=$reset_color; export LESS_TERMCAP_me
+LESS_TERMCAP_se=$reset_color; export LESS_TERMCAP_se
+LESS_TERMCAP_so="$lc${color[bold]};${color[bg-blue]};${color[yellow]}$rc"
+export LESS_TERMCAP_so
+LESS_TERMCAP_ue=$reset_color; export LESS_TERMCAP_ue
+LESS_TERMCAP_us=${fg_bold[green]}; export LESS_TERMCAP_us
 
 # fish-style history search
 
@@ -138,17 +141,16 @@ bindkey '^[[5C' forward-word \
 # Completion
 
 zmodload -i zsh/complist
-autoload -U colors && colors
 autoload -U compinit && compinit
 
 # Formatting
 zstyle ':completion:*' verbose yes
-zstyle ':completion:*:descriptions' format "%{$fg[blue]%}%d%{$reset_color%}"
-zstyle ':completion:*:messages' format "%{$fg[green]%}%d%{$reset_color%}"
+zstyle ':completion:*:descriptions' format "%{${fg[blue]}%}%d%{$reset_color%}"
+zstyle ':completion:*:messages' format "%{${fg[green]}%}%d%{$reset_color%}"
 zstyle ':completion:*:warnings' format \
-       "%{$fg[red]%}No matches for:%{$reset_color%} %d"
+       "%{${fg[red]}%}No matches for:%{$reset_color%} %d"
 zstyle ':completion:*:corrections' format \
-       "%{$fg[red]%}%d (errors: %e)%{$reset_color%}"
+       "%{${fg[red]}%}%d (errors: %e)%{$reset_color%}"
 zstyle ':completion:*' group-name ''
 [[ -n "$LS_COLORS" ]] && zstyle ':completion:*' list-colors \
                                 "${(s.:.)LS_COLORS}"
@@ -189,4 +191,4 @@ function prompt_pwd()
     esac
 }
 
-PROMPT="%n %{$fg[blue]%}\$(prompt_pwd)%{$reset_color%}: "
+PROMPT="%n %{${fg[blue]}%}\$(prompt_pwd)%{$reset_color%}: "
