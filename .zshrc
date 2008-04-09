@@ -185,9 +185,9 @@ function prompt_pwd()
             echo '~'
             ;;
         *)
-            printf '%s' `echo $PWD | sed -e "s|^$HOME|~|" \
-                                         -e 's-/\([^/]\)\([^/]*\)-/\1-g'`
-            echo $PWD | sed -n -e 's-.*/.\([^/]*\)-\1-p'
+            echo -n $PWD | sed -e "s|^$HOME|~|" \
+                               -e 's-/\([^/]\)\([^/]*\)-/\1-g' \
+                               -e "s|\$|${${${(s:/:)PWD}[-1]}[2,-1]}|"
             ;;
     esac
 }
