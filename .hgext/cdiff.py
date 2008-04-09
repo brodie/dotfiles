@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 """Colorizes diff output"""
 
+import os
 import sys
 
 try:
@@ -18,7 +19,10 @@ def cdiff(ui, repo, *pats, **opts):
     """Colorized diff"""
 
     if (opts['color'] == 'never' or
-        (opts['color'] == 'auto' and not sys.stdout.isatty())):
+        (opts['color'] == 'auto' and
+         (os.environ.get('TERM') == 'dumb' or not sys.stdout.isatty())
+        )
+    ):
         diff(ui, repo, *pats, **opts)
         return
 
