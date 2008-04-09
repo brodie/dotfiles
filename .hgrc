@@ -6,6 +6,7 @@ username = Brodie Rao <me+hg@dackz.net>
 record =
 convert =
 extdiff =
+cdiff = ~/.hgext/cdiff.py
 
 [extdiff]
 cmd.vimdiff = vim
