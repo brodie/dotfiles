@@ -182,7 +182,7 @@ function prompt_pwd()
 {
     case $PWD in
         $HOME)
-            echo '~'
+            echo -n '~'
             ;;
         *)
             echo -n $PWD | sed -e "s|^$HOME|~|" \
