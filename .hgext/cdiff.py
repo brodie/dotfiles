@@ -34,7 +34,12 @@ def cdiff(ui, repo, *pats, **opts):
     finally:
         sys.stdout.close()
         sys.stdout = stdout
-    ui.write(highlight(output, DiffLexer(), TerminalFormatter()))
+    try:
+        output = highlight(output.decode('utf-8'), DiffLexer(),
+                           TerminalFormatter(encoding='utf-8'))
+        ui.write(output)
+    except UnicodeError:
+        ui.write(output)
 
 cdiff.__doc__ = diff.__doc__
 
