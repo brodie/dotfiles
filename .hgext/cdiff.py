@@ -11,9 +11,6 @@ except ImportError:
 
 from mercurial import hg
 from mercurial.commands import diff, table
-from pygments import highlight
-from pygments.lexers import DiffLexer
-from pygments.formatters import TerminalFormatter
 
 def cdiff(ui, repo, *pats, **opts):
     """Colorized diff"""
@@ -34,12 +31,11 @@ def cdiff(ui, repo, *pats, **opts):
     finally:
         sys.stdout.close()
         sys.stdout = stdout
-    try:
-        output = highlight(output.decode('utf-8'), DiffLexer(),
-                           TerminalFormatter(encoding='utf-8'))
-        ui.write(output)
-    except UnicodeError:
-        ui.write(output)
+    if output:
+        from pygments import highlight
+        from pygments.lexers import DiffLexer
+        from pygments.formatters import TerminalFormatter
+        ui.write(highlight(output, DiffLexer(), TerminalFormatter()))
 
 cdiff.__doc__ = diff.__doc__
 
