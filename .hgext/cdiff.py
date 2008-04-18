@@ -31,11 +31,17 @@ def cdiff(ui, repo, *pats, **opts):
     finally:
         sys.stdout.close()
         sys.stdout = stdout
-    if output:
-        from pygments import highlight
-        from pygments.lexers import DiffLexer
-        from pygments.formatters import TerminalFormatter
-        ui.write(highlight(output, DiffLexer(), TerminalFormatter()))
+    if not output:
+        return
+
+    from pygments import highlight
+    from pygments.lexers import DiffLexer
+    from pygments.formatters import TerminalFormatter
+    try:
+        ui.write(highlight(output.decode('utf-8'), DiffLexer(),
+                           TerminalFormatter(encoding='utf-8')))
+    except UnicodeError:
+        ui.write(output)
 
 cdiff.__doc__ = diff.__doc__
 
