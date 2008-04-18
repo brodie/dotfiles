@@ -167,7 +167,7 @@ function _force_rehash()
 zstyle ':completion:*' squeeze-slashes true
 zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}' 'r:|[._-]=* r:|=*' \
                                     'l:|=* r:|=*'
-zstyle ':completion:*' completer _force_rehash _complete _match _correct \
+zstyle ':completion:*' completer _force_rehash _complete _match \
                                  _approximate _prefix
 zstyle ':completion:*match:*' original only
 zstyle -e ':completion:*:approximate:*' \
