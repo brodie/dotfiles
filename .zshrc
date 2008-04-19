@@ -11,7 +11,6 @@ setopt append_history \
        extended_glob \
        extended_history \
        glob_complete \
-    NO_hash_list_all \
        hist_allow_clobber \
        hist_beep \
        hist_expire_dups_first \
@@ -167,8 +166,15 @@ function _force_rehash()
 zstyle ':completion:*' squeeze-slashes true
 zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}' 'r:|[._-]=* r:|=*' \
                                     'l:|=* r:|=*'
-zstyle ':completion:*' completer _force_rehash _complete _match \
-                                 _approximate _prefix
+zstyle -e ':completion:*' completer '
+    if [[ $_last_try != "$HISTNO$BUFFER$CURSOR" ]]
+    then
+        _last_try="$HISTNO$BUFFER$CURSOR"
+        reply=(_force_rehash _complete _match _prefix)
+    else
+        reply=(_ignored _correct _approximate _complete)
+    fi'
+
 zstyle ':completion:*match:*' original only
 zstyle -e ':completion:*:approximate:*' \
            max-errors 'reply=($((($#PREFIX+$#SUFFIX)/3))numeric)'
