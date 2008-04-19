@@ -38,9 +38,11 @@ def cdiff(ui, repo, *pats, **opts):
     from pygments.lexers import DiffLexer
     from pygments.formatters import TerminalFormatter
     try:
-        ui.write(highlight(output.decode('utf-8'), DiffLexer(),
-                           TerminalFormatter(encoding='utf-8')))
-    except UnicodeError:
+        if sys.stdout.encoding is None:
+            raise UnicodeError
+        highlight(output, DiffLexer(),
+                  TerminalFormatter(encoding=sys.stdout.encoding), outfile=ui)
+    except UnicodeError, e:
         ui.write(output)
 
 cdiff.__doc__ = diff.__doc__
