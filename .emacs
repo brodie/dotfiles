@@ -15,6 +15,7 @@
 (setq backup-inhibited t)
 (setq auto-save-default nil)
 (setq vc-handled-backends nil)
+(setq inhibit-splash-screen t)
 (show-paren-mode 1)
 (menu-bar-mode -1)
 
