@@ -6,7 +6,6 @@ setopt append_history \
        auto_list \
        auto_menu \
        auto_remove_slash \
-       correct \
     NO_clobber \
        extended_glob \
        extended_history \
