@@ -2,10 +2,11 @@
 
 setopt NO_global_rcs
 
-LANG="en_US.UTF-8"; export LANG
-EDITOR="vim"; export EDITOR
-PAGER="less"; export PAGER
-BROWSER="open"; export BROWSER
+LANG='en_US.UTF-8'; export LANG
+EDITOR='vim'; export EDITOR
+PAGER='less'; export PAGER
+BROWSER='open'; export BROWSER
+PYTHONPATH="$HOME/.pylib"; export PYTHONPATH
 
 [ -d /usr/X11/bin ] && path=($path /usr/X11/bin)
 [ -d /usr/local/X11/bin ] && path=($path /usr/local/X11/bin)
