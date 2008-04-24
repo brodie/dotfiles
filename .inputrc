@@ -38,4 +38,17 @@ $endif
 "\e[H": beginning-of-line
 "\e[F": end-of-line
 
+# Make C-w work more like M-Rubout
+set bind-tty-special-chars Off
+"\C-w": backward-kill-word
+
+# Automatically show completions
+set show-all-if-ambiguous On
+
+# Approximate fish-style up/down search
+"\C-n": history-search-forward
+"\e[B": history-search-forward
+"\C-p": history-search-backward
+"\e[A": history-search-backward
+
 $endif
