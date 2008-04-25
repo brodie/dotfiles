@@ -2,8 +2,7 @@
 
 # Options
 
-setopt append_history \
-       auto_list \
+setopt auto_list \
        auto_menu \
        auto_remove_slash \
     NO_clobber \
@@ -18,7 +17,7 @@ setopt append_history \
        hist_ignore_space \
        hist_reduce_blanks \
        hist_verify \
-       inc_append_history \
+       share_history \
        interactive_comments \
        list_types \
        list_packed \
