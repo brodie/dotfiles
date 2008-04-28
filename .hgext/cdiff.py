@@ -40,7 +40,7 @@ def cdiff(ui, repo, *pats, **opts):
     try:
         if sys.stdout.encoding is None:
             raise UnicodeError
-        highlight(output, DiffLexer(),
+        highlight(output.decode(sys.stdout.encoding), DiffLexer(),
                   TerminalFormatter(encoding=sys.stdout.encoding), outfile=ui)
     except UnicodeError, e:
         ui.write(output)
