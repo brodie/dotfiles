@@ -1,3 +1,4 @@
+
 (add-to-list 'load-path "~/.emacs.d/plugins")
 
 ; Plugins
@@ -10,6 +11,9 @@
 (setq standard-indent 4)
 (setq-default indent-tabs-mode nil)
 (setq-default show-trailing-whitespace t)
+(setq-default c-basic-offset 4)
+(setq c-offsets-alist
+      '((arglist-intro c-lineup-arglist-intro-after-pern)))
 (setq longlines-show-hard-newlines t)
 (setq transient-mark-mode t)
 (setq backup-inhibited t)
@@ -21,9 +25,12 @@
 (menu-bar-mode -1)
 
 ; Bindings
+(add-hook 'c-mode-common-hook
+          '(lambda ()
+             (define-key c-mode-base-map (kbd "RET") 'newline-and-indent)))
 (add-hook 'python-mode-hook
           '(lambda ()
-             (define-key python-mode-map "\C-m" 'newline-and-indent)))
+             (define-key python-mode-map (kbd "RET") 'newline-and-indent)))
 (global-set-key (kbd "M-[ h") 'beginning-of-line)
 (global-set-key (kbd "M-[ f") 'end-of-line)
 (global-set-key (kbd "M-[ 5 d") 'backward-word)
