@@ -1,4 +1,3 @@
-
 (add-to-list 'load-path "~/.emacs.d/plugins")
 
 ; Plugins
@@ -7,13 +6,17 @@
 (add-to-list 'auto-mode-alist '("\\.js$" . js2-mode))
 (autoload 'markdown-mode "markdown-mode.el")
 
-; Settings
-(setq standard-indent 4)
+; Indentation settings
 (setq-default indent-tabs-mode nil)
-(setq-default show-trailing-whitespace t)
-(setq-default c-basic-offset 4)
+(setq standard-indent 4)
+(setq c-default-style "bsd")
+(setq c-basic-offset 4)
+(setq-default c-indent-level 4)
 (setq c-offsets-alist
       '((arglist-intro c-lineup-arglist-intro-after-pern)))
+
+; Other settings
+(setq-default show-trailing-whitespace t)
 (setq longlines-show-hard-newlines t)
 (setq transient-mark-mode t)
 (setq backup-inhibited t)
@@ -25,12 +28,12 @@
 (menu-bar-mode -1)
 
 ; Bindings
-(add-hook 'c-mode-common-hook
-          '(lambda ()
-             (define-key c-mode-base-map (kbd "RET") 'newline-and-indent)))
 (add-hook 'python-mode-hook
           '(lambda ()
              (define-key python-mode-map (kbd "RET") 'newline-and-indent)))
+(add-hook 'c-mode-common-hook
+          '(lambda ()
+             (define-key c-mode-base-map (kbd "RET") 'newline-and-indent)))
 (global-set-key (kbd "M-[ h") 'beginning-of-line)
 (global-set-key (kbd "M-[ f") 'end-of-line)
 (global-set-key (kbd "M-[ 5 d") 'backward-word)
