@@ -9,7 +9,7 @@ def _pythonrc():
 
         def complete(self, text, state):
             if not text:
-                return ['\t', None][state]
+                return ('\t', None)[state]
             else:
                 return rlcompleter.Completer.complete(self, text, state)
 
@@ -20,13 +20,9 @@ def _pythonrc():
     import os
 
     history_path = os.path.expanduser('~/.pyhistory')
-    def save_history(filename=history_path):
-        readline.write_history_file(filename)
-
+    atexit.register(lambda: readline.write_history_file(history_path))
     if os.path.isfile(history_path):
         readline.read_history_file(history_path)
-
-    atexit.register(save_history)
 
     # Pretty print evaluated expressions
 
