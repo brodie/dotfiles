@@ -52,7 +52,8 @@ fi
 ZLS_COLORS="$LS_COLORS"
 export ZLS_COLORS
 
-alias ll='ls -l' \
+alias emacs='emacs -nw' \
+      ll='ls -l' \
       la='ls -A' \
       l='ls -CF' \
       grep='grep --color=always'
