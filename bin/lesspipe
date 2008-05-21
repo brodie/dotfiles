@@ -35,7 +35,7 @@ case "$1" in
         then
             cat "$1" | pygmentize -l "$LEXER"
         else
-            LEXER=$(lexer_for_mime $(file -ib "$1"))
+            LEXER=$(lexer_for_mime $(file -b --mime "$1"))
             if [ -n "$LEXER" ]
             then
                 cat "$1" | pygmentize -l "$LEXER"
