@@ -56,7 +56,8 @@ alias emacs='emacs -nw' \
       ll='ls -l' \
       la='ls -A' \
       l='ls -CF' \
-      grep='grep --color=always'
+      grep='grep --color=always' \
+      zgrep='zgrep --color=always'
 
 function beep()
 {
