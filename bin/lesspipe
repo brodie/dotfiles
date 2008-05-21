@@ -1,24 +1,47 @@
 #!/bin/sh
 
+lexer_for_file()
+{
+    python -c 'import sys; from pygments.lexers import get_lexer_for_filename; print get_lexer_for_filename(sys.argv[1]).aliases[0]' "$1" 2> /dev/null
+}
+
+lexer_for_mime()
+{
+    python -c 'import sys; from pygments.lexers import get_lexer_for_mimetype; print get_lexer_for_mimetype(sys.argv[1]).aliases[0]' "$1" 2> /dev/null
+}
+
 case "$1" in
-    *.S|*.[1234567]|*.as|*.aux|*.b|*.bas|*.bat|*.befunge|*.bf|*.boo|*.c|\
-    *.c++|*.c++-objdump|*.c-objdump|*.cfg|*.cl|*.cmd|*.cpp|*.cpp-objdump|\
-    *.cs|*.css|*.cw|*.cxx-objdump|*.d|*.d-objdump|*.di|*.diff|*.dylan|*.el|\
-    *.erl|*.gemspec|*.h|*.h++|*.hpp|*.hrl|*.hs|*.htm|*.htm|*.html|*.html|\
-    *.ini|*.java|*.js|*.jsp|*.kid|*.lhs|*.lisp|*.ll|*.lua|*.m|*.mak|*.man|\
-    *.mao|*.md|*.ml|*.mli|*.mll|*.mly|*.moo|*.mu|*.myt|*.objdump|*.pas|\
-    *.patch|*.php|*.php[345]|*.phtml|*.pl|*.pm|*.po|*.pot|*.py|*.pytb|*.pyw|\
-    *.rake|*.raw|*.raw|*.rb|*.rbw|*.rbx|*.rest|*.rhtml|*.rss|*.rst|*.rtf|\
-    *.s|*.sc|*.scm|*.sh|*.sql|*.svg|*.tex|*.tex|*.toc|*.tpl|*.txt|*.txt|\
-    *.vb|*.vim|*.weechatlog|*.xhtml|*.xml|*.xsl|*.xslt|*.xslt|\
-    *.htaccess|*apache.conf|*apache2.conf|*[Mm]akefile|*autodelegate|\
-    *SConstruct|*SConscript|*Rakefile|*sources.list|*squid.conf|*.vimrc)
-        pygmentize "$1"
-        ;;
     *.gz)
-        gunzip -c "$1"
+        LEXER=$(lexer_for_file $(basename "$1" .gz))
+        if [ -n "$LEXER" ]
+        then
+            gunzip -c "$1" | pygmentize -l "$LEXER"
+        else
+            gunzip -c "$1"
+        fi
         ;;
     *.bz2)
-        bzcat "$1"
+        LEXER=$(lexer_for_file $(basename "$1" .bz2))
+        if [ -n "$LEXER" ]
+        then
+            bzcat "$1" | pygmentize -l "$LEXER"
+        else
+            bzcat "$1"
+        fi
+        ;;
+    *)
+        LEXER=$(lexer_for_file "$1")
+        if [ -n "$LEXER" ]
+        then
+            cat "$1" | pygmentize -l "$LEXER"
+        else
+            LEXER=$(lexer_for_mime $(file -ib "$1"))
+            if [ -n "$LEXER" ]
+            then
+                cat "$1" | pygmentize -l "$LEXER"
+            else
+                exit 1
+            fi
+        fi
         ;;
 esac
