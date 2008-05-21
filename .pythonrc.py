@@ -1,10 +1,32 @@
 def _pythonrc():
-    # Enable readline and tab completion
+    # Enable readline, tab completion, and history
 
     import rlcompleter
     import readline
 
+    class TabCompleter(rlcompleter.Completer):
+        """Completer that supports indenting"""
+
+        def complete(self, text, state):
+            if not text:
+                return ['\t', None][state]
+            else:
+                return rlcompleter.Completer.complete(self, text, state)
+
     readline.parse_and_bind('tab: complete')
+    readline.set_completer(TabCompleter().complete)
+
+    import atexit
+    import os
+
+    history_path = os.path.expanduser('~/.pyhistory')
+    def save_history(filename=history_path):
+        readline.write_history_file(filename)
+
+    if os.path.isfile(history_path):
+        readline.read_history_file(history_path)
+
+    atexit.register(save_history)
 
     # Pretty print evaluated expressions
 
@@ -13,7 +35,9 @@ def _pythonrc():
     import sys
 
     def pprinthook(value):
-        """Pretty print an object to sys.stdout and also save it in __builtin__"""
+        """Pretty print an object to sys.stdout and also save it in
+        __builtin__.
+        """
 
         if value is not None:
             pprint.pprint(value)
