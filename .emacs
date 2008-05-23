@@ -58,7 +58,8 @@
              (define-key python-mode-map (kbd "DEL") 'delete-backward-indent)))
 (add-hook 'c-mode-common-hook
           '(lambda ()
-             (define-key c-mode-base-map (kbd "RET") 'newline-and-indent)))
+             (define-key c-mode-base-map (kbd "RET") 'newline-and-indent)
+             (define-key c-mode-base-map (kbd "DEL") 'delete-backward-indent)))
 (global-set-key (kbd "M-[ h") 'beginning-of-line)
 (global-set-key (kbd "M-[ f") 'end-of-line)
 (global-set-key (kbd "M-[ 5 d") 'backward-word)
