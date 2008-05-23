@@ -27,10 +27,33 @@
 (column-number-mode 1)
 (menu-bar-mode -1)
 
+; Mouse settings
+(xterm-mouse-mode 1)
+(mouse-wheel-mode 1)
+(global-set-key [mouse-4] '(lambda ()
+                             (interactive)
+                             (scroll-down 1)))
+
+(global-set-key [mouse-5] '(lambda ()
+                             (interactive)
+                             (scroll-up 1)))
+
 ; Bindings
+
+(defun delete-backward-indent (&optional arg)
+  "Erase a level of indentation, or 1 character"
+  (interactive "*P")
+  (let ((n (mod (current-column) standard-indent)))
+    (if (looking-back (make-string n 32) n)
+        (if (= n 0)
+            (delete-backward-char standard-indent)
+          (delete-backward-char n))
+      (delete-backward-char 1))))
+
 (add-hook 'python-mode-hook
           '(lambda ()
-             (define-key python-mode-map (kbd "RET") 'newline-and-indent)))
+             (define-key python-mode-map (kbd "RET") 'newline-and-indent)
+             (define-key python-mode-map (kbd "DEL") 'delete-backward-indent)))
 (add-hook 'c-mode-common-hook
           '(lambda ()
              (define-key c-mode-base-map (kbd "RET") 'newline-and-indent)))
@@ -38,3 +61,4 @@
 (global-set-key (kbd "M-[ f") 'end-of-line)
 (global-set-key (kbd "M-[ 5 d") 'backward-word)
 (global-set-key (kbd "M-[ 5 c") 'forward-word)
+(global-set-key (kbd "DEL") 'delete-backward-indent)
