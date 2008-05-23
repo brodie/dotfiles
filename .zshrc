@@ -204,7 +204,7 @@ PROMPT="%n %{${fg[blue]}%}\$(_prompt_pwd)%{$reset_color%}: "
 
 case $TERM in
     xterm*|rxvt*)
-        precmd () { print -Pn '\e]0;%n@%M: %~\a' }
+        precmd () { print -Pn "\e]0;%n@%M: $(_prompt_pwd)\a" }
         ;;
     *)
         ;;

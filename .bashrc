@@ -99,7 +99,7 @@ PS1="\u \[$(tput setaf 4)\]\$(_prompt_pwd)\[$(tput sgr0)\]: "
 
 case $TERM in
     xterm*|rxvt*)
-        PROMPT_COMMAND='echo -ne "\e]0;${USER}@${HOSTNAME}: ${PWD/$HOME/~}\a"'
+        PROMPT_COMMAND='echo -ne "\e]0;${USER}@${HOSTNAME}: $(_prompt_pwd)\a"'
         ;;
     *)
         ;;
