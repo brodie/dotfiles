@@ -43,12 +43,14 @@
 (defun delete-backward-indent (&optional arg)
   "Erase a level of indentation, or 1 character"
   (interactive "*P")
-  (let ((n (mod (current-column) standard-indent)))
-    (if (looking-back (make-string n 32) n)
-        (if (= n 0)
-            (delete-backward-char standard-indent)
-          (delete-backward-char n))
-      (delete-backward-char 1))))
+  (if (= (current-column) 0)
+      (delete-backward-char 1)
+    (let ((n (mod (current-column) standard-indent)))
+      (if (looking-back (concat "^\s*" (make-string n 32)))
+          (if (= n 0)
+              (delete-backward-char standard-indent)
+            (delete-backward-char n))
+        (delete-backward-char 1)))))
 
 (add-hook 'python-mode-hook
           '(lambda ()
