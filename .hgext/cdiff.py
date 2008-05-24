@@ -38,10 +38,11 @@ def cdiff(ui, repo, *pats, **opts):
     from pygments.lexers import DiffLexer
     from pygments.formatters import TerminalFormatter
     try:
-        if sys.stdout.encoding is None:
+        if opts['color'] != 'always' and sys.stdout.encoding is None:
             raise UnicodeError
-        highlight(output.decode(sys.stdout.encoding), DiffLexer(),
-                  TerminalFormatter(encoding=sys.stdout.encoding), outfile=ui)
+        encoding = sys.stdout.encoding or 'utf-8'
+        highlight(output.decode(encoding), DiffLexer(),
+                  TerminalFormatter(encoding=encoding), outfile=ui)
     except UnicodeError, e:
         ui.write(output)
 
