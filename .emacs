@@ -3,8 +3,9 @@
 ; Plugins
 ;(require 'yasnippet-bundle)
 (autoload 'js2-mode "js2" nil t)
-(add-to-list 'auto-mode-alist '("\\.js$" . js2-mode))
+;(add-to-list 'auto-mode-alist '("\\.js$" . js2-mode))
 (autoload 'markdown-mode "markdown-mode" nil t)
+(autoload 'rst-mode "rst" nil t)
 
 ; Indentation settings
 (setq-default indent-tabs-mode nil)
@@ -17,6 +18,7 @@
 
 ; Other settings
 (setq-default show-trailing-whitespace t)
+(setq-default rst-level-face-base-color nil)
 (setq longlines-show-hard-newlines t)
 (setq transient-mark-mode t)
 (setq backup-inhibited t)
