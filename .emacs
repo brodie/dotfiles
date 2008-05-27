@@ -3,9 +3,12 @@
 ; Plugins
 ;(require 'yasnippet-bundle)
 (autoload 'js2-mode "js2" nil t)
-;(add-to-list 'auto-mode-alist '("\\.js$" . js2-mode))
-(autoload 'markdown-mode "markdown-mode" nil t)
 (autoload 'rst-mode "rst" nil t)
+(autoload 'markdown-mode "markdown-mode" nil t)
+
+(add-to-list 'auto-mode-alist '("\\.js$" . js2-mode))
+(add-to-list 'auto-mode-alist '("\\.rst$" . rst-mode))
+(add-to-list 'auto-mode-alist '("\\.text$" . rst-mode))
 
 ; Indentation settings
 (setq-default indent-tabs-mode nil)
@@ -41,7 +44,6 @@
                              (scroll-up 1)))
 
 ; Bindings
-
 (defun delete-backward-indent (&optional arg)
   "Erase a level of indentation, or 1 character"
   (interactive "*P")
@@ -62,8 +64,17 @@
           '(lambda ()
              (define-key c-mode-base-map (kbd "RET") 'newline-and-indent)
              (define-key c-mode-base-map (kbd "DEL") 'delete-backward-indent)))
+
 (global-set-key (kbd "M-[ h") 'beginning-of-line)
 (global-set-key (kbd "M-[ f") 'end-of-line)
 (global-set-key (kbd "M-[ 5 d") 'backward-word)
 (global-set-key (kbd "M-[ 5 c") 'forward-word)
 (global-set-key (kbd "DEL") 'delete-backward-indent)
+
+; Spelling
+(add-hook 'markdown-mode-hook '(lambda () (flyspell-mode)))
+(add-hook 'rst-mode-hook '(lambda () (flyspell-mode)))
+(add-hook 'text-mode-hook '(lambda () (flyspell-mode)))
+(add-hook 'c-mode-common-hook '(lambda () (flyspell-prog-mode)))
+(add-hook 'python-mode-hook '(lambda () (flyspell-prog-mode)))
+(add-hook 'sh-mode-hook '(lambda () (flyspell-prog-mode)))
