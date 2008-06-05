@@ -18,6 +18,8 @@
 (setq-default c-indent-level 4)
 (setq c-offsets-alist
       '((arglist-intro c-lineup-arglist-intro-after-pern)))
+(setq tab-stop-list '(4 8 12 16 20 24 28 32 36 40 44 48 52 56 60 64 68 72 76
+                        80 84 88 92 96 100 104 108 112 116 120))
 
 ; Other settings
 (setq-default show-trailing-whitespace t)
@@ -72,9 +74,9 @@
 (global-set-key (kbd "DEL") 'delete-backward-indent)
 
 ; Spelling
-(add-hook 'markdown-mode-hook '(lambda () (flyspell-mode)))
-(add-hook 'rst-mode-hook '(lambda () (flyspell-mode)))
-(add-hook 'text-mode-hook '(lambda () (flyspell-mode)))
+(add-hook 'markdown-mode-hook '(lambda () (flyspell-mode 1)))
+(add-hook 'rst-mode-hook '(lambda () (flyspell-mode 1)))
+(add-hook 'text-mode-hook '(lambda () (flyspell-mode 1)))
 (add-hook 'c-mode-common-hook '(lambda () (flyspell-prog-mode)))
 (add-hook 'python-mode-hook '(lambda () (flyspell-prog-mode)))
 (add-hook 'sh-mode-hook '(lambda () (flyspell-prog-mode)))
