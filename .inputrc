@@ -44,6 +44,8 @@ set bind-tty-special-chars Off
 
 # Automatically show completions
 set show-all-if-ambiguous On
+# Case insensitive completion
+set completion-ignore-case On
 
 # Approximate fish-style up/down search
 "\C-n": history-search-forward
