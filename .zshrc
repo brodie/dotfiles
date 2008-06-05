@@ -3,7 +3,6 @@
 # Options
 
 setopt auto_list \
-       auto_menu \
        auto_remove_slash \
     NO_clobber \
        extended_glob \
