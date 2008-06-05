@@ -22,6 +22,7 @@ setopt auto_list \
        list_types \
        list_packed \
        long_list_jobs \
+       menu_complete \
        multios \
        numeric_glob_sort \
        posix_builtins \
