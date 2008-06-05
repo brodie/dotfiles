@@ -9,7 +9,7 @@ def _pythonrc():
 
         def complete(self, text, state):
             if not text:
-                return ('\t', None)[state]
+                return ('    ', None)[state]
             else:
                 return rlcompleter.Completer.complete(self, text, state)
 
