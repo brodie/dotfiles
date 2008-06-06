@@ -28,7 +28,13 @@ def _pythonrc():
 
     import __builtin__
     import pprint
+    import pydoc
     import sys
+    import types
+
+    help_types = (types.BuiltinFunctionType, types.BuiltinMethodType,
+                  types.FunctionType, types.MethodType, types.ModuleType,
+                  types.TypeType, types.UnboundMethodType)
 
     def pprinthook(value):
         """Pretty print an object to sys.stdout and also save it in
@@ -36,7 +42,13 @@ def _pythonrc():
         """
 
         if value is not None:
-            pprint.pprint(value)
+            if (isinstance(value, help_types) and
+                getattr(value, '__doc__', None)):
+                print repr(value)
+                print
+                print pydoc.getdoc(value)
+            else:
+                pprint.pprint(value)
         __builtin__._ = value
 
     sys.displayhook = pprinthook
