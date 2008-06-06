@@ -2,14 +2,11 @@
 
 # Options
 
-setopt auto_list \
-       auto_remove_slash \
-    NO_clobber \
+setopt NO_clobber \
        extended_glob \
        extended_history \
        glob_complete \
        hist_allow_clobber \
-       hist_beep \
        hist_expire_dups_first \
        hist_ignore_all_dups \
        hist_ignore_dups \
@@ -18,10 +15,8 @@ setopt auto_list \
        hist_verify \
        share_history \
        interactive_comments \
-       list_types \
        list_packed \
        long_list_jobs \
-       menu_complete \
        multios \
        numeric_glob_sort \
        posix_builtins \
@@ -178,8 +173,8 @@ zstyle ':completion:*match:*' original only
 zstyle -e ':completion:*:approximate:*' \
            max-errors 'reply=($((($#PREFIX+$#SUFFIX)/3))numeric)'
 zstyle ':completion:*:functions' ignored-patterns '_*'
-zstyle ':completion:*:rm:*' ignore-line yes
-zstyle ':completion:*:cp:*' ignore-line yes
+zstyle ':completion:*:(cp|emacs|diff|kill|ls|rm|rmdir|scp|vim|vimdiff):*' \
+       ignore-line yes
 
 # Prompt
 
