@@ -158,7 +158,8 @@ _force_rehash()
 
 # Matching
 zstyle ':completion:*' squeeze-slashes true
-zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}' 'r:|[._-]=* r:|=*' \
+zstyle ':completion:*' insert menu
+zstyle ':completion:*' matcher-list '' 'm:{a-zA-Z}={A-Za-z}' 'r:|[._-]=* r:|=*' \
                                     'l:|=* r:|=*'
 zstyle -e ':completion:*' completer '
     if [[ $_last_try != "$HISTNO$BUFFER$CURSOR" ]]
