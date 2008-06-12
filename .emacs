@@ -33,6 +33,7 @@
 (show-paren-mode 1)
 (column-number-mode 1)
 (menu-bar-mode -1)
+(setq require-final-newline 'visit-save)
 
 ; Mouse settings
 (xterm-mouse-mode 1)
