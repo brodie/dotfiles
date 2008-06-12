@@ -2,11 +2,7 @@
 
 setopt NO_global_rcs
 
-export LANG='en_US.UTF-8'
-export EDITOR='vim'
-export PAGER='less'
-export BROWSER='open'
-export PYTHONSTARTUP="$HOME/.pythonrc.py"
+[ ! -n "$LANG" ] && export LANG='en_US.UTF-8'
 
 [ -d /usr/X11/bin ] && path=($path /usr/X11/bin)
 [ -d /usr/X11R6/bin ] && path=($path /usr/X11R6/bin)
@@ -23,3 +19,5 @@ export PYTHONSTARTUP="$HOME/.pythonrc.py"
 [ -d /usr/local/share/man ] && manpath=(/usr/local/share/man $manpath)
 [ -d /usr/local/man ] && manpath=(/usr/local/man $manpath)
 [ -d /opt/local/share/man ] && manpath=(/opt/local/share/man $manpath)
+
+[ -d "$HOME/.zsh/functions" ] && fpath=("$HOME/.zsh/functions" $fpath)

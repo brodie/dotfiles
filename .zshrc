@@ -2,6 +2,11 @@
 
 # Options
 
+export EDITOR='vim'
+export PAGER='less'
+export BROWSER='open'
+export PYTHONSTARTUP="$HOME/.pythonrc.py"
+
 setopt NO_clobber \
        extended_glob \
        extended_history \
@@ -73,42 +78,19 @@ export LESS_TERMCAP_so
 export LESS_TERMCAP_ue=$reset_color
 export LESS_TERMCAP_us=${fg_bold[green]}
 
-# fish-style history search
-
-__UP_DOWN_LINE_OR_SEARCH_BUFFER=
-up-line-or-search-all()
-{
-    if [[ ($LASTWIDGET != 'down-line-or-search-all' &&
-       $LASTWIDGET != 'up-line-or-search-all')
-      || "$BUFFER" == '' ]]
-    then
-        __UP_DOWN_LINE_OR_SEARCH_BUFFER="$BUFFER"
-    fi
-    zle up-line-or-search -- "$__UP_DOWN_LINE_OR_SEARCH_BUFFER"
-}
-down-line-or-search-all()
-{
-    if [[ ($LASTWIDGET != 'down-line-or-search-all' &&
-       $LASTWIDGET != 'up-line-or-search-all')
-      || "$BUFFER" == '' ]]
-    then
-        __UP_DOWN_LINE_OR_SEARCH_BUFFER="$BUFFER"
-    fi
-    zle down-line-or-search -- "$__UP_DOWN_LINE_OR_SEARCH_BUFFER"
-}
-
-zle -N up-line-or-search-all
-zle -N down-line-or-search-all
-
 # Load/configure key bindings
 
 autoload zkbd
-[[ ! -d "$HOME/.zkbd" ]] && mkdir "$HOME/.zkbd"
-[[ ! -f "$HOME/.zkbd/$TERM-$VENDOR-$OSTYPE" ]] && zkbd
-source "$HOME/.zkbd/$TERM-$VENDOR-$OSTYPE"
+[[ ! -d "$HOME/.zsh/zkbd" ]] && mkdir -p "$HOME/.zsh/zkbd"
+[[ ! -f "$HOME/.zsh/zkbd/$TERM-$VENDOR-$OSTYPE" ]] && zkbd
+source "$HOME/.zsh/zkbd/$TERM-$VENDOR-$OSTYPE"
 
 bindkey -e # Revert back to emacs mode
 WORDCHARS='' # Use emacs-style word matching
+
+autoload down-line-or-beginning-search up-line-or-beginning-search
+zle -N down-line-or-beginning-search
+zle -N up-line-or-beginning-search
 
 [[ -n "${key[Backspace]}" ]] && bindkey "${key[Backspace]}" \
                                         backward-delete-char
@@ -118,17 +100,16 @@ WORDCHARS='' # Use emacs-style word matching
 [[ -n "${key[Delete]}" ]] && bindkey "${key[Delete]}" delete-char
 [[ -n "${key[End]}" ]] && bindkey "${key[End]}" end-of-line
 [[ -n "${key[PageDown]}" ]] && bindkey "${key[PageDown]}" beep
-[[ -n "${key[Up]}" ]] && bindkey "${key[Up]}" up-line-or-search-all
+[[ -n "${key[Up]}" ]] && bindkey "${key[Up]}" up-line-or-beginning-search
 [[ -n "${key[Left]}" ]] && bindkey "${key[Left]}" backward-char
-[[ -n "${key[Down]}" ]] && bindkey "${key[Down]}" down-line-or-search-all
+[[ -n "${key[Down]}" ]] && bindkey "${key[Down]}" down-line-or-beginning-search
 [[ -n "${key[Right]}" ]] && bindkey "${key[Right]}" forward-char
+[[ -n "${key[Control-Left]}" ]] && bindkey "${key[Control-Left]}" backward-word
+[[ -n "${key[Control-Right]}" ]] && bindkey "${key[Control-Right]}" \
+                                            forward-word
 
-bindkey '^[[5C' forward-word \
-        '^[[5D' backward-word \
-        '^[[1;5C' forward-word \
-        '^[[1;5D' backward-word \
-        '^P' up-line-or-search-all \
-        '^N' down-line-or-search-all \
+bindkey '^P' up-line-or-beginning-search \
+        '^N' down-line-or-beginning-search \
         '^W' vi-backward-kill-word \
         '^U' vi-kill-line
 
@@ -152,7 +133,13 @@ zstyle ':completion:*' group-name ''
 # Rehash PATH for new commands
 _force_rehash()
 {
-    (( CURRENT == 1 )) && rehash
+    if [ $CURRENT -eq 1 ]
+    then
+        rehash
+    elif [ $CURRENT -eq 2 -a "$words[0]" = sudo ]
+    then
+        rehash
+    fi
     return 1
 }
 
