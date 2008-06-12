@@ -136,7 +136,7 @@ _force_rehash()
     if [ $CURRENT -eq 1 ]
     then
         rehash
-    elif [ $CURRENT -eq 2 -a "$words[0]" = sudo ]
+    elif [ $CURRENT -eq 2 -a "$words[1]" = sudo ]
     then
         rehash
     fi
