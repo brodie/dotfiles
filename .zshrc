@@ -162,6 +162,20 @@ zstyle -e ':completion:*:approximate:*' \
 zstyle ':completion:*:functions' ignored-patterns '_*'
 zstyle ':completion:*:(cp|emacs|diff|kill|ls|rm|rmdir|scp|vim|vimdiff):*' \
        ignore-line yes
+zstyle -e ':completion:*:processes' command '
+    if (( $funcstack[(eI)$_comps[sudo]] ))
+    then
+       reply="ps axho user,pid,command"
+    else
+       reply="ps xho pid,command"
+    fi'
+zstyle -e ':completion:*:processes-names' command '
+    if (( $funcstack[(eI)$_comps[sudo]] ))
+    then
+       reply="ps axho command"
+    else
+       reply="ps xho command"
+    fi'
 
 # Prompt
 
