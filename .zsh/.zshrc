@@ -78,47 +78,6 @@ export LESS_TERMCAP_so
 export LESS_TERMCAP_ue=$reset_color
 export LESS_TERMCAP_us=${fg_bold[green]}
 
-# Load/configure key bindings
-
-autoload zkbd
-[[ ! -d "$ZDOTDIR/.zkbd" ]] && mkdir "$ZDOTDIR/.zkbd"
-[[ ! -f "$ZDOTDIR/.zkbd/$TERM-$VENDOR-$OSTYPE" ]] && zkbd
-source "$ZDOTDIR/.zkbd/$TERM-$VENDOR-$OSTYPE"
-
-bindkey -e # Revert back to emacs mode
-WORDCHARS='' # Use emacs-style word matching
-
-autoload down-line-or-beginning-search up-line-or-beginning-search
-zle -N down-line-or-beginning-search
-zle -N up-line-or-beginning-search
-
-[[ -n "${key[Backspace]}" ]] && bindkey "${key[Backspace]}" \
-                                        backward-delete-char
-[[ -n "${key[Insert]}" ]] && bindkey "${key[Insert]}" beep
-[[ -n "${key[Home]}" ]] && bindkey "${key[Home]}" beginning-of-line
-[[ -n "${key[PageUp]}" ]] && bindkey "${key[PageUp]}" beep
-[[ -n "${key[Delete]}" ]] && bindkey "${key[Delete]}" delete-char
-[[ -n "${key[End]}" ]] && bindkey "${key[End]}" end-of-line
-[[ -n "${key[PageDown]}" ]] && bindkey "${key[PageDown]}" beep
-[[ -n "${key[Up]}" ]] && bindkey "${key[Up]}" up-line-or-beginning-search && \
-                         bindkey "\e${key[Up]}" up-line-or-beginning-search
-[[ -n "${key[Left]}" ]] && bindkey "${key[Left]}" backward-char && \
-                           bindkey "\e${key[Left]}" backward-word
-[[ -n "${key[Down]}" ]] && bindkey "${key[Down]}" \
-                                   down-line-or-beginning-search && \
-                           bindkey "\e${key[Down]}" \
-                                   down-line-or-beginning-search
-[[ -n "${key[Right]}" ]] && bindkey "${key[Right]}" forward-char && \
-                            bindkey "\e${key[Right]}" forward-word
-[[ -n "${key[Control-Left]}" ]] && bindkey "${key[Control-Left]}" backward-word
-[[ -n "${key[Control-Right]}" ]] && bindkey "${key[Control-Right]}" \
-                                            forward-word
-
-bindkey '^P' up-line-or-beginning-search \
-        '^N' down-line-or-beginning-search \
-        '^W' vi-backward-kill-word \
-        '^U' vi-kill-line
-
 # Completion
 
 zmodload -i zsh/complist
@@ -212,3 +171,44 @@ case $TERM in
     *)
         ;;
 esac
+
+# Load/configure key bindings
+
+bindkey -e # Revert back to emacs mode
+WORDCHARS='' # Use emacs-style word matching
+
+autoload down-line-or-beginning-search up-line-or-beginning-search
+zle -N down-line-or-beginning-search
+zle -N up-line-or-beginning-search
+
+bindkey '^P' up-line-or-beginning-search \
+        '^N' down-line-or-beginning-search \
+        '^W' vi-backward-kill-word \
+        '^U' vi-kill-line
+
+autoload zkbd
+[[ ! -d "$ZDOTDIR/.zkbd" ]] && mkdir "$ZDOTDIR/.zkbd"
+[[ ! -f "$ZDOTDIR/.zkbd/$TERM-$VENDOR-$OSTYPE" ]] && zkbd
+source "$ZDOTDIR/.zkbd/$TERM-$VENDOR-$OSTYPE"
+
+[[ -n "${key[Backspace]}" ]] && bindkey "${key[Backspace]}" \
+                                        backward-delete-char
+[[ -n "${key[Insert]}" ]] && bindkey "${key[Insert]}" beep
+[[ -n "${key[Home]}" ]] && bindkey "${key[Home]}" beginning-of-line
+[[ -n "${key[PageUp]}" ]] && bindkey "${key[PageUp]}" beep
+[[ -n "${key[Delete]}" ]] && bindkey "${key[Delete]}" delete-char
+[[ -n "${key[End]}" ]] && bindkey "${key[End]}" end-of-line
+[[ -n "${key[PageDown]}" ]] && bindkey "${key[PageDown]}" beep
+[[ -n "${key[Up]}" ]] && bindkey "${key[Up]}" up-line-or-beginning-search && \
+                         bindkey "\e${key[Up]}" up-line-or-beginning-search
+[[ -n "${key[Left]}" ]] && bindkey "${key[Left]}" backward-char && \
+                           bindkey "\e${key[Left]}" backward-word
+[[ -n "${key[Down]}" ]] && bindkey "${key[Down]}" \
+                                   down-line-or-beginning-search && \
+                           bindkey "\e${key[Down]}" \
+                                   down-line-or-beginning-search
+[[ -n "${key[Right]}" ]] && bindkey "${key[Right]}" forward-char && \
+                            bindkey "\e${key[Right]}" forward-word
+[[ -n "${key[Control-Left]}" ]] && bindkey "${key[Control-Left]}" backward-word
+[[ -n "${key[Control-Right]}" ]] && bindkey "${key[Control-Right]}" \
+                                            forward-word
