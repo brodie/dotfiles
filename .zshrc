@@ -100,10 +100,16 @@ zle -N up-line-or-beginning-search
 [[ -n "${key[Delete]}" ]] && bindkey "${key[Delete]}" delete-char
 [[ -n "${key[End]}" ]] && bindkey "${key[End]}" end-of-line
 [[ -n "${key[PageDown]}" ]] && bindkey "${key[PageDown]}" beep
-[[ -n "${key[Up]}" ]] && bindkey "${key[Up]}" up-line-or-beginning-search
-[[ -n "${key[Left]}" ]] && bindkey "${key[Left]}" backward-char
-[[ -n "${key[Down]}" ]] && bindkey "${key[Down]}" down-line-or-beginning-search
-[[ -n "${key[Right]}" ]] && bindkey "${key[Right]}" forward-char
+[[ -n "${key[Up]}" ]] && bindkey "${key[Up]}" up-line-or-beginning-search && \
+                         bindkey "\e${key[Up]}" up-line-or-beginning-search
+[[ -n "${key[Left]}" ]] && bindkey "${key[Left]}" backward-char && \
+                           bindkey "\e${key[Left]}" backward-word
+[[ -n "${key[Down]}" ]] && bindkey "${key[Down]}" \
+                                   down-line-or-beginning-search && \
+                           bindkey "\e${key[Down]}" \
+                                   down-line-or-beginning-search
+[[ -n "${key[Right]}" ]] && bindkey "${key[Right]}" forward-char && \
+                            bindkey "\e${key[Right]}" forward-word
 [[ -n "${key[Control-Left]}" ]] && bindkey "${key[Control-Left]}" backward-word
 [[ -n "${key[Control-Right]}" ]] && bindkey "${key[Control-Right]}" \
                                             forward-word
@@ -145,8 +151,8 @@ _force_rehash()
 
 # Matching
 zstyle ':completion:*' squeeze-slashes true
-zstyle ':completion:*' matcher-list '' 'm:{a-zA-Z}={A-Za-z}' 'r:|[._-]=* r:|=*' \
-                                    'l:|=* r:|=*'
+zstyle ':completion:*' matcher-list '' 'm:{a-zA-Z}={A-Za-z}' \
+                                    'r:|[._-]=* r:|=*' 'l:|=* r:|=*'
 zstyle -e ':completion:*' completer '
     if [[ $_last_try != "$HISTNO$BUFFER$CURSOR" ]]
     then
