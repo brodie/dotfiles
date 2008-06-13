@@ -1,8 +1,8 @@
-#! /bin/zsh -f
+#!/bin/zsh -f
 
 [[ -o interactive ]] && {
-    local -i ARGC
-    (ARGC=0) 2>/dev/null || {
+    local -hi ARGC		# local is a no-op outside of a function
+    (ARGC=0) 2>/dev/null || {	# so ARGC remains read-only for "source"
         print -u2 ${0}: must be run as a function or shell script, not sourced
         return 1
     }
@@ -101,21 +101,33 @@ else
     unset alt
 fi
 
-(( $+alt + $+meta == 0 )) && cat <<EOF
+if (( $+alt + $+meta == 0 ))
+then
+    print $'\n---------\n'
+    if [[ -o multibyte ]]
+    then cat <<EOF
+You are using zsh in MULTIBYTE mode to support modern character sets (for
+languages other than English).  To use the Meta or Alt keys, you probably
+need to revert to single-byte mode with a command such as
 
----------
-
+    unsetopt MULTIBYTE
+EOF
+    else cat <<EOF
 Your current terminal and keyboard configuration does not appear to use
 high-order characters.  You may be able to enable the Meta or Alt keys
 with a command such as
 
     stty pass8
+EOF
+    fi
+    cat <<EOF
 
 If you want to use these extra keys with zsh, try adding the above command
 to your ${ZDOTDIR:-$HOME}/.zshrc file.
 
 See also "man stty" or the documentation for your terminal or emulator.
 EOF
+fi
 
 (( $+alt || $+meta )) && cat <<EOF
 
