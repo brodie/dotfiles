@@ -1,6 +1,8 @@
-#!/bin/zsh
+#!/usr/bin/env zsh
 
 setopt NO_global_rcs
+
+ZDOTDIR="$HOME/.zsh"
 
 [ ! -n "$LANG" ] && export LANG='en_US.UTF-8'
 
@@ -20,4 +22,4 @@ setopt NO_global_rcs
 [ -d /usr/local/man ] && manpath=(/usr/local/man $manpath)
 [ -d /opt/local/share/man ] && manpath=(/opt/local/share/man $manpath)
 
-[ -d "$HOME/.zsh/functions" ] && fpath=("$HOME/.zsh/functions" $fpath)
+[ -d "$ZDOTDIR/functions" ] && fpath=("$ZDOTDIR/functions" $fpath)

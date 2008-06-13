@@ -1,4 +1,4 @@
-#!/bin/zsh
+#!/usr/bin/env zsh
 
 # Options
 
@@ -29,7 +29,7 @@ setopt NO_clobber \
        pushd_ignore_dups
 
 HISTSIZE=1000
-HISTFILE="$HOME/.zsh_history"
+HISTFILE="$ZDOTDIR/.zsh_history"
 SAVEHIST=1000
 
 # Aliases
@@ -81,9 +81,9 @@ export LESS_TERMCAP_us=${fg_bold[green]}
 # Load/configure key bindings
 
 autoload zkbd
-[[ ! -d "$HOME/.zsh/zkbd" ]] && mkdir -p "$HOME/.zsh/zkbd"
-[[ ! -f "$HOME/.zsh/zkbd/$TERM-$VENDOR-$OSTYPE" ]] && zkbd
-source "$HOME/.zsh/zkbd/$TERM-$VENDOR-$OSTYPE"
+[[ ! -d "$ZDOTDIR/.zkbd" ]] && mkdir "$ZDOTDIR/.zkbd"
+[[ ! -f "$ZDOTDIR/.zkbd/$TERM-$VENDOR-$OSTYPE" ]] && zkbd
+source "$ZDOTDIR/.zkbd/$TERM-$VENDOR-$OSTYPE"
 
 bindkey -e # Revert back to emacs mode
 WORDCHARS='' # Use emacs-style word matching
@@ -150,6 +150,7 @@ _force_rehash()
 }
 
 # Matching
+zstyle ':completion:*' use-cache on
 zstyle ':completion:*' squeeze-slashes true
 zstyle ':completion:*' matcher-list '' 'm:{a-zA-Z}={A-Za-z}' \
                                     'r:|[._-]=* r:|=*' 'l:|=* r:|=*'
