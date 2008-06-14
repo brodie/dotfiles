@@ -4,7 +4,13 @@ setopt NO_global_rcs
 
 ZDOTDIR="$HOME/.zsh"
 
-[ ! -n "$LANG" ] && export LANG='en_US.UTF-8'
+if [ ! -n "$LANG" ]
+then
+    export LANG='en_US.UTF-8'
+elif [ "$LANG" != "*.UTF-8" ]
+then
+    export LANG="${LANG%.*}.UTF-8"
+fi
 
 [ -d /usr/X11/bin ] && path=($path /usr/X11/bin)
 [ -d /usr/X11R6/bin ] && path=($path /usr/X11R6/bin)
