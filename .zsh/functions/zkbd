@@ -11,7 +11,7 @@
 emulate -RL zsh
 local zkbd term key seq
 
-zkbd=${ZDOTDIR:-$HOME}/.zsh/zkbd
+zkbd=${ZDOTDIR:-$HOME}/.zkbd
 [[ -d $zkbd ]] || mkdir $zkbd || return 1
 
 print 'typeset -g -A key\n' > $zkbd/$TERM.tmp || return 1
