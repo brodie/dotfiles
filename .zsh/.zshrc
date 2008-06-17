@@ -175,7 +175,7 @@ esac
 # Load/configure key bindings
 
 bindkey -e # Revert back to emacs mode
-WORDCHARS='' # Use emacs-style word matching
+WORDCHARS='_' # Use emacs-style word matching
 
 autoload down-line-or-beginning-search up-line-or-beginning-search
 zle -N down-line-or-beginning-search
@@ -183,7 +183,6 @@ zle -N up-line-or-beginning-search
 
 bindkey '^P' up-line-or-beginning-search \
         '^N' down-line-or-beginning-search \
-        '^W' vi-backward-kill-word \
         '^U' vi-kill-line
 
 autoload zkbd
