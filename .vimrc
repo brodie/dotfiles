@@ -28,7 +28,7 @@ set ruler " Show cursor information
 set smartcase " Case-sensitive searching for searches with uppercase letters
 set textwidth=0 " No hard line wrapping
 set viminfo=\"50,'20 " Store session info in ~/.viminfo
-set wildmode=list:full " More useful command completion
+set wildmode=list:longest " More useful command completion
 fixdel " Try to fix backspace if it's broken
 
 " Syntax highlighting settings
@@ -42,7 +42,7 @@ endif
 if has("autocmd")
     " Tabbing settings
     autocmd FileType c,changelog,cheetah,cpp,cs,csh,css,django,dosini,haskell,java,javascript,mysql,objc,objcpp,perl,po,pyrex,python,rst,ruby,sh,sql,tcsh,vim,zsh setlocal autoindent tabstop=4 shiftwidth=4 expandtab softtabstop=4
-    autocmd FileType dtml,genshi,html,htmlcheetah,htmldjango,kid,mako,php,sgml,smarty,xhtml,xml,xslt setlocal autoindent tabstop=2 shiftwidth=2 expandtab softtabstop=2
+    autocmd FileType ant,dtml,genshi,html,htmlcheetah,htmldjango,kid,mako,php,sgml,smarty,xhtml,xml,xslt setlocal autoindent tabstop=2 shiftwidth=2 expandtab softtabstop=2
 endif
 
 " Convenience command to map something to every mode
