@@ -45,6 +45,10 @@ if has("autocmd")
     autocmd FileType ant,dtml,genshi,html,htmlcheetah,htmldjango,kid,mako,php,sgml,smarty,xhtml,xml,xslt setlocal autoindent tabstop=2 shiftwidth=2 expandtab softtabstop=2
 endif
 
+" emacs-style word deletion
+inoremap <Esc><BS> <C-W>
+cnoremap <Esc><BS> <C-W>
+
 " Convenience command to map something to every mode
 command -nargs=+ AllMap noremap <args>|noremap! <args>|vnoremap <args>
 
