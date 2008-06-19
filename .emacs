@@ -1,7 +1,7 @@
 (add-to-list 'load-path "~/.emacs.d/plugins")
 
 ; Plugins
-;(require 'yasnippet-bundle)
+(autoload 'yas/minor-mode "yasnippet-bundle" nil t)
 (autoload 'js2-mode "js2" nil t)
 (autoload 'rst-mode "rst" nil t)
 (autoload 'markdown-mode "markdown-mode" nil t)

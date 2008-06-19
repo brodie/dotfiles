@@ -3,7 +3,7 @@
 ;; Copyright 2008 pluskid
 ;; 
 ;; Author: pluskid <pluskid@gmail.com>
-;; Version: 0.5.1
+;; Version: 0.5.5
 ;; X-URL: http://code.google.com/p/yasnippet/
 
 ;; This file is free software; you can redistribute it and/or modify
@@ -107,10 +107,14 @@ them. `yas/window-system-popup-function' is used instead when in
 a window system.")
 
 (defvar yas/extra-mode-hooks
-  '(ruby-mode-hook actionscript-mode-hook)
+  '()
   "A list of mode-hook that should be hooked to enable yas/minor-mode.
 Most modes need no special consideration. Some mode (like ruby-mode)
 doesn't call `after-change-major-mode-hook' need to be hooked explicitly.")
+(mapc '(lambda (x)
+	 (add-to-list 'yas/extra-mode-hooks
+		      x))
+      '(ruby-mode-hook actionscript-mode-hook ox-mode-hook python-mode-hook))
 
 (defvar yas/after-exit-snippet-hook
   '()
@@ -126,12 +130,12 @@ proper values:
 
 (defvar yas/buffer-local-condition 
   '(if (and (not (bobp))
-	    (or (string= "font-lock-comment-face"
-			 (get-char-property (1- (point))
-					    'face))
-		(string= "font-lock-string-face"
-			 (get-char-property (1- (point))
-					    'face))))
+	    (or (equal "font-lock-comment-face"
+		       (get-char-property (1- (point))
+					  'face))
+		(equal "font-lock-string-face"
+		       (get-char-property (1- (point))
+					  'face))))
        '(require-snippet-condition . force-in-comment)
      t)
   "Condition to yasnippet local to each buffer.
@@ -178,7 +182,7 @@ to expand.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Internal variables
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defvar yas/version "0.5.1")
+(defvar yas/version "0.5.5")
 
 (defvar yas/snippet-tables (make-hash-table)
   "A hash table of snippet tables corresponding to each major-mode.")
@@ -367,18 +371,20 @@ have, compare through the start point of the overlay."
  * If the template has no condition, it is kept.
  * If the template's condition eval to non-nil, it is kept.
  * Otherwise (eval error or eval to nil) it is filtered."
-  (remove-if '(lambda (pair)
-		(let ((condition (yas/template-condition (cdr pair))))
-		  (if (null condition)
-		      (if yas/require-template-condition
-			  t
-			nil)
-		    (let ((result 
-			   (yas/template-condition-predicate condition)))
-		      (if (eq yas/require-template-condition t)
-			  result
-			(not (eq result yas/require-template-condition)))))))
-	     templates))
+  (remove-if-not '(lambda (pair)
+		    (let ((condition (yas/template-condition (cdr pair))))
+		      (if (null condition)
+			  (if yas/require-template-condition
+			      nil
+			    t)
+			(let ((result 
+			       (yas/template-condition-predicate condition)))
+			  (if yas/require-template-condition
+			      (if (eq yas/require-template-condition t)
+				  result
+				(eq result yas/require-template-condition))
+			    result)))))
+		 templates))
 
 (defun yas/snippet-table-fetch (table key)
   "Fetch a snippet binding to KEY from TABLE. If not found,
@@ -1037,8 +1043,7 @@ name. And under each subdirectory, each file is a definition
 of a snippet. The file name is the trigger key and the
 content of the file is the template."
   (interactive "DSelect the root directory: ")
-  (when (and (interactive-p)
-	     (file-directory-p directory))
+  (when (file-directory-p directory)
     (add-to-list 'yas/root-directory directory))
   (dolist (dir (yas/directory-files directory nil))
     (yas/load-directory-1 dir))
@@ -1330,7 +1335,7 @@ handle the end-of-buffer error fired in it by calling
   "*Bla." :group 'dropdown-list)
 
 (defface dropdown-list-selection-face
-    '((t :inherit dropdown-list :background "purple"))
+    '((t :inherit dropdown-list-face :background "purple"))
   "*Bla." :group 'dropdown-list)
 
 (defvar dropdown-list-overlays nil)
@@ -1513,7 +1518,6 @@ Use multiple times to bind different COMMANDs to the same KEY."
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; dropdown-list.el ends here
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;      Auto-generated code         ;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -1539,11 +1543,12 @@ nil)
 $0
 
 #endif /* $1 */" "#ifndef XXX; #define XXX; #endif" nil)
-  ("main" "int main(int argc, char const *argv)
+  ("main" "int main(int argc, char *argv[])
 {
     $0
     return 0;
-}" "int main(argc, argv) { ... }" nil)
+}
+" "int main(argc, argv) { ... }" nil)
   ("inc.1" "#include <$1>
 " "#include <...>" nil)
   ("inc" "#include \"$1\"
@@ -1568,6 +1573,7 @@ $0
 '(
   ("using" "using namespace ${std};
 $0" "using namespace ... " nil)
+  ("ns" "namespace " "namespace ..." nil)
   ("class" "class ${1:Name}
 {
 public:
@@ -1589,9 +1595,45 @@ public:
 ;;; snippets for css-mode
 (yas/define-snippets 'css-mode
 '(
-  ("border" "border: ${1:1px} ${2:solid} #${3:999};" "border size style color" nil)
-  ("background.1" "background-image: url($1);" "background-image: ..." nil)
-  ("background" "background-color: #${1:DDD};" "background-color: ..." nil)
+  ("pad.top" "padding-top: $1;
+" "padding-top: ..." nil)
+  ("pad.right" "padding-right: $1;
+" "padding-right: ..." nil)
+  ("pad.padding" "padding: ${top} ${right} ${bottom} ${left};
+" "padding: top right bottom left" nil)
+  ("pad.pad" "padding: $1;
+" "padding: ..." nil)
+  ("pad.left" "padding-left: $1;
+" "padding-left: ..." nil)
+  ("pad.bottom" "padding-bottom: $1;
+" "padding-bottom: ..." nil)
+  ("mar.top" "margin-top: $1;
+" "margin-top: ..." nil)
+  ("mar.right" "margin-right: $1;
+" "margin-right: ..." nil)
+  ("mar.margin" "margin: ${top} ${right} ${bottom} ${left};
+" "margin top right bottom left" nil)
+  ("mar.mar" "margin: $1;
+" "margin: ..." nil)
+  ("mar.left" "margin-left: $1;
+" "margin-left: ..." nil)
+  ("mar.bottom" "margin-bottom: $1;
+" "margin-bottom: ..." nil)
+  ("fs" "font-size: ${12px};
+" "font-size: ..." nil)
+  ("ff" "font-family: $1;
+" "font-family: ..." nil)
+  ("disp.none" "dislpay: none;
+" "display: none" nil)
+  ("disp.inline" "dislpay: inline;
+" "display: inline" nil)
+  ("disp.block" "dislpay: block;
+" "display: block" nil)
+  ("cl" "clear: $1;
+" "clear: ..." nil)
+  ("bor" "border: ${1:1px} ${2:solid} #${3:999};" "border size style color" nil)
+  ("bg.1" "background-image: url($1);" "background-image: ..." nil)
+  ("bg" "background-color: #${1:DDD};" "background-color: ..." nil)
   )
 'text-mode)
 
@@ -1662,12 +1704,110 @@ end do
 ;;; snippets for html-mode
 (yas/define-snippets 'html-mode
 '(
+  ("ul.id" "<ul id=\"$1\">
+  $0
+</ul>" "<ul id=\"...\">...</ul>" nil)
+  ("ul.class" "<ul class=\"$1\">
+  $0
+</ul>" "<ul class=\"...\">...</ul>" nil)
+  ("ul" "<ul>
+  $0
+</ul>" "<ul>...</ul>" nil)
+  ("tr" "<tr>
+  $0
+</tr>" "<tr>...</tr>" nil)
+  ("title" "<title>$1</title>" "<title>...</title>" nil)
+  ("th" "<th$1>$2</th>" "<th>...</th>" nil)
+  ("textarea" "<textarea name=\"$1\" id=\"$2\" rows=\"$3\" cols=\"$4\" tabindex=\"$5\"></textarea>" "<textarea ...></textarea>" nil)
+  ("td" "<td$1>$2</td>" "<td>...</td>" nil)
+  ("table" "<table width=\"$1\" cellspacing=\"$2\" cellpadding=\"$3\" border=\"$4\">
+  $0
+</table>" "<table ...>...</table>" nil)
+  ("style" "<style type=\"text/css\" media=\"${1:screen}\">
+  $0
+</style>" "<style type=\"text/css\" media=\"...\">...</style>" nil)
+  ("span.id" "<span id=\"$1\">$2</span>" "<span id=\"...\">...</span>" nil)
+  ("span.class" "<span class=\"$1\">$2</span>" "<span class=\"...\">...</span>" nil)
+  ("span" "<span>$1</span>" "<span>...</span>" nil)
+  ("script.javascript-src" "<script type=\"text/javascript\" src=\"$1\"></script>" "<script type=\"text/javascript\" src=\"...\"></script> " nil)
+  ("script.javascript" "<script type=\"text/javascript\">
+  $0
+</script>" "<script type=\"text/javascript\">...</script> " nil)
+  ("quote" "<blockquote>
+  $1
+</blockquote>" "<blockquote>...</blockquote>" nil)
+  ("pre" "<pre>
+  $0
+</pre>" "<pre>...</pre>" nil)
+  ("p" "<p>$1</p>" "<p>...</p>" nil)
+  ("ol.id" "<ol id=\"$1\">
+  $0
+</ol>" "<ol id=\"...\">...</ol>" nil)
+  ("ol.class" "<ol class=\"$1\">
+  $0
+</ol>" "<ol class=\"...\">...</ol>" nil)
+  ("ol" "<ol>
+  $0
+</ol>" "<ol>...</ol>" nil)
+  ("meta.http-equiv" "<meta name=\"${1:Content-Type}\" content=\"${2:text/html; charset=UTF-8}\" />" "<meta http-equiv=\"...\" content=\"...\" />" nil)
+  ("meta" "<meta name=\"${1:generator}\" content=\"${2:content}\" />" "<meta name=\"...\" content=\"...\" />" nil)
+  ("mailto" "<a href=\"mailto:$1@$2\">$0</a>" "<a href=\"mailto:...@...\">...</a>" nil)
+  ("link.stylesheet-ie" "<!--[if IE]>
+<link rel=\"${1:stylesheet}\" href=\"${2:url}\" type=\"${3:text/css}\" media=\"${4:screen}\" />
+<![endif]-->" "<!--[if IE]><link stylesheet=\"...\" /><![endif]-->" nil)
+  ("link.stylesheet" "<link rel=\"${1:stylesheet}\" href=\"${2:url}\" type=\"${3:text/css}\" media=\"${4:screen}\" />" "<link stylesheet=\"...\" />" nil)
+  ("li.class" "<li class=\"$1\">$2</li>" "<li class=\"...\">...</li>" nil)
+  ("li" "<li>$1</li>" "<li>...</li>" nil)
+  ("input" "<input type=\"$1\" name=\"$2\" value=\"$3\" />" "<input ... />" nil)
+  ("img" "<img src=\"$1\" class=\"$2\" alt=\"$3\" />" "<img src=\"...\" class=\"...\" alt=\"...\" />" nil)
+  ("html.xmlns" "<html xmlns=\"http://www.w3.org/1999/xhtml\" xml:lang=\"${1:en}\" lang=\"${2:en}\">
+  $0
+</html>
+" "<html xmlns=\"...\">...</html>" nil)
+  ("html" "<html>
+  $0
+</html>
+" "<html>...</html>" nil)
+  ("href" "<a href=\"$1\">$2</a>" "<a href=\"...\">...</a>" nil)
+  ("hr" "<hr />
+" "<hr />" nil)
+  ("head" "<head>
+  $0
+</head>" "<head>...</head>" nil)
+  ("h6" "<h6>$1</h6>" "<h6>...</h6>" nil)
+  ("h5" "<h5>$1</h5>" "<h5>...</h5>" nil)
+  ("h4" "<h4>$1</h4>" "<h4>...</h4>" nil)
+  ("h3" "<h3>$1</h3>" "<h3>...</h3>" nil)
+  ("h2" "<h2>$1</h2>" "<h2>...</h2>" nil)
+  ("h1" "<h1>$1</h1>" "<h1>...</h1>" nil)
+  ("form" "<form method=\"$1\" id=\"$2\" action=\"$3\">
+  $0
+</form>" "<form method=\"...\" id=\"...\" action=\"...\"></form>" nil)
   ("doctype.xhtml1_transitional" "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">" "DocType XHTML 1.0 Transitional" nil)
   ("doctype.xhtml1_strict" "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">" "DocType XHTML 1.0 Strict" nil)
   ("doctype.xhtml1_1" "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.1//EN\" \"http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd\">" "DocType XHTML 1.1" nil)
   ("doctype.xhml1" "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Frameset//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd\">" "DocType XHTML 1.0 frameset" nil)
   ("doctype" "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01//EN\" \"http://www.w3.org/TR/html4/strict.dtd\">" "Doctype HTML 4.01 Strict" nil)
+  ("div.id-class" "<div id=\"$1\" class=\"$2\">
+  $0
+</div>" "<div id=\"...\" class=\"...\">...</div>" nil)
+  ("div.id" "<div id=\"$1\">
+  $0
+</div>" "<div id=\"...\">...</div>" nil)
+  ("div.class" "<div class=\"$1\">
+  $0
+</div>" "<div class=\"...\">...</div>" nil)
   ("div" "<div$1>$0</div>" "<div...>...</div>" nil)
+  ("code.class" "<code class=\"$1\">
+  $0
+</code>" "<code class=\"...\">...</code>" nil)
+  ("code" "<code>
+  $0
+</code>" "<code>...</code>" nil)
+  ("br" "<br />" "<br />" nil)
+  ("body" "<body$1>
+  $0
+</body>" "<body>...</body>" nil)
   )
 'text-mode)
 
@@ -1746,17 +1886,17 @@ if (\\$@) {
   ("while" "while ${condition}:
     $0" "while ... : ..." nil)
   ("propsg" "def _set_${1:foo}(self, value):
-   self._$1 = value
+    self._$1 = value
 
 def _get_$1(self):
-   return self._$1
+    return self._$1
 
 $1 = property(_get_$1, _set_$1)
 
 $0
 " "_get_foo ... _set_foo ... foo=property(...)" nil)
   ("propg" "def _get_${1:foo}(self):
-   return self._$1
+    return self._$1
 
 $1 = property(_get_$1)
 
@@ -1767,113 +1907,113 @@ $0
   ("for" "for ${var} in ${collection}:
     $0" "for ... in ... : ..." nil)
   ("defm" "def ${1:name}(self, $2):
-   \"\"\"$3
-   ${2:$
-   (let* ((indent
-           (concat \"\\n\" (make-string (current-column) 32)))
-          (args
-           (mapconcat
-            '(lambda (x)
-               (if (not (string= (nth 0 x) \"\"))
-                   (concat \"- \" (char-to-string 96) (nth 0 x)
-                           (char-to-string 96) \":\")))
-            (mapcar
+    \"\"\"$3
+    ${2:$
+    (let* ((indent
+            (concat \"\\n\" (make-string (current-column) 32)))
+           (args
+            (mapconcat
              '(lambda (x)
-                (mapcar
-                 '(lambda (x)
-                    (replace-regexp-in-string \"\\s*$\" \"\"
-                     (replace-regexp-in-string \"^\\s*\" \"\" x)))
-                 x))
-             (mapcar '(lambda (x) (split-string x \"=\"))
-                     (split-string text \",\")))
-            indent)))
-     (if (string= args \"\")
-         (make-string 3 34)
-       (mapconcat
-        'identity
-        (list \"\" \"Arguments:\" args (make-string 3 34))
-        indent)))
-   }
-   $0
+                (if (not (string= (nth 0 x) \"\"))
+                    (concat \"- \" (char-to-string 96) (nth 0 x)
+                            (char-to-string 96) \":\")))
+             (mapcar
+              '(lambda (x)
+                 (mapcar
+                  '(lambda (x)
+                     (replace-regexp-in-string \"\\s*$\" \"\"
+                      (replace-regexp-in-string \"^\\s*\" \"\" x)))
+                  x))
+              (mapcar '(lambda (x) (split-string x \"=\"))
+                      (split-string text \",\")))
+             indent)))
+      (if (string= args \"\")
+          (make-string 3 34)
+        (mapconcat
+         'identity
+         (list \"\" \"Arguments:\" args (make-string 3 34))
+         indent)))
+    }
+    $0
 " nil nil)
   ("def" "def ${1:name}($2):
-   \"\"\"$3
-   ${2:$
-   (let* ((indent
-           (concat \"\\n\" (make-string (current-column) 32)))
-          (args
-           (mapconcat
-            '(lambda (x)
-               (if (not (string= (nth 0 x) \"\"))
-                   (concat \"- \" (char-to-string 96) (nth 0 x)
-                           (char-to-string 96) \":\")))
-            (mapcar
+    \"\"\"$3
+    ${2:$
+    (let* ((indent
+            (concat \"\\n\" (make-string (current-column) 32)))
+           (args
+            (mapconcat
              '(lambda (x)
-                (mapcar
-                 '(lambda (x)
-                    (replace-regexp-in-string \"\\s*$\" \"\"
-                     (replace-regexp-in-string \"^\\s*\" \"\" x)))
-                 x))
-             (mapcar '(lambda (x) (split-string x \"=\"))
-                     (split-string text \",\")))
-            indent)))
-     (if (string= args \"\")
-         (make-string 3 34)
-       (mapconcat
-        'identity
-        (list \"\" \"Arguments:\" args (make-string 3 34))
-        indent)))
-   }
-   $0
+                (if (not (string= (nth 0 x) \"\"))
+                    (concat \"- \" (char-to-string 96) (nth 0 x)
+                            (char-to-string 96) \":\")))
+             (mapcar
+              '(lambda (x)
+                 (mapcar
+                  '(lambda (x)
+                     (replace-regexp-in-string \"\\s*$\" \"\"
+                      (replace-regexp-in-string \"^\\s*\" \"\" x)))
+                  x))
+              (mapcar '(lambda (x) (split-string x \"=\"))
+                      (split-string text \",\")))
+             indent)))
+      (if (string= args \"\")
+          (make-string 3 34)
+        (mapconcat
+         'identity
+         (list \"\" \"Arguments:\" args (make-string 3 34))
+         indent)))
+    }
+    $0
 " nil nil)
   ("class" "class ${1:ClassName}(${2:object}):
-   \"\"\"$3
-   \"\"\"
+    \"\"\"$3
+    \"\"\"
 
-   def __init__(self, $4):
-       \"\"\"$5
-       ${4:$
-       (let* ((indent
-               (concat \"\\n\" (make-string (current-column) 32)))
-              (args
-               (mapconcat
-                '(lambda (x)
-                   (if (not (string= (nth 0 x) \"\"))
-                       (concat \"- \" (char-to-string 96) (nth 0 x)
-                               (char-to-string 96) \":\")))
-                (mapcar
+    def __init__(self, $4):
+        \"\"\"$5
+        ${4:$
+        (let* ((indent
+                (concat \"\\n\" (make-string (current-column) 32)))
+               (args
+                (mapconcat
                  '(lambda (x)
-                    (mapcar
-                     (lambda (x)
-                       (replace-regexp-in-string \"\\s*$\" \"\"
-                        (replace-regexp-in-string \"^\\s*\" \"\" x))) x))
-                 (mapcar '(lambda (x) (split-string x \"=\"))
-                         (split-string text \",\")))
-                indent)))
-         (if (string= args \"\")
-             (make-string 3 34)
-           (mapconcat
-            'identity
-            (list \"\" \"Arguments:\" args (make-string 3 34))
-            indent)))
-       }
-       ${4:$
-       (mapconcat
-        '(lambda (x)
-           (if (not (string= (nth 0 x) \"\"))
-               (concat \"self._\" (nth 0 x) \" = \" (nth 0 x))))
-        (mapcar
+                    (if (not (string= (nth 0 x) \"\"))
+                        (concat \"- \" (char-to-string 96) (nth 0 x)
+                                (char-to-string 96) \":\")))
+                 (mapcar
+                  '(lambda (x)
+                     (mapcar
+                      (lambda (x)
+                        (replace-regexp-in-string \"\\s*$\" \"\"
+                         (replace-regexp-in-string \"^\\s*\" \"\" x))) x))
+                  (mapcar '(lambda (x) (split-string x \"=\"))
+                          (split-string text \",\")))
+                 indent)))
+          (if (string= args \"\")
+              (make-string 3 34)
+            (mapconcat
+             'identity
+             (list \"\" \"Arguments:\" args (make-string 3 34))
+             indent)))
+        }
+        ${4:$
+        (mapconcat
          '(lambda (x)
-            (mapcar
-             '(lambda (x)
-                (replace-regexp-in-string \"\\s*$\" \"\"
-                 (replace-regexp-in-string \"^\\s*\" \"\" x)))
-             x))
-         (mapcar '(lambda (x) (split-string x \"=\"))
-                 (split-string text \",\")))
-        (concat \"\\n\" (make-string (current-column) 32)))
-       }
-       $0
+            (if (not (string= (nth 0 x) \"\"))
+                (concat \"self._\" (nth 0 x) \" = \" (nth 0 x))))
+         (mapcar
+          '(lambda (x)
+             (mapcar
+              '(lambda (x)
+                 (replace-regexp-in-string \"\\s*$\" \"\"
+                  (replace-regexp-in-string \"^\\s*\" \"\" x)))
+              x))
+          (mapcar '(lambda (x) (split-string x \"=\"))
+                  (split-string text \",\")))
+         (concat \"\\n\" (make-string (current-column) 32)))
+        }
+        $0
 " nil nil)
   ("__" "__${init}__" "__...__" nil)
   )
@@ -1903,15 +2043,15 @@ $0" "Chapter title" nil)
 '(
   ("zip" "zip(${enums}) { |${row}| $0 }" "zip(...) { |...| ... }" nil)
   ("y" ":yields: $0" ":yields: arguments (rdoc)" nil)
-  ("w" "attr_writer :${attr_names}" "attr_writer ..." nil)
+  ("w" "attr_writer :" "attr_writer ..." nil)
   ("select" "select { |${1:element}| $0 }" "select { |...| ... }" nil)
-  ("rw" "attr_accessor :{attr_names}" "attr_accessor ..." nil)
+  ("rw" "attr_accessor :" "attr_accessor ..." nil)
   ("rreq" "require File.join(File.dirname(__FILE__), $0)" "require File.join(File.dirname(__FILE__), ...)" nil)
   ("req" "require \"$0\"" "require \"...\"" nil)
   ("reject" "reject { |${1:element}| $0 }" "reject { |...| ... }" nil)
   ("rb" "#!/usr/bin/ruby -wKU
 " "/usr/bin/ruby -wKU" nil)
-  ("r" "attr_reader :${attr_names}" "attr_reader ..." nil)
+  ("r" "attr_reader :" "attr_reader ..." nil)
   ("mm" "def method_missing(method, *args)
   $0
 end" "def method_missing ... end" nil)
