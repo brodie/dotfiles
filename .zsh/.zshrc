@@ -51,8 +51,14 @@ fi
 
 ZLS_COLORS="$LS_COLORS"
 
-alias emacs='emacs -nw' \
-      ll='ls -l' \
+if [ -n "$(command -v emacs-snapshot)" ]
+then
+    alias emacs='emacs-snapshot -nw'
+else
+    alias emacs='emacs -nw'
+fi
+
+alias ll='ls -l' \
       la='ls -A' \
       l='ls -CF' \
       grep='grep --color=always' \
