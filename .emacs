@@ -5,10 +5,12 @@
 (autoload 'js2-mode "js2" nil t)
 (autoload 'rst-mode "rst" nil t)
 (autoload 'markdown-mode "markdown-mode" nil t)
+(autoload 'pod-mode "pod-mode" nil t)
 
 (add-to-list 'auto-mode-alist '("\\.js$" . js2-mode))
 (add-to-list 'auto-mode-alist '("\\.rst$" . rst-mode))
 (add-to-list 'auto-mode-alist '("\\.text$" . rst-mode))
+(add-to-list 'auto-mode-alist '("\\.pod$" . pod-mode))
 
 ; Indentation settings
 (setq-default indent-tabs-mode nil)
@@ -73,6 +75,7 @@
 (global-set-key (kbd "M-[ 5 d") 'backward-word)
 (global-set-key (kbd "M-[ 5 c") 'forward-word)
 (global-set-key (kbd "DEL") 'delete-backward-indent)
+(global-set-key (kbd "M-g") 'goto-line)
 
 ; Spelling
 (add-hook 'markdown-mode-hook '(lambda () (flyspell-mode 1)))
