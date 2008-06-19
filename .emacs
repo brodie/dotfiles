@@ -1,6 +1,7 @@
 (add-to-list 'load-path "~/.emacs.d/plugins")
 
 ; Plugins
+(require 'sudo)
 (autoload 'yas/minor-mode "yasnippet-bundle" nil t)
 (autoload 'js2-mode "js2" nil t)
 (autoload 'rst-mode "rst" nil t)
@@ -76,6 +77,8 @@
 (global-set-key (kbd "M-[ 5 c") 'forward-word)
 (global-set-key (kbd "DEL") 'delete-backward-indent)
 (global-set-key (kbd "M-g") 'goto-line)
+(global-set-key (kbd "C-x M-s") 'sudo-unset-ro-or-save)
+(global-set-key (kbd "C-x M-f") 'sudo-find-file)
 
 ; Spelling
 (add-hook 'markdown-mode-hook '(lambda () (flyspell-mode 1)))
