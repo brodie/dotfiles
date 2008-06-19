@@ -35,8 +35,9 @@
 (setq inhibit-splash-screen t)
 (show-paren-mode 1)
 (column-number-mode 1)
-(menu-bar-mode -1)
 (setq require-final-newline 'visit-save)
+(if (eq window-system nil)
+    (menu-bar-mode -1))
 
 ; Mouse settings
 (xterm-mouse-mode 1)
