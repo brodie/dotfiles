@@ -181,7 +181,8 @@ or sudo-keep-output-buffer is t."
   "Check output buffer to see if sudo is waiting for a password."
   (with-current-buffer "*sudo-output*"
     (goto-char (point-min))
-    (if (search-forward "Password:" nil 1)
+    (if (let ((case-fold-search t))
+          (search-forward "password" nil 1))
         t
       nil)))
 
