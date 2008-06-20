@@ -34,7 +34,9 @@ def _pythonrc():
 
     help_types = (types.BuiltinFunctionType, types.BuiltinMethodType,
                   types.FunctionType, types.MethodType, types.ModuleType,
-                  types.TypeType, types.UnboundMethodType)
+                  types.TypeType, types.UnboundMethodType,
+                  # method_descriptor
+                  type(list.remove))
 
     def pprinthook(value):
         """Pretty print an object to sys.stdout and also save it in
