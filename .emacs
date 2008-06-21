@@ -10,7 +10,7 @@
 
 (add-to-list 'auto-mode-alist '("\\.js$" . js2-mode))
 (add-to-list 'auto-mode-alist '("\\.rst$" . rst-mode))
-(add-to-list 'auto-mode-alist '("\\.text$" . rst-mode))
+(add-to-list 'auto-mode-alist '("\\.text$" . markdown-mode))
 (add-to-list 'auto-mode-alist '("\\.pod$" . pod-mode))
 
 ; Indentation settings
