@@ -7,11 +7,13 @@
 (autoload 'rst-mode "rst" nil t)
 (autoload 'markdown-mode "markdown-mode" nil t)
 (autoload 'pod-mode "pod-mode" nil t)
+(autoload 'po-mode "po-mode" nil t)
 
 (add-to-list 'auto-mode-alist '("\\.js$" . js2-mode))
 (add-to-list 'auto-mode-alist '("\\.rst$" . rst-mode))
 (add-to-list 'auto-mode-alist '("\\.text$" . markdown-mode))
 (add-to-list 'auto-mode-alist '("\\.pod$" . pod-mode))
+(add-to-list 'auto-mode-alist '("\\.po\\'\\|\\.\\." . po-mode))
 
 ; Indentation settings
 (setq-default indent-tabs-mode nil)
@@ -35,6 +37,7 @@
 (setq inhibit-splash-screen t)
 (show-paren-mode 1)
 (column-number-mode 1)
+(add-hook 'after-change-major-mode-hook '(lambda () (c-subword-mode 1)))
 (setq require-final-newline 'visit-save)
 (if (eq window-system nil)
     (menu-bar-mode -1))
