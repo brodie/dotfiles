@@ -184,12 +184,10 @@ bindkey -e # Revert back to emacs mode
 WORDCHARS='_' # Use emacs-style word matching
 
 autoload down-line-or-beginning-search up-line-or-beginning-search
-zle -N down-line-or-beginning-search
-zle -N up-line-or-beginning-search
+zle -N down-line-or-history down-line-or-beginning-search
+zle -N up-line-or-history up-line-or-beginning-search
 
-bindkey '^P' up-line-or-beginning-search \
-        '^N' down-line-or-beginning-search \
-        '^U' vi-kill-line
+bindkey '^U' vi-kill-line
 
 autoload zkbd
 [[ ! -d "$ZDOTDIR/.zkbd" ]] && mkdir "$ZDOTDIR/.zkbd"
@@ -204,14 +202,12 @@ source "$ZDOTDIR/.zkbd/$TERM-$VENDOR-$OSTYPE"
 [[ -n "${key[Delete]}" ]] && bindkey "${key[Delete]}" delete-char
 [[ -n "${key[End]}" ]] && bindkey "${key[End]}" end-of-line
 [[ -n "${key[PageDown]}" ]] && bindkey "${key[PageDown]}" beep
-[[ -n "${key[Up]}" ]] && bindkey "${key[Up]}" up-line-or-beginning-search && \
-                         bindkey "\e${key[Up]}" up-line-or-beginning-search
+[[ -n "${key[Up]}" ]] && bindkey "${key[Up]}" up-line-or-history && \
+                         bindkey "\e${key[Up]}" up-line-or-history
 [[ -n "${key[Left]}" ]] && bindkey "${key[Left]}" backward-char && \
                            bindkey "\e${key[Left]}" backward-word
-[[ -n "${key[Down]}" ]] && bindkey "${key[Down]}" \
-                                   down-line-or-beginning-search && \
-                           bindkey "\e${key[Down]}" \
-                                   down-line-or-beginning-search
+[[ -n "${key[Down]}" ]] && bindkey "${key[Down]}" down-line-or-history && \
+                           bindkey "\e${key[Down]}" down-line-or-history
 [[ -n "${key[Right]}" ]] && bindkey "${key[Right]}" forward-char && \
                             bindkey "\e${key[Right]}" forward-word
 [[ -n "${key[Control-Left]}" ]] && bindkey "${key[Control-Left]}" backward-word
