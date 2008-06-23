@@ -8,12 +8,14 @@
 (autoload 'markdown-mode "markdown-mode" nil t)
 (autoload 'pod-mode "pod-mode" nil t)
 (autoload 'po-mode "po-mode" nil t)
+(autoload 'css-mode "css-mode" nil t)
 
 (add-to-list 'auto-mode-alist '("\\.js$" . js2-mode))
 (add-to-list 'auto-mode-alist '("\\.rst$" . rst-mode))
 (add-to-list 'auto-mode-alist '("\\.text$" . markdown-mode))
 (add-to-list 'auto-mode-alist '("\\.pod$" . pod-mode))
 (add-to-list 'auto-mode-alist '("\\.po\\'\\|\\.\\." . po-mode))
+(add-to-list 'auto-mode-alist '("\\.css$" . css-mode))
 
 ; Indentation settings
 (setq-default indent-tabs-mode nil)
