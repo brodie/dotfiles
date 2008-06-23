@@ -15,7 +15,7 @@
 (add-to-list 'auto-mode-alist '("\\.text$" . markdown-mode))
 (add-to-list 'auto-mode-alist '("\\.pod$" . pod-mode))
 (add-to-list 'auto-mode-alist '("\\.po\\'\\|\\.\\." . po-mode))
-(add-to-list 'auto-mode-alist '("\\.css$" . css-mode))
+(add-to-list 'auto-mode-alist '("\\.css$\\|\\.css\\.dtml$" . css-mode))
 
 ; Indentation settings
 (setq-default indent-tabs-mode nil)
