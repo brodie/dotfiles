@@ -76,6 +76,11 @@
           '(lambda ()
              (define-key c-mode-base-map (kbd "RET") 'newline-and-indent)
              (define-key c-mode-base-map (kbd "DEL") 'delete-backward-indent)))
+(add-hook 'css-mode-hook
+          '(lambda ()
+             (define-key css-mode-map (kbd "RET") 'newline-and-indent)
+             (define-key css-mode-map (kbd "DEL") 'delete-backward-indent)))
+
 
 (global-set-key (kbd "M-[ h") 'beginning-of-line)
 (global-set-key (kbd "M-[ f") 'end-of-line)
