@@ -38,17 +38,53 @@ def _pythonrc():
                   # method_descriptor
                   type(list.remove))
 
+    def formatargs(func):
+        """Returns a string representing a function's argument specification,
+        as if it were from source code.
+
+        For example:
+
+        >>> class Foo(object):
+        ...     def bar(self, x=1, *y, **z):
+        ...         pass
+        ...
+        >>> formatargs(Foo.bar)
+        'self, x=1, *y, **z'
+        """
+
+        from inspect import getargspec
+        args, varargs, varkw, defs = getargspec(func)
+
+        # Fill in default values
+        if defs:
+            last = len(args) - 1
+            for i, val in enumerate(reversed(defs)):
+                args[last - i] = '%s=%r' % (args[last - i], val)
+
+        # Fill in variable arguments
+        if varargs:
+            args.append('*%s' % varargs)
+        if varkw:
+            args.append('**%s' % varkw)
+
+        return ', '.join(args)
+
     def pprinthook(value):
         """Pretty print an object to sys.stdout and also save it in
         __builtin__.
         """
 
         if value is not None:
-            if (isinstance(value, help_types) and
-                getattr(value, '__doc__', None)):
-                print repr(value)
-                print
-                print pydoc.getdoc(value)
+            if isinstance(value, help_types):
+                reprstr = repr(value)
+                if hasattr(value, 'func_code') or hasattr(value, 'im_func'):
+                    parts = reprstr.split(' ')
+                    parts[1] = '%s(%s)' % (parts[1], formatargs(value))
+                    reprstr = ' '.join(parts)
+                print reprstr
+                if getattr(value, '__doc__', None):
+                    print
+                    print pydoc.getdoc(value)
             else:
                 pprint.pprint(value)
         __builtin__._ = value
