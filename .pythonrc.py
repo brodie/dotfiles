@@ -69,6 +69,27 @@ def _pythonrc():
 
         return ', '.join(args)
 
+    def _ioctl_width(fd):
+
+        from fcntl import ioctl
+        from struct import pack, unpack
+        from termios import TIOCGWINSZ
+        return unpack('HHHH',
+                      ioctl(fd, TIOCGWINSZ, pack('HHHH', 0, 0, 0, 0)))[1]
+
+    def get_width():
+        """Returns terminal width"""
+
+        width = 0
+        try:
+            width = _ioctl_width(0) or _ioctl_width(1) or ioctl_width(2)
+        except ImportError:
+            pass
+        if not width:
+            import os
+            width = os.environ.get('COLUMNS', 0)
+        return width
+
     def pprinthook(value):
         """Pretty print an object to sys.stdout and also save it in
         __builtin__.
@@ -86,7 +107,7 @@ def _pythonrc():
                     print
                     print pydoc.getdoc(value)
             else:
-                pprint.pprint(value)
+                pprint.pprint(value, width=get_width() or 80)
         __builtin__._ = value
 
     sys.displayhook = pprinthook
