@@ -189,6 +189,18 @@ zle -N up-line-or-history up-line-or-beginning-search
 
 bindkey '^U' vi-kill-line
 
+if [[ $TERM = xterm* ]]
+then
+    bindkey '\e[1;5A' up-line-or-history \
+            '\e[1;3A' up-line-or-history \
+            '\e[1;5B' down-line-or-history \
+            '\e[1;3B' down-line-or-history \
+            '\e[1;5D' backward-word \
+            '\e[1;3D' backward-word \
+            '\e[1;5C' forward-word \
+            '\e[1;3C' forward-word
+fi
+
 autoload zkbd
 [[ ! -d "$ZDOTDIR/.zkbd" ]] && mkdir "$ZDOTDIR/.zkbd"
 [[ ! -f "$ZDOTDIR/.zkbd/$TERM-$VENDOR-$OSTYPE" ]] && zkbd
