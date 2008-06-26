@@ -91,6 +91,7 @@
 (global-set-key (kbd "M-g") 'goto-line)
 (global-set-key (kbd "C-x M-s") 'sudo-unset-ro-or-save)
 (global-set-key (kbd "C-x M-f") 'sudo-find-file)
+(global-set-key (kbd "ESC ESC") 'keyboard-quit)
 
 ; Spelling
 (add-hook 'markdown-mode-hook '(lambda () (flyspell-mode 1)))
