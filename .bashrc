@@ -1,10 +1,12 @@
 #!/bin/bash
 
-export LANG='en_US.UTF-8'
-export EDITOR='vim'
-export PAGER='less'
-export BROWSER='open'
-export PYTHONSTARTUP="$HOME/.pythonrc.py"
+if [ ! -n "$LANG" ]
+then
+    export LANG='en_US.UTF-8'
+elif [ "$LANG" != "*.UTF-8" ]
+then
+    export LANG="${LANG%.*}.UTF-8"
+fi
 
 [ -d /usr/X11R6/bin ] && export PATH="$PATH:/usr/X11R6/bin"
 [ -d /usr/local/X11R6/bin ] && export PATH="$PATH:/usr/local/X11R6/bin"
@@ -26,6 +28,11 @@ export PYTHONSTARTUP="$HOME/.pythonrc.py"
 [ -z "$PS1" ] && return
 
 # Options
+
+export EDITOR='vim'
+export PAGER='less'
+export BROWSER='open'
+export PYTHONSTARTUP="$HOME/.pythonrc.py"
 
 shopt -s checkhash \
          checkwinsize \
