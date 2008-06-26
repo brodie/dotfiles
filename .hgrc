@@ -1,13 +1,19 @@
 [ui]
 merge = hgmergevim
 username = Brodie Rao <me+hg@dackz.net>
+verbose = True
 
 [extensions]
-record =
+cdiff = ~/.hgext/cdiff.py
 convert =
 extdiff =
-cdiff = ~/.hgext/cdiff.py
+graphlog =
+highlight =
+record =
 
 [extdiff]
 cmd.vimdiff = vim
 opts.vimdiff = -f '+next' '+execute "DirDiff" argv(0) argv(1)'
+
+[web]
+style = gitweb
