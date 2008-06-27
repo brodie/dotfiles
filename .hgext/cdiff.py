@@ -4,11 +4,6 @@
 import os
 import sys
 
-try:
-    from cStringIO import StringIO
-except ImportError:
-    from StringIO import StringIO
-
 from mercurial import hg
 from mercurial.commands import diff, table
 
