@@ -34,8 +34,6 @@
 (setq-default rst-level-face-base-color nil)
 (setq longlines-show-hard-newlines t)
 (setq transient-mark-mode t)
-(setq backup-inhibited t)
-(setq auto-save-default nil)
 (setq vc-handled-backends nil)
 (setq inhibit-splash-screen t)
 (show-paren-mode 1)
@@ -44,6 +42,25 @@
 (setq require-final-newline 'visit-save)
 (if (eq window-system nil)
     (menu-bar-mode -1))
+
+; Backup
+(defvar user-temporary-file-directory
+  (concat temporary-file-directory "emacs-" user-login-name "/"))
+(make-directory user-temporary-file-directory t)
+(set-file-modes user-temporary-file-directory #o700)
+
+(setq backup-by-copying t)
+(setq backup-directory-alist
+      `(("." . ,user-temporary-file-directory)
+        (,tramp-file-name-regexp nil)))
+(setq backup-enable-predicate '(lambda (name)
+  (and (normal-backup-enable-predicate name)
+       (eq (nth 2 (file-attributes name)) (user-uid)))))
+
+(setq auto-save-list-file-prefix
+      (concat user-temporary-file-directory "auto-saves-"))
+(setq auto-save-file-name-transforms
+      `((".*" ,user-temporary-file-directory t)))
 
 ; Mouse settings
 (xterm-mouse-mode 1)
