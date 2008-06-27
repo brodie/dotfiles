@@ -16,16 +16,19 @@ def wrap_write(write):
         for i, line in enumerate(lines):
             if line.startswith('diff'):
                 lines[i] = ''.join(['\x1b[01m', line, '\x1b[0m'])
-            elif line.startswith('---'):
-                lines[i] = ''.join(['\x1b[1;31m', line, '\x1b[0m'])
-            elif line.startswith('+++'):
-                lines[i] = ''.join(['\x1b[32m', line, '\x1b[0m'])
             elif line.startswith('@@'):
                 lines[i] = ''.join(['\x1b[01m\x1b[35m', line, '\x1b[0m'])
-            elif line.startswith('-'):
-                lines[i] = ''.join(['\x1b[31m', line, '\x1b[0m'])
-            elif line.startswith('+'):
-                lines[i] = ''.join(['\x1b[32m', line, '\x1b[0m'])
+            elif line and line[0] in ('-', '+'):
+                # Highlight trailing whitespace
+                rline = line.rstrip()
+                if line != rline:
+                    pos = len(rline)
+                    line = ''.join([line[:pos], '\x1b[01m\x1b[41m',
+                                    line[pos:], '\x1b[0m'])
+                if line[0] == '-':
+                    lines[i] = ''.join(['\x1b[1;31m', line, '\x1b[0m'])
+                else:
+                    lines[i] = ''.join(['\x1b[32m', line, '\x1b[0m'])
         write('\n'.join(lines))
     return wrapper
 
