@@ -13,10 +13,18 @@ def wrap_write(write):
     def wrapper(s):
         lines = s.split('\n')
         for i, line in enumerate(lines):
-            if line.startswith('+'):
-                lines[i] = ''.join(['\033[1;32m', line, '\033[0m'])
+            if line.startswith('diff'):
+                lines[i] = ''.join(['\x1b[01m', line, '\x1b[0m'])
+            elif line.startswith('---'):
+                lines[i] = ''.join(['\x1b[1;31m', line, '\x1b[0m'])
+            elif line.startswith('+++'):
+                lines[i] = ''.join(['\x1b[32m', line, '\x1b[0m'])
+            elif line.startswith('@@'):
+                lines[i] = ''.join(['\x1b[01m\x1b[35m', line, '\x1b[0m'])
             elif line.startswith('-'):
-                lines[i] = ''.join(['\033[1;31m', line, '\033[0m'])
+                lines[i] = ''.join(['\x1b[31m', line, '\x1b[0m'])
+            elif line.startswith('+'):
+                lines[i] = ''.join(['\x1b[32m', line, '\x1b[0m'])
         write('\n'.join(lines))
     return wrapper
 
