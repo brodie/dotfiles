@@ -28,7 +28,7 @@ def wrap_write(write, head_color, group_color, del_color, ins_color,
             elif line.startswith('@@'):
                 lines[i] = ''.join([group_color, line, reset])
             elif line and line[0] in ('-', '+'):
-                # Highlight trailing whitespace
+                # Highlight trailing whitespace (unconditionally)
                 rline = line.rstrip()
                 if line != rline:
                     pos = len(rline)
