@@ -112,7 +112,18 @@ def _pythonrc():
 
     sys.displayhook = pprinthook
 
+# Make sure modules in the current directory can't interfere
+import sys
+try:
+    cwd = sys.path.index('')
+    sys.path.pop(cwd)
+except ValueError:
+    cwd = None
 
 # Run the main function and don't let it taint the global namespace
-_pythonrc()
-del _pythonrc
+try:
+    _pythonrc()
+    del _pythonrc
+finally:
+    if cwd is not None:
+        sys.path.insert(cwd, '')
