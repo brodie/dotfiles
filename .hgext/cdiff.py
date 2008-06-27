@@ -7,6 +7,7 @@ import sys
 from mercurial import hg
 from mercurial.commands import diff, table
 
+# TODO: Pass colors in as arguments and add a light/dark bg setting
 def wrap_write(write):
     """Wraps ui.write and colorizes diff lines written to it"""
 
