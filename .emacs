@@ -82,7 +82,6 @@
              (define-key css-mode-map (kbd "RET") 'newline-and-indent)
              (define-key css-mode-map (kbd "DEL") 'delete-backward-indent)))
 
-
 (global-set-key (kbd "M-[ h") 'beginning-of-line)
 (global-set-key (kbd "M-[ f") 'end-of-line)
 (global-set-key (kbd "M-[ 5 d") 'backward-word)
@@ -91,7 +90,8 @@
 (global-set-key (kbd "M-g") 'goto-line)
 (global-set-key (kbd "C-x M-s") 'sudo-unset-ro-or-save)
 (global-set-key (kbd "C-x M-f") 'sudo-find-file)
-(global-set-key (kbd "ESC ESC") 'keyboard-quit)
+; FIXME: This needs something like vim's ttimeout setting
+;(global-set-key (kbd "ESC ESC") 'keyboard-quit)
 
 ; Spelling
 (add-hook 'markdown-mode-hook '(lambda () (flyspell-mode 1)))
