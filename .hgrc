@@ -4,12 +4,16 @@ username = Brodie Rao <me+hg@dackz.net>
 verbose = True
 
 [extensions]
+alias =
 cdiff = ~/.hgext/cdiff.py
 convert =
 extdiff =
 graphlog =
 highlight =
 record =
+
+[alias]
+last = log --limit=2
 
 [extdiff]
 cmd.vimdiff = vim
