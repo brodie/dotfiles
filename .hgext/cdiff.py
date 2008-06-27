@@ -12,39 +12,35 @@ except ImportError:
 from mercurial import hg
 from mercurial.commands import diff, table
 
+def wrap_write(write):
+    """Wraps ui.write and colorizes diff lines written to it"""
+
+    def wrapper(s):
+        lines = s.split('\n')
+        for i, line in enumerate(lines):
+            if line.startswith('+'):
+                lines[i] = ''.join(['\033[1;32m', line, '\033[0m'])
+            elif line.startswith('-'):
+                lines[i] = ''.join(['\033[1;31m', line, '\033[0m'])
+        write('\n'.join(lines))
+    return wrapper
+
+
 def cdiff(ui, repo, *pats, **opts):
     """Colorized diff"""
 
     if (opts['color'] == 'never' or
         (opts['color'] == 'auto' and
-         (os.environ.get('TERM') == 'dumb' or not sys.stdout.isatty())
-        )
-    ):
+         (os.environ.get('TERM') == 'dumb' or not sys.stdout.isatty()))):
         diff(ui, repo, *pats, **opts)
         return
 
-    stdout = sys.stdout
-    sys.stdout = StringIO()
+    old_write = ui.write
+    ui.write = wrap_write(ui.write)
     try:
         diff(ui, repo, *pats, **opts)
-        output = sys.stdout.getvalue()
     finally:
-        sys.stdout.close()
-        sys.stdout = stdout
-    if not output:
-        return
-
-    from pygments import highlight
-    from pygments.lexers import DiffLexer
-    from pygments.formatters import TerminalFormatter
-    try:
-        if opts['color'] != 'always' and sys.stdout.encoding is None:
-            raise UnicodeError
-        encoding = sys.stdout.encoding or 'utf-8'
-        highlight(output.decode(encoding), DiffLexer(),
-                  TerminalFormatter(encoding=encoding), outfile=ui)
-    except UnicodeError, e:
-        ui.write(output)
+        ui.write = old_write
 
 cdiff.__doc__ = diff.__doc__
 
