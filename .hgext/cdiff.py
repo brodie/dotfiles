@@ -85,7 +85,17 @@ def cdiff(ui, repo, *pats, **opts):
         if val is None:
             colors[key] = DEFAULTS[key]
         else:
-            colors[key] = [COLORS[c] for c in val.split() if c in COLORS]
+            vals = val.split()
+            valid = True
+            for c in vals:
+                if c not in COLORS:
+                    ui.warn("cdiff: Unknown color '%s' (in '%s')\n" % (c, key))
+                    valid = False
+                    break
+            if valid:
+                colors[key] = [COLORS[c] for c in vals]
+            else:
+                colors[key] = DEFAULTS[key]
 
     old_write = ui.write
     ui.write = wrap_write(ui.write, *color_codes(colors))
