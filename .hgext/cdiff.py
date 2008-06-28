@@ -27,7 +27,7 @@ def color_codes(colors):
     fg = tigetstr('setaf')
     bg = tigetstr('setab')
     if None in (reset, bold, fg, bg):
-        raise KeyError
+        raise ImportError('Failed to retrieve control codes from terminfo')
 
     def convert(color, context=fg):
         code = ''
