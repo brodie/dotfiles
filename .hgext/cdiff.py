@@ -11,7 +11,7 @@ Default settings:
     [cdiff]
     ; "diff -r rev file"
     head = bold
-    ; "@@ -a,b -x,y @@"
+    ; "@@ -a,b +x,y @@"
     group = bold magenta
     ; -removed line
     del = bold red
