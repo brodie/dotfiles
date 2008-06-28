@@ -7,17 +7,44 @@ import sys
 from mercurial import hg
 from mercurial.commands import diff, table
 
-# FIXME: Look up colors using curses
-COLORS = {
-    'head_color': '\x1b[01m',
-    'group_color': '\x1b[01m\x1b[35m',
-    'del_color': '\x1b[1;31m',
-    'ins_color': '\x1b[32m',
-    'whitespace_color': '\x1b[01m\x1b[41m',
+COLORS = dict(zip(['bold', 'black', 'red', 'green', 'yellow', 'blue',
+                   'magenta', 'cyan', 'white'], xrange(-1, 8)))
+DEFAULTS = {
+    'head': [COLORS['bold']],
+    'group': [COLORS['bold'], COLORS['magenta']],
+    'del': [COLORS['bold'], COLORS['red']],
+    'ins': [COLORS['green']],
+    'whitespace': [COLORS['bold'], COLORS['red']],
 }
 
+def color_codes(colors):
+    """Looks up color control codes using terminfo"""
+
+    from curses import setupterm, tigetstr, tparm
+    setupterm()
+    reset = tigetstr('sgr0')
+    bold = tigetstr('bold')
+    fg = tigetstr('setaf')
+    bg = tigetstr('setab')
+    if None in (reset, bold, fg, bg):
+        raise KeyError
+
+    def convert(color, context=fg):
+        code = ''
+        if COLORS['bold'] in color:
+            color.remove(COLORS['bold'])
+            code += bold
+        if color:
+            code += tparm(context, color[0])
+        return code
+
+    codes = [convert(colors[c]) for c in ('head', 'group', 'del', 'ins')]
+    codes += [convert(colors['whitespace'], bg), reset]
+    return codes
+
+
 def wrap_write(write, head_color, group_color, del_color, ins_color,
-               whitespace_color, reset='\x1b[0m'):
+               whitespace_color, reset):
     """Wraps ui.write and colorizes diff lines written to it"""
 
     def wrapper(s):
@@ -52,16 +79,16 @@ def cdiff(ui, repo, *pats, **opts):
         return
 
     colors = {}
-    for key in COLORS:
+    for key in DEFAULTS:
         colors[key] = ui.config('cdiff', key)
     for key, val in colors.items():
         if val is None:
-            colors[key] = COLORS[key]
+            colors[key] = DEFAULTS[key]
         else:
-            colors[key] = val.replace('^[', '\x1b')
+            colors[key] = [COLORS[c] for c in val.split() if c in COLORS]
 
     old_write = ui.write
-    ui.write = wrap_write(ui.write, **colors)
+    ui.write = wrap_write(ui.write, *color_codes(colors))
     try:
         diff(ui, repo, *pats, **opts)
     finally:
