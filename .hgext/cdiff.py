@@ -1,5 +1,32 @@
 #!/usr/bin/env python
-"""Colorizes diff output"""
+"""Colorizes diff output for systems with terminfo.
+
+This extension uses the curses library to get ANSI color control codes from
+terminfo. It specifically looks for codes for sgr0 (reset), bold, setaf
+(foreground color), and setab (background color). See terminfo(5) for more
+information.
+
+Default settings:
+
+    [cdiff]
+    ; "diff -r rev file"
+    head = bold
+    ; "@@ -a,b -x,y @@"
+    group = bold magenta
+    ; -removed line
+    del = bold red
+    ; +inserted line
+    ins = green
+    ; -removed line with trailing whitespace
+    ; +inserted line with trailing whitespace
+    whitespace = bold red
+
+Possible colors: black, red, green, yellow, blue, magenta, cyan, white (and
+optionally "bold").
+
+Note: Any trailing whitespace in changed lines is highlighted, even if hasn't
+changed between the changed lines.
+"""
 
 import os
 import sys
