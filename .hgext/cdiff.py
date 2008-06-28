@@ -134,6 +134,7 @@ cdiff.__doc__ = diff.__doc__
 
 
 diffopts = table['^diff']
+# This suppresses the useless "extension overrides" warning
 del table['^diff']
 cmdtable = {'^diff': (
     cdiff,
