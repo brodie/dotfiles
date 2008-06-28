@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 """Colorizes diff output for systems with terminfo.
 
 This extension uses the curses library to get ANSI color control codes from
@@ -25,7 +24,7 @@ Possible colors: black, red, green, yellow, blue, magenta, cyan, white (and
 optionally "bold").
 
 Note: Any trailing whitespace in changed lines is highlighted, even if hasn't
-changed between the changed lines.
+changed between lines.
 """
 
 import os
