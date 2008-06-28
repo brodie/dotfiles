@@ -73,6 +73,8 @@ def wrap_write(write, head_color, group_color, del_color, ins_color,
                whitespace_color, reset):
     """Wraps ui.write and colorizes diff lines written to it"""
 
+    # This assumes that ui.write is called only with full lines (which is
+    # currently the case).
     def wrapper(s):
         lines = s.split('\n')
         for i, line in enumerate(lines):
