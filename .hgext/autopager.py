@@ -60,7 +60,7 @@ def get_height():
 
 
 def wrap_output(max_lines, pager):
-    """Wraps stdout/stderr and sends output to pager of the number of lines
+    """Wraps stdout/stderr and sends output to pager if the number of lines
     written exceeds max_lines, otherwise the buffer is flushed with atexit.
     """
 

@@ -14,7 +14,7 @@ highlight =
 record =
 
 [alias]
-last = log -r -3:tip
+last = log --limit=5
 
 [extdiff]
 cmd.vimdiff = vim
