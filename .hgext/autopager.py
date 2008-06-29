@@ -16,6 +16,9 @@ Default settings:
     pager = [environment variable PAGER]
 
 If neither pager nor PAGER is set, the extension does nothing.
+
+Note: Output to stderr is sent to the pager as well. If the pager isn't
+invoked, it's preserved (instead of being sent to stdout).
 """
 
 import atexit
@@ -38,7 +41,7 @@ def _win_height(fd):
     res = windll.kernel32.GetConsoleScreenBufferInfo(handle, buf)
     if res:
         from struct import unpack
-        left, top, right, bottom = struct.unpack('hhhhHhhhhhh', buf.raw)[5:9]
+        left, top, right, bottom = unpack('hhhhHhhhhhh', buf.raw)[5:9]
         return bottom - top + 1
 
 
@@ -69,26 +72,32 @@ def wrap_output(max_lines, pager):
         if hasattr(sys.stdout, '_stream'):
             sys.stdout = sys.stdout._stream
             sys.stderr = sys.stderr._stream
-        for s in buf[0]:
-            sys.stdout.write(s)
+        for is_stderr, s in buf[0]:
+            if is_stderr:
+                sys.stderr.write(s)
+            else:
+                sys.stdout.write(s)
         buf[0] = []
     atexit.register(flush)
 
     line_count = [0]
     class FileProxy(object):
-        def __init__(self, stream):
+        def __init__(self, stream, is_stderr=False):
             self._stream = stream
+            self._is_stderr = is_stderr
         def __getattr__(self, name):
             return getattr(self._stream, name)
         def write(self, s):
-            buf[0].append(s)
+            # The stream is recorded to preserve stdout/stderr if output
+            # isn't paged.
+            buf[0].append((self._is_stderr, s))
             line_count[0] += s.count('\n')
             if line_count[0] > max_lines:
                 sys.stdout = sys.stderr = os.popen(pager, 'wb')
                 flush()
 
     sys.stdout = FileProxy(sys.stdout)
-    sys.stderr = FileProxy(sys.stderr)
+    sys.stderr = FileProxy(sys.stderr, True)
 
 
 def uisetup(ui, *args, **kwargs):
