@@ -5,6 +5,7 @@ verbose = True
 
 [extensions]
 alias =
+autopager = ~/.hgext/autopager.py
 cdiff = ~/.hgext/cdiff.py
 convert =
 extdiff =

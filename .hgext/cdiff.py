@@ -5,6 +5,10 @@ terminfo. It specifically looks for codes for sgr0 (reset), bold, setaf
 (foreground color), and setab (background color). See terminfo(5) for more
 information.
 
+The --color switch may be used to control when colorizing can occur. Possible
+values are "auto", "always", and "never". "auto" enables colorization only
+for non-dumb terminals (a la GNU grep).
+
 Default settings:
 
     [cdiff]
