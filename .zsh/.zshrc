@@ -183,7 +183,11 @@ esac
 bindkey -e # Revert back to emacs mode
 WORDCHARS='_' # Use emacs-style word matching
 
-autoload down-line-or-beginning-search up-line-or-beginning-search
+autoload -U select-word-style
+select-word-style normal
+zstyle ':zle:*' word-style subword
+
+autoload -U down-line-or-beginning-search up-line-or-beginning-search
 zle -N down-line-or-history down-line-or-beginning-search
 zle -N up-line-or-history up-line-or-beginning-search
 
@@ -201,7 +205,7 @@ then
             '\e[1;3C' forward-word
 fi
 
-autoload zkbd
+autoload -U zkbd
 [[ ! -d "$ZDOTDIR/.zkbd" ]] && mkdir "$ZDOTDIR/.zkbd"
 [[ ! -f "$ZDOTDIR/.zkbd/$TERM-$VENDOR-$OSTYPE" ]] && zkbd
 source "$ZDOTDIR/.zkbd/$TERM-$VENDOR-$OSTYPE"
