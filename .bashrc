@@ -1,31 +1,31 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-if [ ! -n "$LANG" ]
+if [[ -z "$LANG" ]]
 then
     export LANG='en_US.UTF-8'
-elif [ "$LANG" != "*.UTF-8" ]
+elif [[ "$LANG" != "*.UTF-8" ]]
 then
     export LANG="${LANG%.*}.UTF-8"
 fi
 
-[ -d /usr/X11R6/bin ] && export PATH="$PATH:/usr/X11R6/bin"
-[ -d /usr/local/X11R6/bin ] && export PATH="$PATH:/usr/local/X11R6/bin"
-[ -d /usr/local/bin ] && export PATH="/usr/local/bin:$PATH"
-[ -d /usr/local/sbin ] && export PATH="/usr/local/sbin:$PATH"
-[ -d /usr/local/mysql/bin ] && export PATH="/usr/local/mysql/bin:$PATH"
-[ -d /opt/local/bin ] && export PATH="/opt/local/bin:$PATH"
-[ -d /opt/local/sbin ] && export PATH="/opt/local/sbin:$PATH"
-[ -d "$HOME/bin" ] && export PATH="$HOME/bin:$PATH"
+[[ -d /usr/X11R6/bin ]] && export PATH="$PATH:/usr/X11R6/bin"
+[[ -d /usr/local/X11R6/bin ]] && export PATH="$PATH:/usr/local/X11R6/bin"
+[[ -d /usr/local/bin ]] && export PATH="/usr/local/bin:$PATH"
+[[ -d /usr/local/sbin ]] && export PATH="/usr/local/sbin:$PATH"
+[[ -d /usr/local/mysql/bin ]] && export PATH="/usr/local/mysql/bin:$PATH"
+[[ -d /opt/local/bin ]] && export PATH="/opt/local/bin:$PATH"
+[[ -d /opt/local/sbin ]] && export PATH="/opt/local/sbin:$PATH"
+[[ -d "$HOME/bin" ]] && export PATH="$HOME/bin:$PATH"
 
-[ -d /usr/X11/man ] && export MANPATH="$MANPATH:/usr/X11/man"
-[ -d /usr/X11R6/man ] && export MANPATH="$MANPATH:/usr/X11R6/man"
-[ -d /usr/share/man ] && export MANPATH="/usr/share/man:$MANPATH"
-[ -d /usr/local/share/man ] && export MANPATH="/usr/local/share/man:$MANPATH"
-[ -d /usr/local/man ] && export MANPATH="/usr/local/man:$MANPATH"
-[ -d /opt/local/share/man ] && export MANPATH="/opt/local/share/man:$MANPATH"
+[[ -d /usr/X11/man ]] && export MANPATH="$MANPATH:/usr/X11/man"
+[[ -d /usr/X11R6/man ]] && export MANPATH="$MANPATH:/usr/X11R6/man"
+[[ -d /usr/share/man ]] && export MANPATH="/usr/share/man:$MANPATH"
+[[ -d /usr/local/share/man ]] && export MANPATH="/usr/local/share/man:$MANPATH"
+[[ -d /usr/local/man ]] && export MANPATH="/usr/local/man:$MANPATH"
+[[ -d /opt/local/share/man ]] && export MANPATH="/opt/local/share/man:$MANPATH"
 
 # Interactive-only settings follow
-[ -z "$PS1" ] && return
+[[ -z "$PS1" ]] && return
 
 # Options
 
@@ -43,10 +43,13 @@ shopt -s checkhash \
 HISTCONTROL=ignoreboth
 HISTFILESIZE=1000
 
+# Disable flow control, which makes ^S and ^Q work
+[[ -n "$(command -v stty)" ]] && stty -ixoff -ixon
+
 # Aliases
 
-if [ "$TERM" != "dumb" -a ! -z "$(command -v dircolors)" -a -x \
-     "$(command -v dircolors)" ]; then
+if [[ "$TERM" != dumb && -n "$(command -v dircolors)" ]]
+then
     eval "$(dircolors -b)"
     alias ls='ls --color=auto'
     alias dir='ls --color=auto --format=vertical'
@@ -92,7 +95,7 @@ _prompt_pwd()
             echo -n '~'
             ;;
         *)
-            local last=${PWD/#*\//}
+            local last="${PWD/#*\//}"
             echo -n $PWD | sed -e "s|^$HOME|~|" \
                                -e 's-/\([^/]\)\([^/]*\)-/\1-g' \
                                -e "s|\$|${last:1}|"
@@ -114,4 +117,4 @@ esac
 
 # Completion
 
-[ -r $HOME/.bash_completion ] && . $HOME/.bash_completion
+[[ -f "$HOME/.bash_completion" ]] && . "$HOME/.bash_completion"
