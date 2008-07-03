@@ -3,3 +3,9 @@
 \eOH goto-line
 \e[F goto-end
 \eOF goto-end
+#line-edit
+\ed word-delete
+\e[1;5D word-left
+\e[1;3D word-left
+\e[1;5C word-right
+\e[1;3C word-right
