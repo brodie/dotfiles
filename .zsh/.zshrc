@@ -73,7 +73,7 @@ autoload -U colors && colors
 
 # less niceties
 
-export LESS='-R'
+export LESS='-iR'
 export LESSOPEN="| $HOME/bin/lesspipe %s"
 export LESS_TERMCAP_mb=${fg_bold[red]}
 export LESS_TERMCAP_md=${fg_bold[blue]}
