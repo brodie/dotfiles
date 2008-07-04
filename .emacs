@@ -42,6 +42,7 @@
 (setq require-final-newline 'visit-save)
 (if (eq window-system nil)
     (menu-bar-mode -1))
+(setq mac-option-modifier 'meta)
 
 ; Backup
 (defvar user-temporary-file-directory
