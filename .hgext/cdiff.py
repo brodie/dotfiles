@@ -12,6 +12,8 @@ for non-dumb terminals (a la GNU grep).
 Default settings:
 
     [cdiff]
+    ; --color default
+    color = auto
     ; "diff -r rev file"
     head = bold
     ; "@@ -a,b +x,y @@"
@@ -34,7 +36,6 @@ changed between lines.
 import os
 import sys
 
-from mercurial import hg
 from mercurial.commands import diff, table
 
 COLORS = dict(zip(['bold', 'black', 'red', 'green', 'yellow', 'blue',
@@ -139,16 +140,18 @@ def cdiff(ui, repo, *pats, **opts):
 cdiff.__doc__ = diff.__doc__
 
 
+cdiffopts = ('c', 'color', 'auto', 'when to colorize (always, auto, or never)')
 diffopts = table['^diff']
 # This suppresses the useless "extension overrides" warning
 del table['^diff']
 cmdtable = {'^diff': (
     cdiff,
-    diffopts[1] + [(
-        'c',
-        'color',
-        'auto',
-        'when to colorize (always, auto, or never)',
-    )],
+    diffopts[1] + [cdiffopts],
     diffopts[2],
 )}
+
+
+def uisetup(ui, *args, **kwargs):
+    color = ui.config('cdiff', 'color')
+    if color in ('always', 'never'):
+        cmdtable['^diff'][1][-1] = cdiffopts[0:2] + (color,) + cdiffopts[3:]
