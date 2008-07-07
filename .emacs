@@ -88,9 +88,16 @@
             (delete-backward-char n))
         (delete-backward-char 1)))))
 
+(defun newline-maybe-indent ()
+  "Like newline-and-indent, but doesn't indent if the previous line is blank"
+  (interactive "*")
+  (if (= (line-beginning-position) (line-end-position))
+      (newline)
+    (newline-and-indent)))
+
 (add-hook 'python-mode-hook
           '(lambda ()
-             (define-key python-mode-map (kbd "RET") 'newline-and-indent)
+             (define-key python-mode-map (kbd "RET") 'newline-maybe-indent)
              (define-key python-mode-map (kbd "DEL") 'delete-backward-indent)))
 (add-hook 'c-mode-common-hook
           '(lambda ()
