@@ -105,9 +105,19 @@ def wrap_write(write, head_color, group_color, del_color, ins_color,
 def cdiff(ui, repo, *pats, **opts):
     """Colorized diff"""
 
+    # Duplicate stdout in case sys.stdout has be reassigned
+    try:
+        stdout = os.fdopen(os.dup(1), 'w')
+        try:
+            isatty = stdout.isatty()
+        finally:
+            stdout.close()
+    except Exception:
+        isatty = sys.stdout.isatty()
+
     if (opts['color'] == 'never' or
         (opts['color'] == 'auto' and
-         (os.environ.get('TERM') == 'dumb' or not sys.stdout.isatty()))):
+         (os.environ.get('TERM') == 'dumb' or not isatty))):
         diff(ui, repo, *pats, **opts)
         return
 

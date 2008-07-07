@@ -16,9 +16,6 @@ record =
 [alias]
 last = log --limit=5
 
-[cdiff]
-color = always
-
 [extdiff]
 cmd.vimdiff = vim
 opts.vimdiff = -f '+next' '+execute "DirDiff" argv(0) argv(1)'
