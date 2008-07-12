@@ -38,11 +38,6 @@ $endif
 "\e[H": beginning-of-line
 "\e[F": end-of-line
 
-# Make C-w work more like M-Rubout
-set bind-tty-special-chars Off
-"\C-w": unix-filename-rubout
-"\M-Rubout": unix-filename-rubout
-
 # Automatically show completions
 set show-all-if-ambiguous On
 # Case insensitive completion

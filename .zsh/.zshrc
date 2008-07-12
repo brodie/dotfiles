@@ -202,8 +202,13 @@ autoload -U down-line-or-beginning-search up-line-or-beginning-search
 zle -N down-line-or-history down-line-or-beginning-search
 zle -N up-line-or-history up-line-or-beginning-search
 
-bindkey '^U' vi-kill-line \
-        '^Q' quoted-insert
+# Make ^W work like it does in bash (while leaving other bindings alone)
+zle -N backward-kill-word-bash backward-kill-word-match
+zstyle ':zle:backward-kill-word-bash' word-style whitespace
+
+bindkey '^Q' quoted-insert \
+        '^U' vi-kill-line \
+        '^W' backward-kill-word-bash
 
 if [[ "$TERM" = xterm* ]]
 then
