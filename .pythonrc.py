@@ -1,28 +1,33 @@
 def _pythonrc():
     # Enable readline, tab completion, and history
 
-    import rlcompleter
-    import readline
+    try:
+        import readline
+    except ImportError, e:
+        import sys
+        print >> sys.stderr, e
+    else:
+        import rlcompleter
 
-    class TabCompleter(rlcompleter.Completer):
-        """Completer that supports indenting"""
+        class TabCompleter(rlcompleter.Completer):
+            """Completer that supports indenting"""
 
-        def complete(self, text, state):
-            if not text:
-                return ('    ', None)[state]
-            else:
-                return rlcompleter.Completer.complete(self, text, state)
+            def complete(self, text, state):
+                if not text:
+                    return ('    ', None)[state]
+                else:
+                    return rlcompleter.Completer.complete(self, text, state)
 
-    readline.parse_and_bind('tab: complete')
-    readline.set_completer(TabCompleter().complete)
+        readline.parse_and_bind('tab: complete')
+        readline.set_completer(TabCompleter().complete)
 
-    import atexit
-    import os
+        import atexit
+        import os
 
-    history_path = os.path.expanduser('~/.pyhistory')
-    atexit.register(lambda: readline.write_history_file(history_path))
-    if os.path.isfile(history_path):
-        readline.read_history_file(history_path)
+        history_path = os.path.expanduser('~/.pyhistory')
+        atexit.register(lambda: readline.write_history_file(history_path))
+        if os.path.isfile(history_path):
+            readline.read_history_file(history_path)
 
     # Pretty print evaluated expressions
 
@@ -115,15 +120,18 @@ def _pythonrc():
 # Make sure modules in the current directory can't interfere
 import sys
 try:
-    cwd = sys.path.index('')
-    sys.path.pop(cwd)
-except ValueError:
-    cwd = None
+    try:
+        cwd = sys.path.index('')
+        sys.path.pop(cwd)
+    except ValueError:
+        cwd = None
 
-# Run the main function and don't let it taint the global namespace
-try:
-    _pythonrc()
-    del _pythonrc
+    # Run the main function and don't let it taint the global namespace
+    try:
+        _pythonrc()
+        del _pythonrc
+    finally:
+        if cwd is not None:
+            sys.path.insert(cwd, '')
 finally:
-    if cwd is not None:
-        sys.path.insert(cwd, '')
+    del sys
