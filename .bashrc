@@ -75,16 +75,23 @@ function beep()
 
 # less niceties
 
+reset_color=$(tput sgr0)
+bold_color=$(tput bold)
+fg_blue=$(tput setaf 4)
+bg_blue=$(tput setab 4)
+fg_yellow=$(tput setaf 3)
+fg_green=$(tput setaf 2)
+
 export LESS='-R'
 export LESSOPEN="| $HOME/bin/lesspipe %s"
-export LESS_TERMCAP_mb=${fg_bold[red]}
-export LESS_TERMCAP_md=${fg_bold[blue]}
+export LESS_TERMCAP_mb="$bold_color$fg_blue"
+export LESS_TERMCAP_md="$bold_color$fg_blue"
 export LESS_TERMCAP_me=$reset_color
 export LESS_TERMCAP_se=$reset_color
-LESS_TERMCAP_so=$'\e['"${color[bold]};${color[bg-blue]};${color[yellow]}m"
+LESS_TERMCAP_so=$'\e['"$bold_color$bg_blue$fg_yellow"
 export LESS_TERMCAP_so
 export LESS_TERMCAP_ue=$reset_color
-export LESS_TERMCAP_us=${fg_bold[green]}
+export LESS_TERMCAP_us=$fg_green
 
 # Prompt
 
@@ -102,8 +109,8 @@ _prompt_pwd()
     esac
 }
 
-PS1="\u \[$(tput setaf 4)\]\$(_prompt_pwd)\[$(tput sgr0)\]: "
-#PS1="\h \[$(tput setaf 4)\]\$(_prompt_pwd)\[$(tput sgr0)\]: "
+PS1="\u \[$fg_blue\]\$(_prompt_pwd)\[$reset_color\]: "
+#PS1="\h \[$fg_blue\]\$(_prompt_pwd)\[$reset_color\]: "
 
 # Window title
 
