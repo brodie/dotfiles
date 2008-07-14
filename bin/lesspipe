@@ -1,6 +1,6 @@
 #!/bin/sh
 
-if [[ ! -r "$1" ]]
+if [ ! -f "$1" -o ! -r "$1"  ]
 then
     exit 1
 fi
@@ -19,12 +19,12 @@ lexer_for_mime()
 case "$1" in
     *.gz)
         LEXER=$(lexer_for_file $(basename "$1" .gz))
-        if [[ -n "$LEXER" ]]
+        if [ -n "$LEXER" ]
         then
             gunzip -c "$1" | pygmentize -l "$LEXER"
         else
             LEXER=$(lexer_for_mime $(file -b -z --mime "$1"))
-            if [[ -n "$LEXER" ]]
+            if [ -n "$LEXER" ]
             then
                 gunzip -c "$1" | pygmentize -l "$LEXER"
             else
@@ -34,12 +34,12 @@ case "$1" in
         ;;
     *.bz2)
         LEXER=$(lexer_for_file $(basename "$1" .bz2))
-        if [[ -n "$LEXER" ]]
+        if [ -n "$LEXER" ]
         then
             bzcat "$1" | pygmentize -l "$LEXER"
         else
             LEXER=$(lexer_for_mime $(file -b -z --mime "$1"))
-            if [[ -n "$LEXER" ]]
+            if [ -n "$LEXER" ]
             then
                 bzcat "$1" | pygmentize -l "$LEXER"
             else
@@ -49,12 +49,12 @@ case "$1" in
         ;;
     *)
         LEXER=$(lexer_for_file "$1")
-        if [[ -n "$LEXER" ]]
+        if [ -n "$LEXER" ]
         then
             cat "$1" | pygmentize -l "$LEXER"
         else
             LEXER=$(lexer_for_mime $(file -b --mime "$1"))
-            if [[ -n "$LEXER" ]]
+            if [ -n "$LEXER" ]
             then
                 cat "$1" | pygmentize -l "$LEXER"
             else
