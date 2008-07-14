@@ -2,9 +2,26 @@
 
 OPTS='-O outencoding=utf-8'
 
-if [ ! -f "$1" -o ! -r "$1"  ]
+# Don't bother with unreadable files or directories
+if [ ! -f "$1" -o ! -r "$1" ]
 then
     exit 1
+fi
+
+# Don't colorize for large files (>= 512 KB)
+if [ $(stat -c %s "$1") -ge 524288 ]
+then
+    case "$1" in
+        *.gz)
+            gunzip -c "$1"
+            ;;
+        *.bz2)
+            bzcat "$1"
+            ;;
+        *)
+            exit 1
+            ;;
+    esac
 fi
 
 lexer_for_file()
@@ -12,6 +29,7 @@ lexer_for_file()
     python -c 'import sys; from pygments.lexers import get_lexer_for_filename; print get_lexer_for_filename(sys.argv[1]).aliases[0]' "$1" 2> /dev/null
 }
 
+# FIXME: file's mime type output is unreliable and usually incorrect
 lexer_for_mime()
 {
     MIME=${1%;*}
