@@ -88,7 +88,7 @@ export LESS_TERMCAP_mb="$bold_color$fg_blue"
 export LESS_TERMCAP_md="$bold_color$fg_blue"
 export LESS_TERMCAP_me=$reset_color
 export LESS_TERMCAP_se=$reset_color
-LESS_TERMCAP_so=$'\e['"$bold_color$bg_blue$fg_yellow"
+LESS_TERMCAP_so="$bold_color$bg_blue$fg_yellow"
 export LESS_TERMCAP_so
 export LESS_TERMCAP_ue=$reset_color
 export LESS_TERMCAP_us=$fg_green
