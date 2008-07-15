@@ -25,6 +25,9 @@ $if mode=emacs
 "\e[1;5D": backward-word
 "\eOC": forward-word
 "\eOD": backward-word
+"\e[1;3C": forward-word
+"\e[1;3D": backward-word
+
 
 $if term=rxvt
 "\e[8~": end-of-line
@@ -46,7 +49,9 @@ set completion-ignore-case On
 # Approximate fish-style up/down search
 "\C-n": history-search-forward
 "\e[B": history-search-forward
+"\e[1;3B": history-search-forward
 "\C-p": history-search-backward
+"\e[1;3A": history-search-backward
 "\e[A": history-search-backward
 
 $endif

@@ -8,6 +8,13 @@ then
     export LANG="${LANG%.*}.UTF-8"
 fi
 
+if [[ -n "$(command -v locale)" ]]
+then
+    locale -a 2> /dev/null | grep -q "$LANG" || export LANG="${LANG%.*}"
+    locale -a 2> /dev/null | grep -q "$LANG" || export LANG=C
+fi
+
+
 [[ -d /usr/X11R6/bin ]] && export PATH="$PATH:/usr/X11R6/bin"
 [[ -d /usr/local/X11R6/bin ]] && export PATH="$PATH:/usr/local/X11R6/bin"
 [[ -d /usr/local/bin ]] && export PATH="/usr/local/bin:$PATH"
