@@ -135,10 +135,10 @@ _prompt_pwd()
             echo -n '~'
             ;;
         *)
+            local first=$(echo -n "${PWD/$HOME/\~}" | sed -e \
+                          's-/\([^/]\)\([^/]*\)-/\1-g')
             local last="${PWD/#*\//}"
-            echo -n "$PWD" | sed -e "s|^$HOME|~|" \
-                                 -e 's-/\([^/]\)\([^/]*\)-/\1-g'
-            echo -n "${last:1}"
+            echo -n "$first${last:1}"
     esac
 }
 

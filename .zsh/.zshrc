@@ -64,9 +64,9 @@ ZLS_COLORS="$LS_COLORS"
 
 if [[ -n "$(command -v emacs-snapshot)" ]]
 then
-    alias emacs='emacsclient.emacs-snapshot -n'
+    alias emacs='emacs-snapshot -nw'
 else
-    alias emacs='emacsclient -n'
+    alias emacs='emacs -nw'
 fi
 
 alias ll='ls -l' \
@@ -195,8 +195,8 @@ _prompt_pwd()
             echo -n '~'
             ;;
         *)
-            print -nP '%~' | sed -e 's-/\([^/]\)\([^/]*\)-/\1-g'
-            echo -n "${${PWD/#*\/}[2,-1]}"
+            local p=$(print -nP '%~' | sed -e 's-/\([^/]\)\([^/]*\)-/\1-g')
+            echo -n "$p${${PWD/#*\/}[2,-1]}"
             ;;
     esac
 }
