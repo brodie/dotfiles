@@ -64,9 +64,9 @@ ZLS_COLORS="$LS_COLORS"
 
 if [[ -n "$(command -v emacs-snapshot)" ]]
 then
-    alias emacs='emacs-snapshot -nw'
+    alias emacs='emacsclient.emacs-snapshot -n'
 else
-    alias emacs='emacs -nw'
+    alias emacs='emacsclient -n'
 fi
 
 alias ll='ls -l' \
@@ -78,6 +78,26 @@ alias ll='ls -l' \
 beep()
 {
     echo -n '\a'
+}
+
+svn()
+{
+    case $1 in
+        diff)
+            if [[ -n "$(command -v colordiff)" ]]
+            then
+                command svn $@ | colordiff | less
+            else
+                command svn $@ | less
+            fi
+            ;;
+        log)
+            command svn $@ | less
+            ;;
+        *)
+            command svn $@
+            ;;
+    esac
 }
 
 autoload -U colors && colors
