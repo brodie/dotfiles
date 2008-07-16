@@ -1,0 +1,14 @@
+# Enable with:
+# gconftool --set /desktop/gnome/interface/gtk_key_theme MacEmacs --type string
+
+binding "gtk-macemacs-text-entry"
+{
+  bind "<alt>Left" { "move-cursor" (words, -1, 0) }
+  bind "<alt>Right" { "move-cursor" (words, 1, 0) }
+
+  bind "<alt>Delete" { "delete-from-cursor" (word-ends, 1) }
+  bind "<alt>BackSpace" { "delete-from-cursor" (word-ends, -1) }
+}
+
+class "GtkEntry" binding "gtk-macemacs-text-entry"
+class "GtkTextView" binding "gtk-macemacs-text-entry"
