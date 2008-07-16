@@ -12,6 +12,12 @@ then
     export LANG="${LANG%.*}.UTF-8"
 fi
 
+if [[ -n "$(command -v locale)" ]]
+then
+    locale -a 2> /dev/null | grep -iq "^${LANG/-/}\$" || export LANG="${LANG%.*}"
+    locale -a 2> /dev/null | grep -iq "^${LANG/-/}\$" || export LANG=C
+fi
+
 [[ -d /usr/X11/bin ]] && path=($path /usr/X11/bin)
 [[ -d /usr/X11R6/bin ]] && path=($path /usr/X11R6/bin)
 [[ -d /usr/local/bin ]] && path=(/usr/local/bin $path)

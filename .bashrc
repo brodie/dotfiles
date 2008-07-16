@@ -10,8 +10,8 @@ fi
 
 if [[ -n "$(command -v locale)" ]]
 then
-    locale -a 2> /dev/null | grep -q "$LANG" || export LANG="${LANG%.*}"
-    locale -a 2> /dev/null | grep -q "$LANG" || export LANG=C
+    locale -a 2> /dev/null | grep -iq "^${LANG/-/}\$" || export LANG="${LANG%.*}"
+    locale -a 2> /dev/null | grep -iq "^${LANG/-/}\$" || export LANG=C
 fi
 
 
@@ -75,10 +75,36 @@ alias emacs='emacs -nw' \
       grep='grep --color=always' \
       zgrep='zgrep --color=always'
 
-function beep()
+beep()
 {
     echo -n '\a'
 }
+
+if [[ "$TERM" != dumb && -n "$(command -v colordiff)" ]]
+then
+    alias diff=colordiff
+    svn()
+    {
+        for ARG in $@
+        do
+            if [[ "$ARG" == '--help' ]]
+            then
+                command svn $@
+                return $?
+            fi
+        done
+
+        case $1 in
+            diff)
+                command svn $@ 2>&1 | colordiff
+                ;;
+            *)
+                command svn $@
+                return $?
+                ;;
+        esac
+    }
+fi
 
 # less niceties
 
@@ -110,9 +136,9 @@ _prompt_pwd()
             ;;
         *)
             local last="${PWD/#*\//}"
-            echo -n $PWD | sed -e "s|^$HOME|~|" \
-                               -e 's-/\([^/]\)\([^/]*\)-/\1-g' \
-                               -e "s|\$|${last:1}|"
+            echo -n "$PWD" | sed -e "s|^$HOME|~|" \
+                                 -e 's-/\([^/]\)\([^/]*\)-/\1-g'
+            echo -n "${last:1}"
     esac
 }
 
