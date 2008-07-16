@@ -80,25 +80,31 @@ beep()
     echo -n '\a'
 }
 
-svn()
-{
-    case $1 in
-        diff)
-            if [[ -n "$(command -v colordiff)" ]]
+if [[ "$TERM" != dumb && -n "$(command -v colordiff)" ]]
+then
+    alias diff=colordiff
+    svn()
+    {
+        for ARG in $@
+        do
+            if [[ "$ARG" == '--help' ]]
             then
-                command svn $@ | colordiff | less
-            else
-                command svn $@ | less
+                command svn $@
+                return $?
             fi
-            ;;
-        log)
-            command svn $@ | less
-            ;;
-        *)
-            command svn $@
-            ;;
-    esac
-}
+        done
+
+        case $1 in
+            diff)
+                command svn $@ 2>&1 | colordiff
+                ;;
+            *)
+                command svn $@
+                return $?
+                ;;
+        esac
+    }
+fi
 
 autoload -U colors && colors
 
