@@ -9,7 +9,7 @@ then
 fi
 
 # Don't colorize for large files (>= 512 KB)
-if [ $(stat -c %s "$1") -ge 524288 ]
+if [ $(perl -e 'print -s @ARGV[$#ARGV]' "$1") -ge 524288 ]
 then
     case "$1" in
         *.gz)
