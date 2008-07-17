@@ -5,6 +5,8 @@ binding "gtk-macemacs-text-entry"
 {
   bind "<alt>Left" { "move-cursor" (words, -1, 0) }
   bind "<alt>Right" { "move-cursor" (words, 1, 0) }
+  bind "<shift><alt>Left" { "move-cursor" (words, -1, 1) }
+  bind "<shift><alt>Right" { "move-cursor" (words, 1, 1) }
 
   bind "<alt>Delete" { "delete-from-cursor" (word-ends, 1) }
   bind "<alt>BackSpace" { "delete-from-cursor" (word-ends, -1) }
