@@ -10,8 +10,10 @@ fi
 
 if [[ -n "$(command -v locale)" ]]
 then
-    locale -a 2> /dev/null | grep -iq "^${LANG/-/}\$" || export LANG="${LANG%.*}"
-    locale -a 2> /dev/null | grep -iq "^${LANG/-/}\$" || export LANG=C
+    locale -a 2> /dev/null | grep -iq "^${LANG/-/-\?}\$" || \
+        export LANG="${LANG%.*}"
+    locale -a 2> /dev/null | grep -iq "^${LANG/-/-\?}\$" || \
+        export LANG=C
 fi
 
 
