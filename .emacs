@@ -42,9 +42,10 @@
 (savehist-mode 1)
 (add-hook 'after-change-major-mode-hook '(lambda () (c-subword-mode 1)))
 (setq require-final-newline 'visit-save)
-(menu-bar-mode nil)
-(tool-bar-mode nil)
-(scroll-bar-mode nil)
+(menu-bar-mode -1)
+(when window-system
+  (tool-bar-mode -1)
+  (scroll-bar-mode -1))
 (setq mac-option-modifier 'meta)
 
 ; Backup
@@ -67,15 +68,15 @@
       `((".*" ,user-temporary-file-directory t)))
 
 ; Mouse settings
-(xterm-mouse-mode 1)
-(mouse-wheel-mode 1)
-(global-set-key [mouse-4] '(lambda ()
-                             (interactive)
-                             (scroll-down 1)))
-
-(global-set-key [mouse-5] '(lambda ()
-                             (interactive)
-                             (scroll-up 1)))
+(unless window-system
+  (xterm-mouse-mode 1)
+  (mouse-wheel-mode 1)
+  (global-set-key [mouse-4] '(lambda ()
+                               (interactive)
+                               (scroll-down 1)))
+  (global-set-key [mouse-5] '(lambda ()
+                               (interactive)
+                               (scroll-up 1))))
 
 ; Bindings
 (defun delete-backward-indent (&optional arg)
