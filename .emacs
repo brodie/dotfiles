@@ -39,6 +39,7 @@
 (show-paren-mode 1)
 (column-number-mode 1)
 (delete-selection-mode 1)
+(savehist-mode 1)
 (add-hook 'after-change-major-mode-hook '(lambda () (c-subword-mode 1)))
 (setq require-final-newline 'visit-save)
 (menu-bar-mode nil)
