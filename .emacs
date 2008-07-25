@@ -41,8 +41,9 @@
 (delete-selection-mode 1)
 (add-hook 'after-change-major-mode-hook '(lambda () (c-subword-mode 1)))
 (setq require-final-newline 'visit-save)
-(if (eq window-system nil)
-    (menu-bar-mode -1))
+(menu-bar-mode nil)
+(tool-bar-mode nil)
+(scroll-bar-mode nil)
 (setq mac-option-modifier 'meta)
 
 ; Backup
@@ -116,6 +117,7 @@
 (global-set-key (kbd "M-g") 'goto-line)
 (global-set-key (kbd "C-x M-s") 'sudo-unset-ro-or-save)
 (global-set-key (kbd "C-x M-f") 'sudo-find-file)
+(global-set-key (kbd "C--") 'undo)
 ; FIXME: This needs something like vim's ttimeout setting
 ;(global-set-key (kbd "ESC ESC") 'keyboard-quit)
 
