@@ -195,7 +195,8 @@ _prompt_pwd()
             echo -n '~'
             ;;
         *)
-            local p=$(print -nP '%~' | sed -e 's-/\([^/]\)\([^/]*\)-/\1-g')
+            local p=$(echo -n "${PWD/$HOME/~}" | sed -e \
+                      's-/\([^/]\)\([^/]*\)-/\1-g')
             echo -n "$p${${PWD/#*\/}[2,-1]}"
             ;;
     esac
