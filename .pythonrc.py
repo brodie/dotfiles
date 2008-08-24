@@ -3,9 +3,9 @@ def _pythonrc():
 
     try:
         import readline
-    except ImportError, e:
+    except ImportError:
         import sys
-        print >> sys.stderr, e
+        print >> sys.stderr, 'readline unavailable - tab completion disabled.'
     else:
         import rlcompleter
 
@@ -87,7 +87,7 @@ def _pythonrc():
 
         width = 0
         try:
-            width = _ioctl_width(0) or _ioctl_width(1) or ioctl_width(2)
+            width = _ioctl_width(0) or _ioctl_width(1) or _ioctl_width(2)
         except ImportError:
             pass
         if not width:
@@ -117,6 +117,25 @@ def _pythonrc():
 
     sys.displayhook = pprinthook
 
+    try:
+        if sys.platform == 'win32':
+            raise ImportError()
+        from pygments import highlight
+        from pygments.lexers import PythonTracebackLexer
+        from pygments.formatters import TerminalFormatter
+        from traceback import format_exception
+
+        def excepthook(exctype, value, traceback):
+            """Prints exceptions to sys.stderr and colorizes them"""
+
+            s = ''.join(format_exception(exctype, value, traceback))
+            s = highlight(s, PythonTracebackLexer(), TerminalFormatter())
+            print >> sys.stderr, s
+
+        sys.excepthook = excepthook
+    except ImportError:
+        pass
+
 # Make sure modules in the current directory can't interfere
 import sys
 try:
@@ -135,3 +154,51 @@ try:
             sys.path.insert(cwd, '')
 finally:
     del sys
+
+def source(obj):
+    """Displays the source code of an object.
+
+    Applies syntax highlighting if Pygments is available.
+    """
+
+    import sys
+
+    from inspect import findsource, getmodule, getsource
+    try:
+        s = getsource(obj)
+    except TypeError:
+        print >> sys.stderr, ("Source code unavailable (maybe it's part of "
+                              "a C extension?)")
+        return
+
+    import re
+    enc = 'ascii'
+    for line in findsource(getmodule(obj))[0][:2]:
+        m = re.search(r'coding[:=]\s*([-\w.]+)', line)
+        if m:
+            enc = m.group(1)
+    try:
+        s = s.decode(enc, 'replace')
+    except LookupError:
+        s = s.decode('ascii', 'replace')
+
+    try:
+        if sys.platform == 'win32':
+            raise ImportError()
+        from pygments import highlight
+        from pygments.lexers import PythonLexer
+        from pygments.formatters import TerminalFormatter
+        s = highlight(s, PythonLexer(), TerminalFormatter())
+    except (ImportError, UnicodeError):
+        pass
+
+    import os
+    from pydoc import pager
+    lessopts = os.environ.get('LESS')
+    try:
+        if lessopts is not None:
+            os.environ['LESS'] = lessopts + ' -R'
+        pager(s.encode(sys.stdout.encoding, 'replace'))
+    finally:
+        if lessopts is not None:
+            os.environ['LESS'] = lessopts
