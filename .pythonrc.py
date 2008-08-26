@@ -130,7 +130,7 @@ def _pythonrc():
 
             s = ''.join(format_exception(exctype, value, traceback))
             s = highlight(s, PythonTracebackLexer(), TerminalFormatter())
-            print >> sys.stderr, s
+            print >> sys.stderr, s,
 
         sys.excepthook = excepthook
     except ImportError:
