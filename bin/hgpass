@@ -26,6 +26,7 @@ def _daemonize():
 
 def main():
 
+    username = getpass.getuser()
     password = getpass.getpass()
 
     path = os.path.expanduser('~/.hgpass')
@@ -46,7 +47,7 @@ def main():
             conn, addr = server.accept()
             try:
                 conn.recv(1)
-                conn.send(password)
+                conn.send('\x00'.join([username, password]))
             finally:
                 conn.close()
             time.sleep(0.5)
