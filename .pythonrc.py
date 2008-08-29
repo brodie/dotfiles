@@ -120,17 +120,29 @@ def _pythonrc():
     try:
         if sys.platform == 'win32':
             raise ImportError()
+        try:
+            from cStringIO import StringIO
+        except ImportError:
+            from StringIO import StringIO
         from pygments import highlight
         from pygments.lexers import PythonTracebackLexer
         from pygments.formatters import TerminalFormatter
-        from traceback import format_exception
 
+        _old_excepthook = sys.excepthook
         def excepthook(exctype, value, traceback):
             """Prints exceptions to sys.stderr and colorizes them"""
 
-            s = ''.join(format_exception(exctype, value, traceback))
-            s = highlight(s, PythonTracebackLexer(), TerminalFormatter())
-            print >> sys.stderr, s,
+            # traceback.format_exception() isn't used because it's
+            # inconsistent with the built-in formatter
+            old_stderr = sys.stderr
+            sys.stderr = StringIO()
+            try:
+                _old_excepthook(exctype, value, traceback)
+                s = sys.stderr.getvalue()
+                s = highlight(s, PythonTracebackLexer(), TerminalFormatter())
+                old_stderr.write(s)
+            finally:
+                sys.stderr = old_stderr
 
         sys.excepthook = excepthook
     except ImportError:
@@ -194,11 +206,13 @@ def source(obj):
 
     import os
     from pydoc import pager
-    lessopts = os.environ.get('LESS')
+    has_lessopts = 'LESS' in os.environ
+    lessopts = os.environ.get('LESS', '')
     try:
-        if lessopts is not None:
-            os.environ['LESS'] = lessopts + ' -R'
+        os.environ['LESS'] = lessopts + ' -R'
         pager(s.encode(sys.stdout.encoding, 'replace'))
     finally:
-        if lessopts is not None:
+        if has_lessopts:
             os.environ['LESS'] = lessopts
+        else:
+            os.environ.pop('LESS', None)
