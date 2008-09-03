@@ -1,13 +1,17 @@
-"""Colorizes diff output for systems with terminfo.
+"""Colorizes diff/qdiff output for Unix terminals.
 
-This extension uses the curses library to get ANSI color control codes from
-terminfo. It specifically looks for codes for sgr0 (reset), bold, setaf
-(foreground color), and setab (background color). See terminfo(5) for more
-information.
+This extension uses ANSI color control codes to colorize output from the
+built-in diff command and MQ's qdiff command. It highlights diff headings and
+changed lines, much like the Python library Pygments and the command line
+utility colordiff do.
 
-The --color switch may be used to control when colorizing can occur. Possible
+The --color switch may be used to control when colorizing occurs. Possible
 values are "auto", "always", and "never". "auto" enables colorization only
 for non-dumb terminals (a la GNU grep).
+
+Note: If auto-colorization is enabled and you're using the pager extension
+with less, make sure less is run with the -R switch, so it won't escape color
+control codes.
 
 Default settings:
 
@@ -29,14 +33,15 @@ Default settings:
 Possible colors: black, red, green, yellow, blue, magenta, cyan, white (and
 optionally "bold").
 
-Note: Any trailing whitespace in changed lines is highlighted, even if hasn't
-changed between lines.
+Note: Any trailing whitespace in changed lines is highlighted, even if it
+hasn't changed between lines.
 """
 
 import os
 import sys
 
-from mercurial.commands import diff, table
+from mercurial import cmdutil, commands, extensions
+from mercurial.ui import ui as ui_cls
 
 COLORS = dict(zip(['bold', 'black', 'red', 'green', 'yellow', 'blue',
                    'magenta', 'cyan', 'white'], xrange(-1, 8)))
@@ -74,6 +79,15 @@ def color_codes(colors):
     return codes
 
 
+def colorize(color, line, reset):
+    """Colorizes a line, preserving any trailing carriage return"""
+
+    if line.endswith('\r'):
+        return ''.join([color, line[:-1], reset, '\r'])
+    else:
+        return ''.join([color, line, reset])
+
+
 def wrap_write(write, head_color, group_color, del_color, ins_color,
                whitespace_color, reset):
     """Wraps ui.write and colorizes diff lines written to it"""
@@ -84,28 +98,28 @@ def wrap_write(write, head_color, group_color, del_color, ins_color,
         lines = s.split('\n')
         for i, line in enumerate(lines):
             if line.startswith('diff'):
-                lines[i] = ''.join([head_color, line, reset])
+                lines[i] = colorize(head_color, line, reset)
             elif line.startswith('@@'):
-                lines[i] = ''.join([group_color, line, reset])
+                lines[i] = colorize(group_color, line, reset)
             elif line and line[0] in ('-', '+'):
                 # Highlight trailing whitespace (unconditionally)
                 rline = line.rstrip()
                 if line != rline:
                     pos = len(rline)
-                    line = ''.join([line[:pos], whitespace_color,
-                                    line[pos:], reset])
+                    line = ''.join([line[:pos], colorize(whitespace_color,
+                                                         line[pos:], reset)])
                 if line[0] == '-':
-                    lines[i] = ''.join([del_color, line, reset])
+                    lines[i] = colorize(del_color, line, reset)
                 else:
-                    lines[i] = ''.join([ins_color, line, reset])
+                    lines[i] = colorize(ins_color, line, reset)
         write('\n'.join(lines))
     return wrapper
 
 
-def cdiff(ui, repo, *pats, **opts):
+def cdiff(diffcmd, ui, repo, *pats, **opts):
     """Colorized diff"""
 
-    # Duplicate stdout in case sys.stdout has be reassigned
+    # Duplicate stdout in case sys.stdout has been reassigned
     try:
         stdout = os.fdopen(os.dup(1), 'w')
         try:
@@ -118,7 +132,7 @@ def cdiff(ui, repo, *pats, **opts):
     if (opts['color'] == 'never' or
         (opts['color'] == 'auto' and
          (os.environ.get('TERM') == 'dumb' or not isatty))):
-        diff(ui, repo, *pats, **opts)
+        diffcmd(ui, repo, *pats, **opts)
         return
 
     colors = {}
@@ -143,25 +157,66 @@ def cdiff(ui, repo, *pats, **opts):
     old_write = ui.write
     ui.write = wrap_write(ui.write, *color_codes(colors))
     try:
-        diff(ui, repo, *pats, **opts)
+        diffcmd(ui, repo, *pats, **opts)
     finally:
         ui.write = old_write
 
-cdiff.__doc__ = diff.__doc__
+
+def wrapcmd(cmd):
+    """Creates a wrapper with cmd wrapped by cdiff()"""
+
+    def wrapper(ui, repo, *pats, **opts):
+        return cdiff(cmd, ui, repo, *pats, **opts)
+    wrapper.__doc__ = cmd.__doc__
+    return wrapper
 
 
-cdiffopts = ('c', 'color', 'auto', 'when to colorize (always, auto, or never)')
-diffopts = table['^diff']
-# This suppresses the useless "extension overrides" warning
-del table['^diff']
-cmdtable = {'^diff': (
-    cdiff,
-    diffopts[1] + [cdiffopts],
-    diffopts[2],
-)}
+def uisetup(ui):
+    """Adds -c/--color to the diff and qdiff commands"""
 
-
-def uisetup(ui, *args, **kwargs):
+    default = 'auto'
     color = ui.config('cdiff', 'color')
     if color in ('always', 'never'):
-        cmdtable['^diff'][1][-1] = cdiffopts[0:2] + (color,) + cdiffopts[3:]
+        default = color
+    cdiffopts = ('c', 'color', default,
+                 'when to colorize (always, auto, or never)')
+
+    # Try to find mq, or load it if it's not already loaded
+    mq = None
+    try:
+        mq = extensions.find('mq')
+    except KeyError:
+        path = ui.config('extensions', 'hgext.mq',
+                         ui.config('extensions', 'mq'))
+        if path is not None:
+            # extensions.loadall() is used instead of load() because it
+            # does some extra path parsing that load() doesn't.
+            class ui_wrapper(ui_cls):
+                def configitems(self, section, untrusted=False):
+                    if section == 'extensions':
+                        return [('mq', path)]
+                    else:
+                        return ui_cls.configitems(self, section, untrusted)
+            _ui = ui_wrapper(parentui=ui)
+            extensions.loadall(_ui)
+            mq = extensions.find('mq')
+
+    cmds = [('diff', commands.table)]
+    if mq is not None:
+        cmds.append(('qdiff', mq.cmdtable))
+
+    for name, table in cmds:
+        try:
+            aliases, entry = cmdutil.findcmd(ui, name, table)
+        except cmdutil.UnknownCommand:
+            continue
+
+        cmdkey, cmdentry = None, None
+        for k, e in table.iteritems():
+            if e is entry:
+                cmdkey, cmdentry = k, e
+                break
+
+        wrapperentry = (wrapcmd(cmdentry[0]),) + cmdentry[1:]
+        wrapperentry[1].append(cdiffopts)
+        table[cmdkey] = wrapperentry
