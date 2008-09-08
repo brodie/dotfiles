@@ -100,20 +100,22 @@ def _pythonrc():
         __builtin__.
         """
 
-        if value is not None:
-            if isinstance(value, help_types):
-                reprstr = repr(value)
-                if hasattr(value, 'func_code') or hasattr(value, 'im_func'):
-                    parts = reprstr.split(' ')
-                    parts[1] = '%s(%s)' % (parts[1], formatargs(value))
-                    reprstr = ' '.join(parts)
-                print reprstr
-                if getattr(value, '__doc__', None):
-                    print
-                    print pydoc.getdoc(value)
-            else:
-                pprint.pprint(value, width=get_width() or 80)
+        if value is None:
+            return
         __builtin__._ = value
+
+        if isinstance(value, help_types):
+            reprstr = repr(value)
+            if hasattr(value, 'func_code') or hasattr(value, 'im_func'):
+                parts = reprstr.split(' ')
+                parts[1] = '%s(%s)' % (parts[1], formatargs(value))
+                reprstr = ' '.join(parts)
+            print reprstr
+            if getattr(value, '__doc__', None):
+                print
+                print pydoc.getdoc(value)
+        else:
+            pprint.pprint(value, width=get_width() or 80)
 
     sys.displayhook = pprinthook
 
