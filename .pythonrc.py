@@ -177,8 +177,12 @@ def source(obj):
 
     import sys
 
-    from inspect import findsource, getmodule, getsource
+    from inspect import findsource, getmodule, getsource, getsourcefile
     try:
+        # Check to see if the object is defined in a shared library, which
+        # findsource() doesn't do properly (see issue4050)
+        if not getsourcefile(obj):
+            raise TypeError()
         s = getsource(obj)
     except TypeError:
         print >> sys.stderr, ("Source code unavailable (maybe it's part of "
