@@ -28,6 +28,7 @@ def _pythonrc():
         atexit.register(lambda: readline.write_history_file(history_path))
         if os.path.isfile(history_path):
             readline.read_history_file(history_path)
+        readline.set_history_length(1000)
 
     # Pretty print evaluated expressions
 
