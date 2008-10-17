@@ -6,7 +6,7 @@
 ;; Created: Nov 2003
 ;; Keywords: languages
 ;; URL: http://www.loveshack.ukfsn.org/emacs/
-;; $Revision: 1.12 $
+;; $Revision: 1.15 $
 
 ;; This file is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -66,9 +66,9 @@
 ;;; Code:
 
 (eval-when-compile
-  (require 'compile)
   (require 'comint)
   (autoload 'info-lookup-maybe-add-help "info-look"))
+(eval-and-compile (require 'compile))	; avoid warning
 
 (require 'sym-comp)
 (autoload 'comint-mode "comint")
@@ -108,11 +108,12 @@
     ;; Top-level assignments are worth highlighting.
     (,(rx line-start (group (1+ (or word ?_))) (0+ space) "=")
      (1 font-lock-variable-name-face))
-    (,(rx line-start (* (any " \t")) (group "@" (1+ (or word ?_)))) ; decorators
+    ;; decorators
+    (,(rx line-start (* (any " \t")) (group "@" (1+ (or word ?_ ?.))))
      (1 font-lock-type-face))
     ;; Built-ins.  (The next three blocks are from
     ;; `__builtin__.__dict__.keys()' in Python 2.5.1.)  These patterns
-    ;; are debateable, but they at least help to spot possible
+    ;; are debatable, but they at least help to spot possible
     ;; shadowing of builtins.
     (,(rx symbol-start (or
 	  ;; exceptions
@@ -150,7 +151,7 @@
      (1 font-lock-builtin-face))
     (,(rx symbol-start (or
 	  ;; other built-ins
-	  "True" "False" "None" "Ellipsis"
+	  "True" "False" "Ellipsis"
 	  "_" "__debug__" "__doc__" "__import__" "__name__") symbol-end)
      . font-lock-builtin-face)))
 
@@ -654,7 +655,7 @@ Set `python-indent' locally to the value guessed."
   '(("else" "if" "elif" "while" "for" "try" "except")
     ("elif" "if" "elif")
     ("except" "try" "except")
-    ("finally" "try"))
+    ("finally" "try" "except"))		; `except' for Python 2.5
   "Alist of keyword matches.
 The car of an element is a keyword introducing a statement which
 can close a block opened by a keyword in the cdr.")
@@ -1401,6 +1402,10 @@ one isn't running attached to `python-buffer', or interactively the
 default `python-command', or argument NEW is non-nil.  See also the
 documentation for `python-buffer'.
 
+Note that, as a security measure, modules won't be loaded from the
+current directory if this command is invoked initially in a
+world-writable directory.
+
 Runs the hook `inferior-python-mode-hook' \(after the
 `comint-mode-hook' is run).  \(Type \\[describe-mode] in the process
 buffer for a list of commands.)"
@@ -1428,9 +1433,25 @@ buffer for a list of commands.)"
 			   (generate-new-buffer "*Python*")
 			   (car cmdlist) nil (cdr cmdlist)))
 	(setq-default python-buffer (current-buffer))
-	(setq python-buffer (current-buffer)))
-      (accept-process-output (get-buffer-process python-buffer) 5)
-      (inferior-python-mode)))
+	(setq python-buffer (current-buffer))
+	(accept-process-output (get-buffer-process python-buffer) 5)
+	(inferior-python-mode)
+	;; There's a security risk if we're invoked in a word-writable
+	;; directory (possibly just by finding the file with Eldoc
+	;; enabled).  An attacker could drop in a malicious os.py, for
+	;; instance, which will get loaded by `import os', since ''
+	;; heads sys.path when python is invoked interactively.  So in
+	;; that case, don't allow imports from the current directory.
+	;; (Using `sys' initially is OK, since it's a builtin.)  If
+	;; the user subsequently chdirs into a world-writable
+	;; directory, that's their lookout.  It's more convenient to
+	;; set things up here than in emacs.py, messing with sys.path
+	;; around the initial use of `os'.  See also comments below
+	;; about code loading.
+	(when (/= 0 (logand 2 (file-modes default-directory)))	; world-writable
+	  (message "Current directory world-writable --\
+ suppressing Python imports from it")
+	  (python-send-string "import sys; sys.path.remove('')")))))
   (if (derived-mode-p 'python-mode)
       (setq python-buffer (default-value 'python-buffer))) ; buffer-local
   ;; Load function definitions we need.
@@ -2367,6 +2388,7 @@ with skeleton expansions for compound statement templates.
 (custom-add-option 'python-mode-hook 'turn-on-eldoc-mode)
 (custom-add-option 'python-mode-hook 'abbrev-mode)
 (custom-add-option 'python-mode-hook 'python-setup-brm)
+(custom-add-option 'python-mode-hook 'flyspell-prog-mode)
 
 ;;;###autoload
 (define-derived-mode jython-mode python-mode  "Jython"
