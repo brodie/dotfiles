@@ -2,6 +2,7 @@
 
 ; Plugins
 (require 'sudo)
+(require 'flymake-point)
 (autoload 'yas/minor-mode "yasnippet-bundle" nil t)
 (autoload 'js2-mode "js2" nil t)
 (autoload 'rst-mode "rst" nil t)
