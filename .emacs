@@ -35,7 +35,7 @@
 (setq-default rst-level-face-base-color nil)
 (setq longlines-show-hard-newlines t)
 (setq transient-mark-mode t)
-(setq vc-handled-backends nil)
+;(setq vc-handled-backends nil)
 (setq inhibit-splash-screen t)
 (show-paren-mode 1)
 (column-number-mode 1)
