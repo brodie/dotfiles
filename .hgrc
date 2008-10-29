@@ -11,6 +11,7 @@ extdiff =
 graphlog =
 highlight =
 pager =
+rebase =
 record =
 
 [alias]
@@ -24,4 +25,4 @@ opts.vimdiff = -f '+next' '+execute "DirDiff" argv(0) argv(1)'
 attend = diff, last, log
 
 [web]
-style = gitweb
+style = monoblue
