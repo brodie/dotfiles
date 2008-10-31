@@ -10,6 +10,7 @@ convert =
 extdiff =
 graphlog =
 highlight =
+mq =
 pager =
 rebase =
 record =
@@ -22,7 +23,7 @@ cmd.vimdiff = vim
 opts.vimdiff = -f '+next' '+execute "DirDiff" argv(0) argv(1)'
 
 [pager]
-attend = diff, last, log
+attend = annotate, diff, last, log, qdiff
 
 [web]
 style = monoblue
