@@ -40,7 +40,7 @@ hasn't changed between lines.
 import os
 import sys
 
-from mercurial import cmdutil, commands, extensions
+from mercurial import commands, extensions
 from mercurial.ui import ui as ui_cls
 
 COLORS = dict(zip(['bold', 'black', 'red', 'green', 'yellow', 'blue',
@@ -116,7 +116,7 @@ def wrap_write(write, head_color, group_color, del_color, ins_color,
     return wrapper
 
 
-def cdiff(diffcmd, ui, repo, *pats, **opts):
+def cdiff(orig, ui, repo, *pats, **opts):
     """Colorized diff"""
 
     # Duplicate stdout in case sys.stdout has been reassigned
@@ -132,7 +132,7 @@ def cdiff(diffcmd, ui, repo, *pats, **opts):
     if (opts['color'] == 'never' or
         (opts['color'] == 'auto' and
          (os.environ.get('TERM') == 'dumb' or not isatty))):
-        diffcmd(ui, repo, *pats, **opts)
+        orig(ui, repo, *pats, **opts)
         return
 
     colors = {}
@@ -157,18 +157,9 @@ def cdiff(diffcmd, ui, repo, *pats, **opts):
     old_write = ui.write
     ui.write = wrap_write(ui.write, *color_codes(colors))
     try:
-        diffcmd(ui, repo, *pats, **opts)
+        orig(ui, repo, *pats, **opts)
     finally:
         ui.write = old_write
-
-
-def wrapcmd(cmd):
-    """Creates a wrapper with cmd wrapped by cdiff()"""
-
-    def wrapper(ui, repo, *pats, **opts):
-        return cdiff(cmd, ui, repo, *pats, **opts)
-    wrapper.__doc__ = cmd.__doc__
-    return wrapper
 
 
 def uisetup(ui):
@@ -201,22 +192,12 @@ def uisetup(ui):
             extensions.loadall(_ui)
             mq = extensions.find('mq')
 
-    cmds = [('diff', commands.table)]
+    # hg log -p/--patch can be colorized, but non-diff messages may get
+    # colorized inadvertently at the moment.
+    cmds = [('diff', commands.table), ('log', commands.table)]
     if mq is not None:
         cmds.append(('qdiff', mq.cmdtable))
 
     for name, table in cmds:
-        try:
-            aliases, entry = cmdutil.findcmd(ui, name, table)
-        except cmdutil.UnknownCommand:
-            continue
-
-        cmdkey, cmdentry = None, None
-        for k, e in table.iteritems():
-            if e is entry:
-                cmdkey, cmdentry = k, e
-                break
-
-        wrapperentry = (wrapcmd(cmdentry[0]),) + cmdentry[1:]
-        wrapperentry[1].append(cdiffopts)
-        table[cmdkey] = wrapperentry
+        entry = extensions.wrapcommand(table, name, cdiff)
+        entry[1].append(cdiffopts)

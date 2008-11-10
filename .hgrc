@@ -5,13 +5,13 @@ verbose = True
 
 [extensions]
 alias =
+autopager = ~/.hgext/autopager.py
 cdiff = ~/.hgext/cdiff.py
 convert =
 extdiff =
 graphlog =
 highlight =
 mq =
-pager =
 rebase =
 record =
 
@@ -21,9 +21,6 @@ last = log --limit=5
 [extdiff]
 cmd.vimdiff = vim
 opts.vimdiff = -f '+next' '+execute "DirDiff" argv(0) argv(1)'
-
-[pager]
-attend = annotate, diff, last, log, qdiff
 
 [web]
 style = monoblue
