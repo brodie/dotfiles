@@ -71,7 +71,7 @@ fi
 
 alias ll='ls -l' \
       la='ls -A' \
-      l='ls -CF' \
+      l='less' \
       grep='grep --color=always' \
       zgrep='zgrep --color=always'
 
@@ -82,7 +82,7 @@ beep()
 
 if [[ "$TERM" != dumb && -n "$(command -v colordiff)" ]]
 then
-    alias diff=colordiff
+    alias diff='colordiff -u'
     svn()
     {
         for ARG in $@
