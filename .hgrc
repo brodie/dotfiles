@@ -6,12 +6,13 @@ verbose = True
 [extensions]
 alias =
 autopager = ~/.hgext/autopager.py
-cdiff = ~/.hgext/cdiff.py
+color = ~/.hgext/color.py
 convert =
 extdiff =
 graphlog =
 highlight =
 mq =
+patchbomb =
 rebase =
 record =
 transplant =
@@ -19,9 +20,18 @@ transplant =
 [alias]
 last = log --limit=5
 
+[autopager]
+attend = annotate, diff, last, log, qdiff
+
 [extdiff]
 cmd.vimdiff = vim
 opts.vimdiff = -f '+next' '+execute "DirDiff" argv(0) argv(1)'
 
-[web]
-style = monoblue
+[email]
+from = Brodie Rao <dackze@gmail.com>
+
+[smtp]
+host = smtp.gmail.com
+port = 587
+tls = true
+username = dackze@gmail.com
