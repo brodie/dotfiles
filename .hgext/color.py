@@ -176,15 +176,13 @@ _patch_effects = { 'applied': ('blue', 'bold', 'underline'),
 def colordiff(orig, ui, repo, *dummy, **opts):
     '''run diff-related commands with colored output'''
 
-    from mercurial.commands import incoming, log, outgoing
-    if orig in (incoming, log, outgoing) and not opts['patch']:
+    from mercurial.commands import incoming, log, outgoing, tip
+    if orig in (incoming, log, outgoing, tip) and not opts['patch']:
         return orig(ui, repo, *dummy, **opts)
-
-    old_write = ui.write
 
     # This assumes that ui.write is called only with full lines (which is
     # currently the case).
-    def wrapper(s):
+    def wrapper(orig, s):
         lines = s.split('\n')
         for i, line in enumerate(lines):
             if line.startswith('diff'):
@@ -203,9 +201,9 @@ def colordiff(orig, ui, repo, *dummy, **opts):
                     lines[i] = render_effects(line, *_diff_effects['del'])
                 else:
                     lines[i] = render_effects(line, *_diff_effects['ins'])
-        old_write('\n'.join(lines))
+        orig('\n'.join(lines))
 
-    ui.write = wrapper
+    old_write = extensions.wrapfunction(ui, 'write', wrapper)
     try:
         orig(ui, repo, *dummy, **opts)
     finally:
@@ -223,6 +221,7 @@ def uisetup(ui):
     _setupcmd(ui, 'incoming', commands.table, colordiff, _diff_effects)
     _setupcmd(ui, 'log', commands.table, colordiff, _diff_effects)
     _setupcmd(ui, 'outgoing', commands.table, colordiff, _diff_effects)
+    _setupcmd(ui, 'tip', commands.table, colordiff, _diff_effects)
     _setupcmd(ui, 'status', commands.table, colorstatus, _status_effects)
     if ui.config('extensions', 'hgext.mq') is not None or \
             ui.config('extensions', 'mq') is not None:
@@ -243,7 +242,7 @@ def _setupcmd(ui, cmd, table, func, effectsmap):
         except Exception:
             isatty = sys.stdout.isatty()
 
-        if (opts['color'] == 'never' or
+        if (opts['no_color'] or opts['color'] == 'never' or
             (opts['color'] == 'auto' and
              (os.environ.get('TERM') == 'dumb' or not isatty))):
             return orig(*args, **opts)
@@ -253,6 +252,7 @@ def _setupcmd(ui, cmd, table, func, effectsmap):
     entry = extensions.wrapcommand(table, cmd, nocolor)
     entry[1].append(('', 'color', 'auto',
                      _("when to colorize (always, auto, or never)")))
+    entry[1].append(('', 'no-color', None, _("don't colorize output")))
 
     for status in effectsmap:
         effects = ui.config('color', cmd + '.' + status)

@@ -2,6 +2,7 @@
 merge = hgmergevim
 username = Brodie Rao <me+hg@dackz.net>
 verbose = True
+ssh = ssh -C
 
 [extensions]
 alias =
@@ -21,7 +22,7 @@ transplant =
 last = log --limit=5
 
 [autopager]
-attend = annotate, diff, last, log, qdiff
+attend = annotate, diff, glog, incoming, last, log, outgoing, qdiff, tip
 
 [extdiff]
 cmd.vimdiff = vim
