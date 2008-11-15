@@ -45,16 +45,31 @@ if has("autocmd")
     autocmd FileType ant,dtml,genshi,html,htmlcheetah,htmldjango,kid,mako,php,sgml,smarty,xhtml,xml,xslt setlocal autoindent tabstop=2 shiftwidth=2 expandtab softtabstop=2
 endif
 
-" emacs-style word deletion
-inoremap <Esc><BS> <C-W>
-cnoremap <Esc><BS> <C-W>
-
 " Convenience command to map something to every mode
 command -nargs=+ AllMap noremap <args>|noremap! <args>|vnoremap <args>
 
-" Map FreeBSD/OS X home/end keys properly
+" emacs-style bindings
+inoremap <Esc><BS> <C-W>
+cnoremap <Esc><BS> <C-W>
+AllMap <C-A> <Home>
+AllMap <C-E> <End>
+AllMap <C-P> <Up>
+AllMap <C-N> <Down>
+AllMap <C-F> <Right>
+AllMap <C-B> <Left>
+AllMap <Esc>v <PageUp>
+AllMap <C-V> <PageDown>
+AllMap <C-G> <Esc><Esc>
+AllMap <Esc>f <C-Right>
+AllMap <Esc>b <C-Left>
+AllMap <Esc><Right> <C-Right>
+AllMap <Esc><Left> <C-Left>
+
+" Map FreeBSD/OS X keys properly
 AllMap <Esc>[H <xHome>
 AllMap <Esc>[F <xEnd>
+AllMap <Esc>[5D <C-Left>
+AllMap <Esc>[5C <C-Right>
 
 delcommand AllMap
 
