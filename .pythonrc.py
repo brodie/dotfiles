@@ -34,6 +34,7 @@ def _pythonrc():
     # Pretty print evaluated expressions
 
     import __builtin__
+    import inspect
     import pprint
     import pydoc
     import sys
@@ -59,8 +60,7 @@ def _pythonrc():
         'self, x=1, *y, **z'
         """
 
-        from inspect import getargspec
-        args, varargs, varkw, defs = getargspec(func)
+        args, varargs, varkw, defs = inspect.getargspec(func)
 
         # Fill in default values
         if defs:
@@ -108,10 +108,17 @@ def _pythonrc():
 
         if isinstance(value, help_types):
             reprstr = repr(value)
-            if hasattr(value, 'func_code') or hasattr(value, 'im_func'):
-                parts = reprstr.split(' ')
-                parts[1] = '%s(%s)' % (parts[1], formatargs(value))
-                reprstr = ' '.join(parts)
+            try:
+                if inspect.isfunction(value):
+                    parts = reprstr.split(' ')
+                    parts[1] = '%s(%s)' % (parts[1], formatargs(value))
+                    reprstr = ' '.join(parts)
+                elif inspect.ismethod(value):
+                    parts = reprstr[:-1].split(' ')
+                    parts[2] = '%s(%s)' % (parts[2], formatargs(value))
+                    reprstr = ' '.join(parts) + '>'
+            except TypeError:
+                pass
             print reprstr
             if getattr(value, '__doc__', None):
                 print
