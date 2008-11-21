@@ -44,6 +44,8 @@
 (add-hook 'after-change-major-mode-hook '(lambda () (c-subword-mode 1)))
 (setq require-final-newline 'visit-save)
 (menu-bar-mode -1)
+(ido-mode t)
+(setq ido-enable-flex-matching t)
 (when window-system
   (tool-bar-mode -1)
   (scroll-bar-mode -1))
