@@ -226,7 +226,6 @@ def uisetup(ui):
     _setupcmd(ui, 'outgoing', commands.table, None, _diff_effects)
     _setupcmd(ui, 'tip', commands.table, None, _diff_effects)
     _setupcmd(ui, 'status', commands.table, colorstatus, _status_effects)
-    _setupcmd(ui, 'status', commands.table, colorstatus, _status_effects)
     if ui.config('extensions', 'hgext.mq') is not None or \
             ui.config('extensions', 'mq') is not None:
         from hgext import mq
