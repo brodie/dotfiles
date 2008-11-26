@@ -172,7 +172,8 @@ _patch_effects = { 'applied': ('blue', 'bold', 'underline'),
                    'missing': ('red', 'bold'),
                    'unapplied': ('black', 'bold'), }
 
-def _color_wrapper(orig, s):
+def colorwrap(orig, s):
+    '''wrap ui.write for colored diff output'''
     lines = s.split('\n')
     for i, line in enumerate(lines):
         for prefix, style in _diff_prefixes:
@@ -182,41 +183,41 @@ def _color_wrapper(orig, s):
                 break
     orig('\n'.join(lines))
 
-def showpatch_color(orig, self, node):
-    old_write = extensions.wrapfunction(self.ui, 'write', _color_wrapper)
+def colorshowpatch(orig, self, node):
+    '''wrap cmdutil.changeset_printer.showpatch with colored output'''
+    oldwrite = extensions.wrapfunction(self.ui, 'write', colorwrap)
     try:
         orig(self, node)
     finally:
-        self.ui.write = old_write
+        self.ui.write = oldwrite
 
 def colordiff(orig, ui, repo, *pats, **opts):
     '''run the diff command with colored output'''
-
-    old_write = extensions.wrapfunction(ui, 'write', _color_wrapper)
+    oldwrite = extensions.wrapfunction(ui, 'write', colorwrap)
     try:
         orig(ui, repo, *pats, **opts)
     finally:
-        ui.write = old_write
+        ui.write = oldwrite
 
-_diff_prefixes = [ ('diff', 'diffline'),
-                   ('copy', 'extended'),
-                   ('rename', 'extended'),
-                   ('new', 'extended'),
-                   ('deleted', 'extended'),
-                   ('---', 'file_a'),
-                   ('+++', 'file_b'),
-                   ('@', 'hunk'),
-                   ('-', 'deleted'),
-                   ('+', 'inserted'), ]
+_diff_prefixes = [('diff', 'diffline'),
+                  ('copy', 'extended'),
+                  ('rename', 'extended'),
+                  ('new', 'extended'),
+                  ('deleted', 'extended'),
+                  ('---', 'file_a'),
+                  ('+++', 'file_b'),
+                  ('@', 'hunk'),
+                  ('-', 'deleted'),
+                  ('+', 'inserted')]
 
-_diff_effects = { 'diffline': ('bold', ),
-                  'extended': ('cyan', 'bold'),
-                  'file_a': ('red', 'bold'),
-                  'file_b': ('green', 'bold'),
-                  'hunk': ('magenta', ),
-                  'deleted': ('red', ),
-                  'inserted': ('green', ),
-                  'changed': ('white', ), }
+_diff_effects = {'diffline': ('bold',),
+                 'extended': ('cyan', 'bold'),
+                 'file_a': ('red', 'bold'),
+                 'file_b': ('green', 'bold'),
+                 'hunk': ('magenta',),
+                 'deleted': ('red',),
+                 'inserted': ('green',),
+                 'changed': ('white',)}
 
 def uisetup(ui):
     '''Initialize the extension.'''
@@ -232,35 +233,36 @@ def uisetup(ui):
         _setupcmd(ui, 'qdiff', mq.cmdtable, colordiff, _diff_effects)
         _setupcmd(ui, 'qseries', mq.cmdtable, colorqseries, _patch_effects)
 
+def isatty():
+    '''check sys.stdout.isatty(), even when sys.stdout has been reassigned'''
+    if sys.stdout.fileno() != 1:
+        try:
+            stdout = os.fdopen(os.dup(1), 'w')
+            try:
+                return stdout.isatty()
+            finally:
+                stdout.close()
+        except Exception:
+            pass
+    return sys.stdout.isatty()
+
 def _setupcmd(ui, cmd, table, func, effectsmap):
     '''patch in command to command table and load effect map'''
     def nocolor(orig, *args, **opts):
-        def isatty():
-            # Duplicate stdout in case sys.stdout has been reassigned
-            if sys.stdout.fileno() != 1:
-                try:
-                    stdout = os.fdopen(os.dup(1), 'w')
-                    try:
-                        return stdout.isatty()
-                    finally:
-                        stdout.close()
-                except Exception:
-                    pass
-            return sys.stdout.isatty()
 
         if (opts['no_color'] or opts['color'] == 'never' or
             (opts['color'] == 'auto' and
              (os.environ.get('TERM') == 'dumb' or not isatty()))):
             return orig(*args, **opts)
 
-        old_showpatch = extensions.wrapfunction(cmdutil.changeset_printer,
-                                                'showpatch', showpatch_color)
+        oldshowpatch = extensions.wrapfunction(cmdutil.changeset_printer,
+                                               'showpatch', colorshowpatch)
         try:
             if func is not None:
                 return func(orig, *args, **opts)
             return orig(*args, **opts)
         finally:
-            cmdutil.changeset_printer.showpatch = old_showpatch
+            cmdutil.changeset_printer.showpatch = oldshowpatch
 
     entry = extensions.wrapcommand(table, cmd, nocolor)
     entry[1].extend([
