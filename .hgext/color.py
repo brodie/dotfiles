@@ -49,16 +49,20 @@ qseries.applied = blue bold underline
 qseries.unapplied = black bold
 qseries.missing = red bold
 
-diff.head = bold
-diff.group = magenta bold
-diff.del = red bold
-diff.ins = green
+diff.diffline = bold
+diff.extended = cyan bold
+diff.file_a = red bold
+diff.file_b = green bold
+diff.hunk = magenta
+diff.deleted = red
+diff.inserted = green
+diff.changed = white
 diff.whitespace = bold red_background
 '''
 
 import os, re, sys
 
-from mercurial import commands, extensions
+from mercurial import cmdutil, commands, extensions
 from mercurial.i18n import _
 
 # start and stop parameters for effects
@@ -101,23 +105,18 @@ def colorstatus(orig, ui, repo, *pats, **opts):
 
     delimiter = opts['print0'] and '\0' or '\n'
 
-    # run status and capture it's output
+    nostatus = opts.get('no_status')
+    opts['no_status'] = False
+    # run status and capture its output
     ui.pushbuffer()
     retval = orig(ui, repo, *pats, **opts)
     # filter out empty strings
-    lines = [ line for line in ui.popbuffer().split(delimiter) if line ]
+    lines_with_status = [ line for line in ui.popbuffer().split(delimiter) if line ]
 
-    if opts['no_status']:
-        # if --no-status, run the command again without that option to get
-        # output with status abbreviations
-        opts['no_status'] = False
-        ui.pushbuffer()
-        orig(ui, repo, *pats, **opts)
-        # filter out empty strings
-        lines_with_status = [ line for
-                              line in ui.popbuffer().split(delimiter) if line ]
+    if nostatus:
+        lines = [l[2:] for l in lines_with_status]
     else:
-        lines_with_status = lines
+        lines = lines_with_status
 
     # apply color to output and display it
     for i in xrange(0, len(lines)):
@@ -125,7 +124,7 @@ def colorstatus(orig, ui, repo, *pats, **opts):
         effects = _status_effects[status]
         if effects:
             lines[i] = render_effects(lines[i], *effects)
-        sys.stdout.write(lines[i] + delimiter)
+        ui.write(lines[i] + delimiter)
     return retval
 
 _status_abbreviations = { 'M': 'modified',
@@ -166,62 +165,67 @@ def colorqseries(orig, ui, repo, *dummy, **opts):
             effects = _patch_effects['applied']
         else:
             effects = _patch_effects['unapplied']
-        sys.stdout.write(render_effects(patch, *effects) + '\n')
+        ui.write(render_effects(patch, *effects) + '\n')
     return retval
 
 _patch_effects = { 'applied': ('blue', 'bold', 'underline'),
                    'missing': ('red', 'bold'),
                    'unapplied': ('black', 'bold'), }
 
-def colordiff(orig, ui, repo, *dummy, **opts):
-    '''run diff-related commands with colored output'''
+def _color_wrapper(orig, s):
+    lines = s.split('\n')
+    for i, line in enumerate(lines):
+        for prefix, style in _diff_prefixes:
+            if line.startswith(prefix):
+                effects = _diff_effects[style]
+                lines[i] = render_effects(line, *_diff_effects[style])
+                break
+    orig('\n'.join(lines))
 
-    from mercurial.commands import incoming, log, outgoing, tip
-    if orig in (incoming, log, outgoing, tip) and not opts['patch']:
-        return orig(ui, repo, *dummy, **opts)
-
-    # This assumes that ui.write is called only with full lines (which is
-    # currently the case).
-    def wrapper(orig, s):
-        lines = s.split('\n')
-        for i, line in enumerate(lines):
-            if line.startswith('diff'):
-                lines[i] = render_effects(line, *_diff_effects['head'])
-            elif line.startswith('@@'):
-                lines[i] = render_effects(line, *_diff_effects['group'])
-            elif line and line[0] in ('-', '+'):
-                # Highlight trailing whitespace (unconditionally)
-                rline = line.rstrip()
-                if line != rline:
-                    pos = len(rline)
-                    line = ''.join([line[:pos],
-                        render_effects(line[pos:],
-                                       *_diff_effects['whitespace'])])
-                if line[0] == '-':
-                    lines[i] = render_effects(line, *_diff_effects['del'])
-                else:
-                    lines[i] = render_effects(line, *_diff_effects['ins'])
-        orig('\n'.join(lines))
-
-    old_write = extensions.wrapfunction(ui, 'write', wrapper)
+def showpatch_color(orig, self, node):
+    old_write = extensions.wrapfunction(self.ui, 'write', _color_wrapper)
     try:
-        orig(ui, repo, *dummy, **opts)
+        orig(self, node)
+    finally:
+        self.ui.write = old_write
+
+def colordiff(orig, ui, repo, *pats, **opts):
+    '''run the diff command with colored output'''
+
+    old_write = extensions.wrapfunction(ui, 'write', _color_wrapper)
+    try:
+        orig(ui, repo, *pats, **opts)
     finally:
         ui.write = old_write
 
-_diff_effects = { 'head': ('bold', ),
-                  'group': ('magenta', 'bold'),
-                  'del': ('red', 'bold'),
-                  'ins': ('green', ),
-                  'whitespace': ('bold', 'red_background'), }
+_diff_prefixes = [ ('diff', 'diffline'),
+                   ('copy', 'extended'),
+                   ('rename', 'extended'),
+                   ('new', 'extended'),
+                   ('deleted', 'extended'),
+                   ('---', 'file_a'),
+                   ('+++', 'file_b'),
+                   ('@', 'hunk'),
+                   ('-', 'deleted'),
+                   ('+', 'inserted'), ]
+
+_diff_effects = { 'diffline': ('bold', ),
+                  'extended': ('cyan', 'bold'),
+                  'file_a': ('red', 'bold'),
+                  'file_b': ('green', 'bold'),
+                  'hunk': ('magenta', ),
+                  'deleted': ('red', ),
+                  'inserted': ('green', ),
+                  'changed': ('white', ), }
 
 def uisetup(ui):
     '''Initialize the extension.'''
     _setupcmd(ui, 'diff', commands.table, colordiff, _diff_effects)
-    _setupcmd(ui, 'incoming', commands.table, colordiff, _diff_effects)
-    _setupcmd(ui, 'log', commands.table, colordiff, _diff_effects)
-    _setupcmd(ui, 'outgoing', commands.table, colordiff, _diff_effects)
-    _setupcmd(ui, 'tip', commands.table, colordiff, _diff_effects)
+    _setupcmd(ui, 'incoming', commands.table, None, _diff_effects)
+    _setupcmd(ui, 'log', commands.table, None, _diff_effects)
+    _setupcmd(ui, 'outgoing', commands.table, None, _diff_effects)
+    _setupcmd(ui, 'tip', commands.table, None, _diff_effects)
+    _setupcmd(ui, 'status', commands.table, colorstatus, _status_effects)
     _setupcmd(ui, 'status', commands.table, colorstatus, _status_effects)
     if ui.config('extensions', 'hgext.mq') is not None or \
             ui.config('extensions', 'mq') is not None:
@@ -232,27 +236,38 @@ def uisetup(ui):
 def _setupcmd(ui, cmd, table, func, effectsmap):
     '''patch in command to command table and load effect map'''
     def nocolor(orig, *args, **opts):
-        # Duplicate stdout in case sys.stdout has been reassigned
-        try:
-            stdout = os.fdopen(os.dup(1), 'w')
-            try:
-                isatty = stdout.isatty()
-            finally:
-                stdout.close()
-        except Exception:
-            isatty = sys.stdout.isatty()
+        def isatty():
+            # Duplicate stdout in case sys.stdout has been reassigned
+            if sys.stdout.fileno() != 1:
+                try:
+                    stdout = os.fdopen(os.dup(1), 'w')
+                    try:
+                        return stdout.isatty()
+                    finally:
+                        stdout.close()
+                except Exception:
+                    pass
+            return sys.stdout.isatty()
 
         if (opts['no_color'] or opts['color'] == 'never' or
             (opts['color'] == 'auto' and
-             (os.environ.get('TERM') == 'dumb' or not isatty))):
+             (os.environ.get('TERM') == 'dumb' or not isatty()))):
             return orig(*args, **opts)
-        else:
-            return func(orig, *args, **opts)
+
+        old_showpatch = extensions.wrapfunction(cmdutil.changeset_printer,
+                                                'showpatch', showpatch_color)
+        try:
+            if func is not None:
+                return func(orig, *args, **opts)
+            return orig(*args, **opts)
+        finally:
+            cmdutil.changeset_printer.showpatch = old_showpatch
 
     entry = extensions.wrapcommand(table, cmd, nocolor)
-    entry[1].append(('', 'color', 'auto',
-                     _("when to colorize (always, auto, or never)")))
-    entry[1].append(('', 'no-color', None, _("don't colorize output")))
+    entry[1].extend([
+        ('', 'color', 'auto', _("when to colorize (always, auto, or never)")),
+        ('', 'no-color', None, _("don't colorize output")),
+    ])
 
     for status in effectsmap:
         effects = ui.config('color', cmd + '.' + status)

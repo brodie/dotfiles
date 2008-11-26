@@ -24,6 +24,9 @@ last = log --limit=5
 [autopager]
 attend = annotate, diff, glog, incoming, last, log, outgoing, qdiff, tip
 
+[color]
+diff.deleted = red bold
+
 [extdiff]
 cmd.vimdiff = vim
 opts.vimdiff = -f '+next' '+execute "DirDiff" argv(0) argv(1)'
