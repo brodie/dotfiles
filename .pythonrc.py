@@ -19,6 +19,8 @@ def _pythonrc():
                     return rlcompleter.Completer.complete(self, text, state)
 
         readline.parse_and_bind('tab: complete')
+        # Apple Python in OS X 10.5 uses libedit to provide readline
+        readline.parse_and_bind('bind ^I rl_complete')
         readline.set_completer(TabCompleter().complete)
 
         import atexit
