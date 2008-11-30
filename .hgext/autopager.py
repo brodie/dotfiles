@@ -41,6 +41,7 @@ Tips for using this extension with less:
 
 import atexit
 import os
+import re
 import signal
 import sys
 import unicodedata
@@ -134,6 +135,10 @@ def wrap_output(pager, height, width):
         flush()
         return orig(*args, **kwargs)
 
+    import __builtin__
+    extensions.wrapfunction(__builtin__, 'input', wrapper)
+    extensions.wrapfunction(__builtin__, 'raw_input', wrapper)
+
     from mercurial.ui import ui
     extensions.wrapfunction(ui, 'prompt', wrapper)
     extensions.wrapfunction(ui, 'getpass', wrapper)
@@ -144,6 +149,7 @@ def wrap_output(pager, height, width):
     extensions.wrapfunction(util, 'popen2', wrapper)
     extensions.wrapfunction(util, 'popen3', wrapper)
 
+    sub_control_codes = re.compile(r'(?:[\x00-\x08]|\x1b\[[\d;]+m)').sub
     class FileProxy(object):
         def __init__(self, stream, is_stderr=False):
             self._stream = stream
@@ -164,7 +170,7 @@ def wrap_output(pager, height, width):
                 s = unicodedata.normalize('NFC', s)
             except UnicodeError:
                 pass
-            for c in s:
+            for c in sub_control_codes('', s):
                 col_count[0] += 1
                 if c == '\n' or col_count[0] > width:
                     line_count[0] += 1

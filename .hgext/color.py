@@ -91,10 +91,11 @@ _effect_params = {'none': 0,
 
 def render_effects(text, *effects):
     'Wrap text in commands to turn on each effect.'
-    ctrl = [str(_effect_params['none'])]
-    ctrl.extend([str(_effect_params[e]) for e in effects])
-    ctrl = '\033[' + ';'.join(ctrl) + 'm'
-    return ctrl + text
+    start = [str(_effect_params[e]) for e in effects]
+    stop = [str(_effect_params['none'])]
+    start = '\033[' + ';'.join(start) + 'm'
+    stop = '\033[' + ';'.join(stop) + 'm'
+    return ''.join([start, text, stop])
 
 def colorstatus(orig, ui, repo, *pats, **opts):
     '''run the status command with colored output'''
