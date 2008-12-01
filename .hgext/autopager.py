@@ -1,5 +1,4 @@
-"""Pages output using PAGER only if the output would exceed the terminal's
-height.
+"""pages output only if it exceeds the terminal's height
 
 On Unix, this extension uses ioctl(2) to determine the terminal's dimensions.
 On Windows, GetConsoleScreenBufferInfo is used. If neither is available or
@@ -128,9 +127,7 @@ def wrap_output(pager, height, width):
     atexit.register(flush, True)
 
     # Flush the buffer and remove the output wrappers for interactive prompts.
-    # Note: This doesn't work if the pager is already launched, and prompts
-    # can still come up outside of these two methods (e.g. when "push" runs
-    # ssh, or if an extension uses getpass or raw_input directly.)
+    # Note: This doesn't work if the pager is already launched.
     def wrapper(orig, *args, **kwargs):
         flush()
         return orig(*args, **kwargs)
@@ -138,6 +135,9 @@ def wrap_output(pager, height, width):
     import __builtin__
     extensions.wrapfunction(__builtin__, 'input', wrapper)
     extensions.wrapfunction(__builtin__, 'raw_input', wrapper)
+
+    import getpass
+    extensions.wrapfunction(getpass, 'getpass', wrapper)
 
     from mercurial.ui import ui
     extensions.wrapfunction(ui, 'prompt', wrapper)
