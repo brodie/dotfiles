@@ -27,6 +27,10 @@ attend = annotate, diff, glog, incoming, last, log, outgoing, qdiff, tip
 [color]
 diff.deleted = red bold
 
+[diff]
+git = True
+showfunc = True
+
 [extdiff]
 cmd.vimdiff = vim
 opts.vimdiff = -f '+next' '+execute "DirDiff" argv(0) argv(1)'
