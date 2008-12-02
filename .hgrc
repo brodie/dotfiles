@@ -7,7 +7,7 @@ ssh = ssh -C
 [extensions]
 alias =
 autopager = ~/.hgext/autopager.py
-color = ~/.hgext/color.py
+color =
 convert =
 extdiff =
 graphlog =
