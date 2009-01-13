@@ -119,6 +119,9 @@
              (define-key css-mode-map (kbd "RET") 'newline-and-indent)
              (define-key css-mode-map (kbd "DEL") 'delete-backward-indent)
              (define-key css-mode-map (kbd "M-RET") 'hs-toggle-hiding)))
+(add-hook 'ido-setup-hook
+          '(lambda ()
+             (define-key ido-completion-map (kbd "SPC") 'self-insert-command)))
 
 (global-set-key (kbd "M-[ h") 'beginning-of-line)
 (global-set-key (kbd "M-[ f") 'end-of-line)
