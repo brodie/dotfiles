@@ -50,6 +50,8 @@
   (tool-bar-mode -1)
   (scroll-bar-mode -1))
 (setq mac-option-modifier 'meta)
+(setq sentence-end-double-space nil)
+(setq sentence-end "[.?!][]\"')]\\($\\|\t\\| \\)[ \t\n]")
 
 ; Backup
 (defvar user-temporary-file-directory
