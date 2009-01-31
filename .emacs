@@ -48,7 +48,8 @@
 (setq ido-enable-flex-matching t)
 (when window-system
   (tool-bar-mode -1)
-  (scroll-bar-mode -1))
+  (scroll-bar-mode -1)
+  (server-start))
 (setq mac-option-modifier 'meta)
 (setq sentence-end-double-space nil)
 (setq sentence-end "[.?!][]\"')]\\($\\|\t\\| \\)[ \t\n]")
