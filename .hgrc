@@ -1,8 +1,12 @@
 [ui]
-merge = hgmergevim
+ssh = ssh -C
 username = Brodie Rao <me+hg@dackz.net>
 verbose = True
-ssh = ssh -C
+
+[merge-tools]
+mergevim.executable = vim
+mergevim.args = -d $local $other $base
+mergevim.checkchanged = true
 
 [extensions]
 alias =
