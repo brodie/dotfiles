@@ -1,17 +1,17 @@
 ;;; python.el --- silly walks for Python  -*- coding: iso-8859-1 -*-
 
-;; Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008  Free Software Foundation, Inc.
+;; Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009  Free Software Foundation, Inc.
 
 ;; Author: Dave Love <fx@gnu.org>
 ;; Created: Nov 2003
 ;; Keywords: languages
 ;; URL: http://www.loveshack.ukfsn.org/emacs/
-;; $Revision: 1.15 $
+;; $Revision: 1.22 $
 
 ;; This file is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
-;; the Free Software Foundation; either version 3, or (at your option)
-;; any later version.
+;; the Free Software Foundation, either version 3 of the License, or
+;; (at your option) any later version.
 
 ;; This file is distributed in the hope that it will be useful,
 ;; but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -19,9 +19,7 @@
 ;; GNU General Public License for more details.
 
 ;; You should have received a copy of the GNU General Public License
-;; along with GNU Emacs; see the file COPYING.  If not, write to the
-;; Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
-;; Boston, MA 02110-1301, USA.
+;; along with GNU Emacs.  If not, see <http://www.gnu.org/licenses/>.
 
 ;;; Commentary:
 
@@ -59,9 +57,14 @@
 ;; with python-mode.el in some respects.  For instance, various key
 ;; bindings are changed to obey Emacs conventions.
 
-;; TODO: See various Fixmes below.
+;; There is support for both Python 2 and Python 3 languages and
+;; interpreters using the emacs.py module in inferior processes.
 
-;; Fixme: This doesn't support (the nascent) Python 3 .
+;; The support for Jython probably isn't useful, since Jython seems
+;; only to implement the Python 2.2 language, and so won't run
+;; emacs.py.
+
+;; TODO: See various Fixmes below.
 
 ;;; Code:
 
@@ -91,11 +94,13 @@
 
 (defvar python-font-lock-keywords
   `(,(rx symbol-start
-	 ;; From v 2.5 reference, § keywords.
-	 ;; def and class dealt with separately below
+	 ;; Originally from v 2.5 reference, § keywords, but now
+	 ;; modified for Pythin 2/3 compatibility.
+	 ;; def and class dealt with separately below.
+	 ;; See also the extra keywords below.
 	 (or "and" "as" "assert" "break" "continue" "del" "elif" "else"
-	     "except" "exec" "finally" "for" "from" "global" "if"
-	     "import" "in" "is" "lambda" "not" "or" "pass" "print"
+	     "except" "finally" "for" "from" "global" "if"
+	     "import" "in" "is" "lambda" "not" "or" "pass"
 	     "raise" "return" "try" "while" "with" "yield")
 	 symbol-end)
     (,(rx symbol-start "None" symbol-end)	; see § Keywords in 2.5 manual
@@ -112,9 +117,9 @@
     (,(rx line-start (* (any " \t")) (group "@" (1+ (or word ?_ ?.))))
      (1 font-lock-type-face))
     ;; Built-ins.  (The next three blocks are from
-    ;; `__builtin__.__dict__.keys()' in Python 2.5.1.)  These patterns
-    ;; are debatable, but they at least help to spot possible
-    ;; shadowing of builtins.
+    ;; `__builtin__.__dict__.keys()' in Python 2.5.1.  Now modified
+    ;; for Python 2/3 compatibility.)  These patterns are debateable,
+    ;; but they at least help to spot possible shadowing of builtins.
     (,(rx symbol-start (or
 	  ;; exceptions
 	  "ArithmeticError" "AssertionError" "AttributeError"
@@ -136,24 +141,52 @@
 	  (group (or
 	  ;; callable built-ins, fontified when not appearing as
 	  ;; object attributes
-	  "abs" "all" "any" "apply" "basestring" "bool" "buffer" "callable"
-	  "chr" "classmethod" "cmp" "coerce" "compile" "complex"
+	  "abs" "all" "any" "bool"
+	  "chr" "classmethod" "cmp" "compile" "complex"
 	  "copyright" "credits" "delattr" "dict" "dir" "divmod"
-	  "enumerate" "eval" "execfile" "exit" "file" "filter" "float"
+	  "enumerate" "eval" "exit" "filter" "float"
 	  "frozenset" "getattr" "globals" "hasattr" "hash" "help"
-	  "hex" "id" "input" "int" "intern" "isinstance" "issubclass"
-	  "iter" "len" "license" "list" "locals" "long" "map" "max"
+	  "hex" "id" "input" "int" "isinstance" "issubclass"
+	  "iter" "len" "license" "list" "locals" "map" "max"
 	  "min" "object" "oct" "open" "ord" "pow" "property" "quit"
-	  "range" "raw_input" "reduce" "reload" "repr" "reversed"
+	  "range" "repr" "reversed"
 	  "round" "set" "setattr" "slice" "sorted" "staticmethod"
-	  "str" "sum" "super" "tuple" "type" "unichr" "unicode" "vars"
+	  "str" "sum" "super" "tuple" "type" "vars"
 	  "xrange" "zip")) symbol-end)
      (1 font-lock-builtin-face))
     (,(rx symbol-start (or
 	  ;; other built-ins
 	  "True" "False" "Ellipsis"
 	  "_" "__debug__" "__doc__" "__import__" "__name__") symbol-end)
-     . font-lock-builtin-face)))
+     . font-lock-builtin-face))
+  "Font Lock keywords appropriate for both Python 2 and 3.")
+
+(defvar python-2-font-lock-keywords
+  `(,(rx symbol-start (or "exec" "print") symbol-end)
+    (,(rx (or line-start (not (any ". \t"))) (* (any " \t")) symbol-start
+	  (group (or
+	  "apply" "basestring" "buffer" "callable" "xrange" "reduce"
+	  "intern" "reload" "execfile" "coerce" "reload" "unichr" "unicode"
+	  "file" "long" "raw_input"))
+	  symbol-end)
+     (1 font-lock-builtin-face))
+    (,(rx symbol-start "StandardError" symbol-end)
+     . font-lock-type-face))
+  "Extra keywords for Python 2.x, not in Python 3.x.")
+
+(defvar python-3-font-lock-keywords
+  `(,(rx symbol-start (or "nonlocal") symbol-end)
+    (,(rx (or line-start (not (any ". \t"))) (* (any " \t")) symbol-start
+	  (group (or
+	  "ascii" "bin" "bytearray" "bytes" "exec" "format" "memoryview"
+	  "next" "print")) symbol-end)
+     (1 font-lock-builtin-face))
+    (,(rx symbol-start (or "BufferError" "BytesWarning") symbol-end)
+     . font-lock-type-face)
+    (,(rx symbol-start (or
+	  "__build_class__" "__package__") symbol-end)
+     . font-lock-builtin-face))
+  "Extra keywords for Python 3.x, not in Python 2.x.")
 
 (defconst python-font-lock-syntactic-keywords
   ;; Make outer chars of matching triple-quote sequences into generic
@@ -165,7 +198,8 @@
 	  (backref 1)
 	  (group (backref 1)))
      (2 ,(string-to-syntax "\"")))	; dummy
-    (,(rx (group (optional (any "uUrR"))) ; prefix gets syntax property
+    (,(rx (group (optional (any "bBuUrR"))) ; Prefix gets syntax property.
+					    ; `b' is Python 3, but not `u'.
 	  (optional (any "rR"))		  ; possible second prefix
 	  (group (syntax string-quote))   ; maybe gets property
 	  (backref 2)			  ; per first quote
@@ -202,7 +236,7 @@ Used for syntactic keywords.  N is the match number (1, 2 or 3)."
 	     (syntax (syntax-ppss)))
 	(when (eq t (nth 3 syntax))	; after unclosed fence
 	  (goto-char (nth 8 syntax))	; fence position
-	  (skip-chars-forward "uUrR")	; skip any prefix
+	  (skip-chars-forward "bBuUrR")	; skip any prefix (`u' not in Python 3)
 	  ;; Is it a matching sequence?
 	  (if (eq (char-after) (char-after (match-beginning 2)))
 	      (eval-when-compile (string-to-syntax "|"))))))
@@ -316,6 +350,8 @@ Used for syntactic keywords.  N is the match number (1, 2 or 3)."
 	"-"
 	["Help on symbol" python-describe-symbol
 	 :help "Use pydoc on symbol at point"]
+	["Info-lookup on symbol" info-lookup-symbol
+	 :help "Look up symbol at point in Info docs"]
 	["Complete symbol" symbol-complete
 	 :help "Complete (qualified) symbol before point"]
 	["Find function" python-find-function
@@ -325,9 +361,19 @@ Used for syntactic keywords.  N is the match number (1, 2 or 3)."
     map))
 ;; Fixme: add toolbar stuff for useful things like symbol help, send
 ;; region, at least.  (Shouldn't be specific to Python, obviously.)
-;; eric has items including: (un)indent, (un)comment, restart script,
+;; Eric has items including: (un)indent, (un)comment, restart script,
 ;; run script, debug script; also things for profiling, unit testing.
 
+;; Fixme: In python 3, identifiers are generalized over Python 2:
+;;   identifier  ::=  id_start id_continue*
+;;   id_start    ::=  <all characters in general categories
+;;                     Lu, Ll, Lt, Lm, Lo, Nl, the underscore,
+;;                     and characters with the Other_ID_Start property>
+;;   id_continue ::=  <all characters in id_start,
+;;                     plus characters in the categories Mn, Mc, Nd, Pc
+;;                     and others with the Other_ID_Continue property>
+;; Without checking, I think that will mainly mean we should have
+;; more characters with symbol syntax.
 (defvar python-mode-syntax-table
   (let ((table (make-syntax-table)))
     ;; Give punctuation syntax to ASCII that normally has symbol
@@ -344,6 +390,7 @@ Used for syntactic keywords.  N is the match number (1, 2 or 3)."
     (modify-syntax-entry ?# "<" table)
     (modify-syntax-entry ?\n ">" table)
     (modify-syntax-entry ?' "\"" table)
+    ;; Not in Python 3, but presumably harmless:
     (modify-syntax-entry ?` "$" table)
     table))
 
@@ -499,8 +546,11 @@ Set `python-indent' locally to the value guessed."
     (save-restriction
       (widen)
       (goto-char (point-min))
-      (let (done indent)
-	(while (and (not done) (not (eobp)))
+      (let ((point (point))
+	    done indent)
+	(while (and (not done) (not (eobp))
+		    (or (bobp) (> (point) point)))
+	  (setq point (point))
 	  (when (and (re-search-forward (rx ?: (0+ space)
 					    (or (syntax comment-start)
 						line-end))
@@ -514,10 +564,10 @@ Set `python-indent' locally to the value guessed."
 		(if (and indent (>= indent 2) (<= indent 8)) ; sanity check
 		    (setq done t))))))
 	(when done
-	  (when (/= indent (default-value 'python-indent))
-	    (set (make-local-variable 'python-indent) indent)
-	    (unless (= tab-width python-indent)
-	      (setq indent-tabs-mode nil)))
+	  (set (make-local-variable 'python-indent) indent)
+	  ;; Python 3 makes this an error.
+	  (unless (= tab-width python-indent)
+	    (setq indent-tabs-mode nil))
 	  indent)))))
 
 ;; Alist of possible indentations and start of statement they would
@@ -655,7 +705,7 @@ Set `python-indent' locally to the value guessed."
   '(("else" "if" "elif" "while" "for" "try" "except")
     ("elif" "if" "elif")
     ("except" "try" "except")
-    ("finally" "try" "except"))		; `except' for Python 2.5
+    ("finally" "try" "except" "else"))
   "Alist of keyword matches.
 The car of an element is a keyword introducing a statement which
 can close a block opened by a keyword in the cdr.")
@@ -715,7 +765,8 @@ corresponding block opening (or nil)."
 		      (python-close-block-statement-p))
 	    (push (cons (current-indentation) (python-initial-text))
 		  levels))
-	  (while (python-beginning-of-block)
+	  (while (and (python-beginning-of-block)
+		      (not (assoc (current-indentation) levels)))
 	    (when (or (not start)
 		      (member (python-first-word)
 			      (cdr (assoc start python-block-pairs))))
@@ -811,10 +862,10 @@ reached start of buffer."
 	found lep def-line)
     (if (python-comment-line-p)
 	(setq ci most-positive-fixnum))
+    (setq def-line (looking-at def-re))
     (while (and (not (bobp)) (not found))
       ;; Treat bol at beginning of function as outside function so
       ;; that successive C-M-a makes progress backwards.
-      (setq def-line (looking-at def-re))
       (unless (bolp) (end-of-line))
       (setq lep (line-end-position))
       (if (and (re-search-backward def-re nil 'move)
@@ -823,11 +874,7 @@ reached start of buffer."
 	       (let ((in (current-indentation)))
 		 (or (and (zerop ci) (zerop in))
 		     (= lep (line-end-position)) ; on initial line
-		     ;; Not sure why it was like this -- fails in case of
-		     ;; last internal function followed by first
-		     ;; non-def statement of the main body.
-;; 		     (and def-line (= in ci))
-		     (= in ci)
+ 		     (and def-line (= in ci)) ; previous same-level def
 		     (< in ci)))
 	       (not (python-in-string/comment)))
 	  (setq found t)))
@@ -988,8 +1035,9 @@ Return count of statements left to move."
   "Go to start of current block.
 With numeric arg, do it that many times.  If ARG is negative, call
 `python-end-of-block' instead.
-If point is on the first line of a block, use its outer block.
-If current statement is in column zero, don't move and return nil.
+If point is on the first statement of a block, use its outer block.
+If current statement is in column zero and doesn't start a block, or
+point is already at the start of an outer block, don't move and return nil.
 Otherwise return non-nil."
   (interactive "p")
   (unless arg (setq arg 1))
@@ -1004,7 +1052,11 @@ Otherwise return non-nil."
       (python-beginning-of-statement)
       (let ((ci (current-indentation)))
 	(if (zerop ci)
-	    (not (goto-char point))	; return nil
+	    ;; N.b. `python-indentation-levels' depends on returning
+	    ;; nil at the start of top-level blocks.
+	    (if (not (and (python-open-block-statement-p)
+			  (/= point (point))))
+		(not (goto-char point))) ; return nil
 	  ;; Look upwards for less indented statement.
 	  (if (catch 'done
 ;;; This is slower than the below.
@@ -1029,17 +1081,21 @@ Otherwise return non-nil."
   "Go to end of current block.
 With numeric arg, do it that many times.  If ARG is negative,
 call `python-beginning-of-block' instead.
-If current statement is in column zero and doesn't open a block,
-don't move and return nil.  Otherwise return t."
+If current statement is in column zero and doesn't open a block, or
+point is already at the start of an outer block,don't move and return nil.
+Otherwise return t."
   (interactive "p")
   (unless arg (setq arg 1))
   (if (< arg 0)
       (python-beginning-of-block (- arg))
     (while (and (> arg 0)
 		(let* ((point (point))
-		       (_ (if (python-comment-line-p)
+		       (_ (if (or (python-comment-line-p)
+				  (python-blank-line-p))
 			      (python-skip-comments/blanks t)))
-		       (ci (current-indentation))
+		       (ci (save-excursion
+			     (python-beginning-of-statement)
+			     (current-indentation)))
 		       (open (python-open-block-statement-p)))
 		  (if (and (zerop ci) (not open))
 		      (not (goto-char point))
@@ -1055,7 +1111,7 @@ don't move and return nil.  Otherwise return t."
 
 ;;;; Imenu.
 
-;; For possibily speeding this up, here's the top of the ELP profile
+;; For possibly speeding this up, here's the top of the ELP profile
 ;; for rescanning pydoc.py (2.2k lines, 90kb):
 ;; Function Name                         Call Count  Elapsed Time  Average Time
 ;; ====================================  ==========  ============  ============
@@ -1085,25 +1141,31 @@ precede it)."
 	(unless (get-text-property (1- (point-max)) 'fontified)
 	  (jit-lock-fontify-now))
       (font-lock-fontify-buffer)))
-  (let (index-alist)			; accumulated value to return
+  (let (index-alist			; accumulated value to return
+	class)
     (while (re-search-forward
 	    (rx line-start (0+ space)	; leading space
-		(or (group "def") (group "class"))	   ; type
+		(group ; rx bug
+		 (or (group "def") (group "class")))	   ; type
 		(1+ space) (group (1+ (or word ?_))))	   ; name
 	    nil t)
-      (unless (python-in-string/comment)
 	(let ((pos (match-beginning 0))
-	      (name (match-string-no-properties 3)))
-	  (if (match-beginning 2)	; def or class?
-	      (setq name (concat "class " name)))
-	  (save-restriction
-	    (narrow-to-defun)
-	    (let* ((python-recursing t)
-		   (sublist (python-imenu-create-index)))
-	      (if sublist
-		  (progn (push (cons (concat " " name) pos) sublist)
-			 (push (cons name sublist) index-alist))
-		(push (cons name pos) index-alist)))))))
+	      (name (match-string-no-properties 4))
+	      (class (match-beginning 3))) ; def or class?
+	  (unless (python-in-string/comment)
+	    (save-restriction
+	      (narrow-to-defun)
+	      (let* ((python-recursing t)
+		     (sublist (python-imenu-create-index)))
+		(if sublist
+		    (progn (push (cons (propertize name 'complex t) pos)
+				 sublist)
+			   (push (cons (if class
+					   (concat name " (class)")
+					 (concat name " (def)"))
+				       sublist)
+				 index-alist))
+		  (push (cons name pos) index-alist)))))))
     (unless (boundp 'python-recursing)
       ;; Look for module variables.
       (let (vars)
@@ -1115,11 +1177,46 @@ precede it)."
 	    (push (cons (match-string 1) (match-beginning 1))
 		  vars)))
 	(setq index-alist (nreverse index-alist))
-	(if vars
-	    (push (cons "Module variables"
-			(nreverse vars))
-		  index-alist))))
+	(when vars
+	  (if imenu-sort-function
+	      ;; Fixme:  Shouldn't this get done by Imenu?
+	      (setq index-alist (sort index-alist imenu-sort-function)))
+	  (push (cons "Module variables"
+		      (nreverse vars))
+		index-alist))))
     index-alist))
+
+;; Overall sort order: module variables, classes, functions with
+;; nested components (element's cdr is a cons), simple functions
+;; (element's cdr is an atom).  Otherwise, sort alphabetically.
+(defun python-imenu-sort-function (x y)
+  (let ((name1 (car x))
+	(name2 (car y))
+	(rest1 (cdr x))
+	(rest2 (cdr y)))
+    (cond
+     ;; complex (sublist) beats simple
+     ((when (consp rest1)
+	(if (consp rest2)
+	    (string-lessp name1 name2)
+	  t)))
+     ((consp rest2)
+      nil)
+     ;; classes beat functions
+     ((when (string-match "(class)\\'" name1)
+	(if (string-match "(class)\\'" name2)
+	    (string-lessp name1 name2)
+	  t)))
+     ((string-match "(class)\\'" name2)
+      nil)
+     ;; nested defs preferred
+     ((when (get-text-property 1 'complex name1)
+	(if (get-text-property 1 'complex name2)
+	    (string-lessp name1 name2)
+	  t)))
+     ((get-text-property 1 'complex name2)
+      nil)
+     (t (string-lessp name1 name2)))))
 
 ;;;; `Electric' commands.
 
@@ -1203,9 +1300,17 @@ See `python-check-command' for the default."
   "*Shell command to run Python interpreter.
 Any arguments can't contain whitespace.
 Note that IPython may not work properly; it must at least be used
-with the `-cl' flag, i.e. use `ipython -cl'."
+with the `-cl' flag, i.e. use `ipython -cl'.
+
+Doesn't take full effect unless set through Custom."
   :group 'python
-  :type 'string)
+  :type 'string
+  ;; Fiddle with things which depend on it.
+  :set (lambda (symbol value)
+	 (set-default symbol value)
+	 (setq-default python-command value)
+	 (if (featurep 'info-look)	; may change the relevant files
+	     (python-after-info-look))))
 
 (defcustom python-jython-command "jython"
   "*Shell command to run Jython interpreter.
@@ -1382,11 +1487,20 @@ Don't save anything for STR matching `inferior-python-filter-regexp'."
       (error "Can't run Python command `%s'" cmd))
     (let* ((res (shell-command-to-string (concat cmd " --version"))))
       (string-match "Python \\([0-9]\\)\\.\\([0-9]\\)" res)
-      (unless (and (equal "2" (match-string 1 res))
-		   (match-beginning 2)
-		   (>= (string-to-number (match-string 2 res)) 2))
-	(error "Only Python versions >= 2.2 and < 3.0 supported")))
+      ;; Assume we'll still be good in any 3.n.
+      (unless (or (equal "3" (match-string 1 res))
+		  (and (equal "2" (match-string 1 res))
+		       (match-beginning 2)
+		       (>= (string-to-number (match-string 2 res)) 2)))
+	(error "Only Python versions >= 2.3 and < 4.0 supported")))
     (setq python-version-checked t)))
+
+(eval-when-compile (defvar python-source-modes)) ; forward declaration
+
+(defcustom python-process-kill-without-query nil
+  "Non-nil means don't query killing Python process when Emacs exits."
+  :group 'python
+  :type 'boolean)
 
 ;;;###autoload
 (defun run-python (&optional cmd noshow new)
@@ -1414,7 +1528,6 @@ buffer for a list of commands.)"
 		 (list python-command)))
   (unless cmd (setq cmd python-command))
   (python-check-version cmd)
-  (setq python-command cmd)
   ;; Fixme: Consider making `python-buffer' buffer-local as a buffer
   ;; (not a name) in Python buffers from which `run-python' &c is
   ;; invoked.  Would support multiple processes better.
@@ -1432,11 +1545,16 @@ buffer for a list of commands.)"
 	(set-buffer (apply 'make-comint-in-buffer "Python"
 			   (generate-new-buffer "*Python*")
 			   (car cmdlist) nil (cdr cmdlist)))
+	(set (make-local-variable 'python-command) cmd)
 	(setq-default python-buffer (current-buffer))
 	(setq python-buffer (current-buffer))
+	(if (and python-process-kill-without-query
+		 (comint-check-proc (current-buffer)))
+	    (set-process-query-on-exit-flag
+	     (get-buffer-process (current-buffer)) nil))
 	(accept-process-output (get-buffer-process python-buffer) 5)
 	(inferior-python-mode)
-	;; There's a security risk if we're invoked in a word-writable
+	;; There's a security risk if we're invoked in a world-writable
 	;; directory (possibly just by finding the file with Eldoc
 	;; enabled).  An attacker could drop in a malicious os.py, for
 	;; instance, which will get loaded by `import os', since ''
@@ -1700,33 +1818,35 @@ process."
   "`eldoc-print-current-symbol-info' for Python.
 Only works when point is in a function name, not its arg list, for
 instance.  Assumes an inferior Python is running."
-  (let ((symbol (with-syntax-table python-dotty-syntax-table
-		  (current-word))))
-    ;; First try the symbol we're on.
-    (or (and symbol
-	     (python-send-receive (format "emacs.eargs(%S, %s)"
-					  symbol python-imports)))
-	;; Try moving to symbol before enclosing parens.
-	(let ((s (syntax-ppss)))
-	  (unless (zerop (car s))
-	    (when (eq ?\( (char-after (nth 1 s)))
-	      (save-excursion
-		(goto-char (nth 1 s))
-		(skip-syntax-backward "-")
-		(let ((point (point)))
-		  (skip-chars-backward "a-zA-Z._")
-		  (if (< (point) point)
-		      (python-send-receive
-		       (format "emacs.eargs(%S, %s)"
-			       (buffer-substring-no-properties (point) point)
-			       python-imports)))))))))))
+  (with-syntax-table python-dotty-syntax-table
+    (let ((symbol (current-word)))
+      ;; First try the symbol we're on.
+      (or (and symbol
+	       (python-send-receive (format "emacs.eargs(%S, %s)"
+					    symbol python-imports)))
+	  ;; Try moving to symbol before enclosing parens.
+	  (let ((s (syntax-ppss)))
+	    (unless (zerop (car s))
+	      (when (eq ?\( (char-after (nth 1 s)))
+		(save-excursion
+		  (goto-char (nth 1 s))
+		  (skip-syntax-backward "-")
+		  (let ((point (point)))
+		    (skip-syntax-backward "w_")
+		    (if (< (point) point)
+			(python-send-receive
+			 (format "emacs.eargs(%S, %s)"
+				 (buffer-substring-no-properties (point) point)
+				 python-imports))))))))))))
 
 ;;;; Info-look functionality.
 
-(autoload 'Info-goto-node "info")
+(eval-when-compile (require 'info))
 
 (defun python-after-info-look ()
   "Set up info-look for Python.
+Tries to take account of versioned Python Info files, e.g. Debian's
+python2.5-ref.info.gz.
 Used with `eval-after-load'."
   (let* ((version (let ((s (shell-command-to-string (concat python-command
 							    " -V"))))
@@ -1736,12 +1856,39 @@ Used with `eval-after-load'."
 	 (versioned
 	  (with-temp-buffer
 	    (Info-mode)
+	    ;; First look for Info files corresponding to the version
+	    ;; of the interpreter we're running.
 	    (condition-case ()
 		;; Don't use `info' because it would pop-up a *info* buffer.
-		(progn (Info-goto-node (format "(python%s-lib)Miscellaneous Index"
-					       version))
-		       t)
-	      (error nil)))))
+		(progn
+		  (Info-goto-node (format "(python%s-lib)Miscellaneous Index"
+					  version))
+		  t)
+	      (error
+	       ;; Otherwise see if we actually have an un-versioned one.
+	       (condition-case ()
+		   (progn
+		     (Info-goto-node
+		      (format "(python-lib)Miscellaneous Index" version))
+		     nil)
+		 (error
+		  ;; Otherwise look for any versioned Info file.
+		  (condition-case ()
+		      (let (found)
+			(dolist (dir (or Info-directory-list
+					 Info-default-directory-list))
+			  (unless found
+			    (let ((file (car (file-expand-wildcards
+					      (expand-file-name "python*-lib*"
+								dir)))))
+			      (if (and file
+				       (string-match
+					"\\<python\\([0-9]+\\.[0-9]+\\>\\)-"
+					file))
+				  (setq version (match-string 1 file)
+					found t)))))
+			found)
+		    (error nil)))))))))
     (info-lookup-maybe-add-help
      :mode 'python-mode
      :regexp "[[:alnum:]_]+"
@@ -1824,7 +1971,7 @@ the string's indentation."
 	(let* ((syntax (syntax-ppss))
 	       (orig (point))
 	       start end)
-	  (cond ((nth 4 syntax)	; comment.   fixme: loses with trailing one
+	  (cond ((nth 4 syntax)	; comment.   Fixme: loses with trailing one
 		 (let (fill-paragraph-function)
 		   (fill-paragraph justify)))
 		;; The `paragraph-start' and `paragraph-separate'
@@ -1943,18 +2090,23 @@ of current line."
       (if accum (mapconcat 'identity accum ".")))))
 
 (defun python-mark-block ()
-  "Mark the block around point.
+  "Mark the block around point and go to the beginning of it.
+Do nothing if not in a block.
 Uses `python-beginning-of-block', `python-end-of-block'."
   (interactive)
-  (push-mark)
-  (python-beginning-of-block)
-  (push-mark (point) nil t)
-  (python-end-of-block)
-  (exchange-point-and-mark))
+  (let ((point (point))
+	(active mark-active))
+    (python-beginning-of-block)
+    (if  (and (= point (point))
+	      (not (python-open-block-statement-p)))
+	;; Didn't move, and not at very start of a top-level block.
+	(progn (pop-mark)
+	       (setq mark-active active))
+      (push-mark point)
+      (push-mark (point) nil t)
+      (python-end-of-block)
+      (exchange-point-and-mark))))
 
-;; Fixme:  Provide a find-function-like command to find source of a
-;; definition (separate from BicycleRepairMan).  Complicated by
-;; finding the right qualified name.
 
 ;;;; Completion.
 
@@ -1968,6 +2120,9 @@ Uses `python-beginning-of-block', `python-end-of-block'."
 ;; something syntactically incorrect.
 ;; However, what we should do is to trundle up the block tree from point
 ;; to extract imports that appear to be in scope, and add those.
+;; Also note constructs effectively at top-level:
+;; if ...:
+;;     import ...
 (defun python-find-imports ()
   "Find top-level imports, updating `python-imports'."
   (interactive)
@@ -2062,7 +2217,7 @@ Interactively, prompt for name."
     (error "Not called from buffer visiting Python file"))
   (let* ((loc (python-send-receive (format "emacs.location_of (%S, %s)"
 					   name python-imports)))
-	 (loc (car (read-from-string loc)))
+	 (loc (if loc (car (read-from-string loc))))
 	 (file (car loc))
 	 (line (cdr loc)))
     (unless file (error "Don't know where `%s' is defined" name))
@@ -2274,42 +2429,12 @@ without confirmation."
   (add-hook 'post-command-hook 'python-abbrev-pc-hook nil t))
 (modify-syntax-entry ?/ "w" python-abbrev-syntax-table)
 
-;;;###autoload
-(define-derived-mode python-mode fundamental-mode "Python"
-  "Major mode for editing Python files.
-Turns on Font Lock mode unconditionally since it is currently required
-for correct parsing of the source.
-See also `jython-mode', which is actually invoked if the buffer appears to
-contain Jython code.  See also `run-python' and associated Python mode
-commands for running Python under Emacs.
+(defvar python-basic-mode-map python-mode-map)
+(defvar python-basic-mode-syntax-table python-mode-syntax-table)
+(defvar python-basic-mode-abbrev-table python-mode-abbrev-table)
 
-The Emacs commands which work with `defun's, e.g. \\[beginning-of-defun], deal
-with nested `def' and `class' blocks.  They take the innermost one as
-current without distinguishing method and class definitions.  Used multiple
-times, they move over others at the same indentation level until they reach
-the end of definitions at that level, when they move up a level.
-\\<python-mode-map>
-Colon is electric: it outdents the line if appropriate, e.g. for
-an else statement.  \\[python-backspace] at the beginning of an indented statement
-deletes a level of indentation to close the current block; otherwise it
-deletes a character backward.  TAB indents the current line relative to
-the preceding code.  Successive TABs, with no intervening command, cycle
-through the possibilities for indentation on the basis of enclosing blocks.
-
-\\[fill-paragraph] fills comments and multi-line strings appropriately, but has no
-effect outside them.
-
-Supports Eldoc mode (only for functions, using a Python process),
-Info-Look and Imenu.  In Outline minor mode, `class' and `def'
-lines count as headers.  Symbol completion is available in the
-same way as in the Python shell using the `rlcompleter' module
-and this is added to the Hippie Expand functions locally if
-Hippie Expand mode is turned on.  Completion of symbols of the
-form x.y only works if the components are literal
-module/attribute names, not variables.  An abbrev table is set up
-with skeleton expansions for compound statement templates.
-
-\\{python-mode-map}"
+(define-derived-mode python-basic-mode fundamental-mode "Python"
+  "Basic Python mode, from which the Python2 and Python3 modes derive."
   :group 'python
   (set (make-local-variable 'font-lock-defaults)
        '(python-font-lock-keywords nil nil nil nil
@@ -2321,6 +2446,10 @@ with skeleton expansions for compound statement templates.
 				   ))
   (set (make-local-variable 'parse-sexp-lookup-properties) t)
   (set (make-local-variable 'comment-start) "# ")
+  (set (make-local-variable 'comment-start-skip)
+       "\\(\\(^\\|[^\\\\\n]\\)\\(\\\\\\\\\\)*\\)#+ *")
+  (set (make-local-variable 'comment-end-skip)
+       "[ \t]*\\(\\s>\\|\n\\)")
   (set (make-local-variable 'indent-line-function) #'python-indent-line)
   (set (make-local-variable 'indent-region-function) #'python-indent-region)
   (set (make-local-variable 'paragraph-start) "\\s-*$")
@@ -2340,6 +2469,7 @@ with skeleton expansions for compound statement templates.
        'python-beginning-of-defun)
   (set (make-local-variable 'end-of-defun-function) 'python-end-of-defun)
   (setq imenu-create-index-function #'python-imenu-create-index)
+  (set (make-local-variable 'imenu-sort-function) 'python-imenu-sort-function)
   (set (make-local-variable 'eldoc-documentation-function)
        #'python-eldoc-function)
   (add-hook 'eldoc-mode-hook
@@ -2368,12 +2498,130 @@ with skeleton expansions for compound statement templates.
 	   (cons 'symbol-completion-try-complete
 		 hippie-expand-try-functions-list)))
   (unless font-lock-mode (font-lock-mode 1))
-  (when python-guess-indent (python-guess-indent))
+  (when python-guess-indent
+    (unless (local-variable-p 'python-indent) ; file local variable
+      (python-guess-indent)))
   (set (make-local-variable 'python-command) python-python-command)
   (python-find-imports)
   (unless (boundp 'python-mode-running)	; kill the recursion from jython-mode
     (let ((python-mode-running t))
       (python-maybe-jython))))
+
+;;;###autoload
+(define-derived-mode python-2-mode python-basic-mode "Python"
+  "Major mode for editing Python 2.x files.
+Supports the syntax and builtins of Python 2.6.
+
+Turns on Font Lock mode unconditionally since it is currently required
+for correct parsing of the source.
+See also `jython-mode', which is actually invoked if the buffer appears to
+contain Jython code.  See also `run-python' and associated Python mode
+commands for running Python under Emacs.
+
+The Emacs commands which work with `defun's, e.g. \\[beginning-of-defun], deal
+with nested `def' and `class' blocks.  They take the innermost one as
+current without distinguishing method and class definitions.  Used multiple
+times, they move over others at the same indentation level until they reach
+the end of definitions at that level, when they move up a level.
+\\<python-mode-map>
+Colon is electric: it outdents the line if appropriate, e.g. for
+an else statement.  \\[python-backspace] at the beginning of an indented statement
+deletes a level of indentation to close the current block; otherwise it
+deletes a character backward.  TAB indents the current line relative to
+the preceding code.  Successive TABs, with no intervening command, cycle
+through the possibilities for indentation on the basis of enclosing blocks.
+
+\\[fill-paragraph] fills comments and multi-line strings appropriately, but has no
+effect outside them.
+
+Supports Eldoc mode (only for functions, using a Python process),
+Info-Look and Imenu.  In Outline minor mode, `class' and `def' lines
+count as headers.
+
+Symbol completion is available similarly to the `rlcompleter' module
+in the Python shell.  This completion is added to the Hippie Expand
+functions locally if Hippie Expand mode is turned on.  Completion of
+symbols of the form x.y only works if the components are literal
+module/attribute names, not variables.  An abbrev table is set up with
+skeleton expansions for compound statement templates.  Turn on Abbrev
+mode to use it.
+
+See also \\[python-3-mode].
+
+\\{python-mode-map}"
+  (font-lock-add-keywords nil python-2-font-lock-keywords 'append)
+  ;; Not propagating as it does in Emacs 21 for some reason.
+  (setq local-abbrev-table python-mode-abbrev-table))
+
+(defcustom python-default-version 2
+  "Which version of the language is supported by \\[python-mode].
+Either `2' (for the Python 2.6 language) or `3' (for the Python 3.0
+language)."
+  :group 'python
+  :type '(choice (const 2) (const 3)))
+
+;;;###autoload
+(define-derived-mode python-mode fundamental-mode "Python"
+  "Major mode for editing Python files.
+
+The version of the language supported depends on
+`python-default-version':  either `python-2-mode' or `python-3-mode',
+q.v., is invoked.  `python-python-command' determines which
+interpreter is used by the Python sub-shell, and you may want to
+ensure it corresponds to the language version you edit if version 2
+and 3 variants are both available."
+  ;; Fixme:  Is this a good idea?  We end up with a different
+  ;; major-mode from the one we invoked.  We could also have
+  ;; python-python-command customization flip an alias.
+  (if (eq 2 python-default-version)
+      (python-2-mode)
+    (python-3-mode)))
+
+;;;###autoload
+(define-derived-mode python-3-mode python-basic-mode "Python"
+  "Major mode for editing Python 3.x files.
+Supports the syntax and builtins of Python 3.0.
+
+Turns on Font Lock mode unconditionally since it is currently required
+for correct parsing of the source.
+See also `jython-mode', which is actually invoked if the buffer appears to
+contain Jython code.  See also `run-python' and associated Python mode
+commands for running Python under Emacs.
+
+The Emacs commands which work with `defun's, e.g. \\[beginning-of-defun], deal
+with nested `def' and `class' blocks.  They take the innermost one as
+current without distinguishing method and class definitions.  Used multiple
+times, they move over others at the same indentation level until they reach
+the end of definitions at that level, when they move up a level.
+\\<python-mode-map>
+Colon is electric: it outdents the line if appropriate, e.g. for
+an else statement.  \\[python-backspace] at the beginning of an indented statement
+deletes a level of indentation to close the current block; otherwise it
+deletes a character backward.  TAB indents the current line relative to
+the preceding code.  Successive TABs, with no intervening command, cycle
+through the possibilities for indentation on the basis of enclosing blocks.
+
+\\[fill-paragraph] fills comments and multi-line strings appropriately, but has no
+effect outside them.
+
+Supports Eldoc mode (only for functions, using a Python process),
+Info-Look and Imenu.  In Outline minor mode, `class' and `def' lines
+count as headers.
+
+Symbol completion is available similarly to the `rlcompleter' module
+in the Python shell.  This completion is added to the Hippie Expand
+functions locally if Hippie Expand mode is turned on.  Completion of
+symbols of the form x.y only works if the components are literal
+module/attribute names, not variables.  An abbrev table is set up with
+skeleton expansions for compound statement templates.  Turn on Abbrev
+mode to use it.
+
+See also \\[python-2-mode].
+
+\\{python-mode-map}"
+  (font-lock-add-keywords nil python-3-font-lock-keywords 'append)
+  ;; Not propagating as it does in Emacs 21 for some reason.
+  (setq local-abbrev-table python-mode-abbrev-table))
 
 ;; Not done automatically in Emacs 21 or 22.
 (defcustom python-mode-hook nil
