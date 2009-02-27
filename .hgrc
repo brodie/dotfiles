@@ -11,13 +11,16 @@ mergevim.checkchanged = true
 [extensions]
 alias =
 autopager = ~/.hgext/autopager.py
-color =
+bookmarks =
+color = ~/.hgext/color.py
 convert =
 extdiff =
+gpg =
 graphlog =
 highlight =
 mq =
 patchbomb =
+purge =
 rebase =
 record =
 transplant =
