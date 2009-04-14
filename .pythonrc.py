@@ -9,24 +9,31 @@ def _pythonrc():
     else:
         import rlcompleter
 
-        class TabCompleter(rlcompleter.Completer):
-            """Completer that supports indenting"""
+        old_complete = rlcompleter.Completer.complete
+        def complete(self, text, state):
+            if not text:
+                return ('    ', None)[state]
+            else:
+                return old_complete(self, text, state)
+        rlcompleter.Completer.complete = complete
 
-            def complete(self, text, state):
-                if not text:
-                    return ('    ', None)[state]
-                else:
-                    return rlcompleter.Completer.complete(self, text, state)
-
-        readline.parse_and_bind('tab: complete')
-        readline.set_completer(TabCompleter().complete)
+        if rlcompleter.Completer.complete != complete:
+            readline.parse_and_bind('tab: complete')
+            readline.set_completer(rlcompleter.Completer().complete)
 
         import atexit
         import os
 
         if 'NOHIST' not in os.environ:
             history_path = os.path.expanduser('~/.pyhistory')
-            atexit.register(lambda: readline.write_history_file(history_path))
+
+            has_written = [False]
+            def write_history():
+                if not has_written[0]:
+                    readline.write_history_file(history_path)
+                    has_written[0] = True
+            atexit.register(write_history)
+
             if os.path.isfile(history_path):
                 readline.read_history_file(history_path)
             readline.set_history_length(1000)
