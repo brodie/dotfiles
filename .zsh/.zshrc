@@ -65,6 +65,9 @@ ZLS_COLORS="$LS_COLORS"
 if [[ -n "$(command -v emacs-snapshot)" ]]
 then
     alias emacs='emacs-snapshot -nw'
+elif [[ -x '/Applications/Aquamacs Emacs.app/Contents/MacOS/bin/emacsclient' ]]
+then
+    alias emacs='/Applications/Aquamacs\ Emacs.app/Contents/MacOS/bin/emacsclient -n'
 else
     alias emacs='emacs -nw'
 fi
@@ -73,6 +76,7 @@ alias ll='ls -l' \
       la='ls -A' \
       l='less' \
       grep='grep --color=always' \
+      mq='hg -R $(hg root)/.hg/patches' \
       zgrep='zgrep --color=always'
 
 beep()

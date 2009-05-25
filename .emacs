@@ -18,6 +18,7 @@
 (add-to-list 'auto-mode-alist '("\\.po\\'\\|\\.\\." . po-mode))
 (add-to-list 'auto-mode-alist '("\\.css$\\|\\.css\\.dtml$" . css-mode))
 (add-to-list 'auto-mode-alist '("\\.pt$" . html-mode))
+(add-to-list 'auto-mode-alist '("\\.m$" . objc-mode))
 
 ; Indentation settings
 (setq-default indent-tabs-mode nil)
@@ -147,6 +148,7 @@
 (add-hook 'sh-mode-hook '(lambda () (flyspell-prog-mode)))
 
 ; flymake/pyflakes
+(setq python-check-command "pyflakes")
 (when (load "flymake" t)
   (defun flymake-pyflakes-init ()
     (let* ((temp-file (flymake-init-create-temp-buffer-copy

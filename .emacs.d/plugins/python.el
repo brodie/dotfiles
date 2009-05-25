@@ -6,7 +6,7 @@
 ;; Created: Nov 2003
 ;; Keywords: languages
 ;; URL: http://www.loveshack.ukfsn.org/emacs/
-;; $Revision: 1.22 $
+;; $Revision: 1.23 $
 
 ;; This file is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -26,7 +26,7 @@
 ;; Major mode for editing Python, with support for inferior processes.
 
 ;; There is another Python mode, python-mode.el, used by XEmacs and
-;; maintained with Python.  That isn't covered by an FSF copyright
+;; previously maintained with Python.  That isn't covered by an FSF copyright
 ;; assignment, unlike this code, and seems not to be well-maintained
 ;; for Emacs (though I've submitted fixes).  This mode is rather
 ;; simpler and is better in other ways.  In particular, using the
@@ -680,9 +680,10 @@ Set `python-indent' locally to the value guessed."
 	  (forward-line)
 	  (unless (python-comment-line-p)
 	    (let ((elt (assq (current-indentation) python-indent-list)))
-	      (setq python-indent-list
-		    (nconc (delete elt python-indent-list)
-			   (list elt))))))
+	      (if elt			; nil "can't" happen
+		  (setq python-indent-list
+			(nconc (delete elt python-indent-list)
+			       (list elt)))))))
 	(caar (last python-indent-list)))))))
 
 ;;;; Cycling through the possible indentations with successive TABs.
@@ -934,9 +935,12 @@ multi-line bracketed expressions."
   (python-beginning-of-string)
   (let (point)
     (while (and (python-continuation-line-p)
-		(if point
-		    (< (point) point)
-		  t))
+		;; Check we make progress.  If it's a backslash
+		;; continuation line, we will move backwards below.
+		(or (python-backslash-continuation-line-p)
+		    (if point
+			(< (point) point)
+		      t)))
       (beginning-of-line)
       (if (python-backslash-continuation-line-p)
 	  (progn
@@ -1262,11 +1266,16 @@ Repeat ARG times."
       (indent-to indent))))
 (put 'python-backspace 'delete-selection 'supersede)
 
-;;;; pychecker
+;;;; pychecker, flymake
 
 (defcustom python-check-command "pychecker --stdlib"
-  "*Command used to check a Python file."
-  :type 'string
+  "*Command used to check a Python file.
+Possible commands include `pychecker', `pyflakes', and `pylint'."
+  :type '(choice
+	  (const "pychecker --stdlib")
+	  (const "pyflakes")
+	  (const "pylint -f parseable")
+	  (string :tag "Other command"))
   :group 'python)
 
 (defvar python-saved-check-command nil
@@ -1291,6 +1300,17 @@ See `python-check-command' for the default."
 	 (cons '("(\\([^,]+\\), line \\([0-9]+\\))" 1 2)
 	       compilation-error-regexp-alist)))
     (compilation-start command)))
+
+(defun python-flymake-init ()
+  "Flymake init function for Python.
+To be added to `flymake-init-create-temp-buffer-copy'."
+  (let ((checker-elts (split-string python-check-command)))
+    (list (car checker-elts) (append (cdr checker-elts)
+				     (list (buffer-file-name))))))
+
+;(eval-after-load "flymake"
+;  '(add-to-list 'flymake-allowed-file-name-masks
+;		'("\\.py\\'" python-flymake-init)))
 
 ;;;; Inferior mode stuff (following cmuscheme).
 
@@ -1888,7 +1908,7 @@ Used with `eval-after-load'."
 				  (setq version (match-string 1 file)
 					found t)))))
 			found)
-		    (error nil)))))))))
+		    (error)))))))))
     (info-lookup-maybe-add-help
      :mode 'python-mode
      :regexp "[[:alnum:]_]+"
@@ -2031,7 +2051,8 @@ END lie.  It is an error if any lines in the region are indented less than
 COUNT columns."
   (interactive (if mark-active
 		   (list (region-beginning) (region-end) current-prefix-arg)
-		 (list (point) (point) current-prefix-arg)))
+		 (list (line-beginning-position) (line-end-position 2)
+		       current-prefix-arg)))
   (if count
       (setq count (prefix-numeric-value count))
     (setq count python-indent))
@@ -2054,7 +2075,8 @@ current line.  The region shifted includes the lines in which START and
 END lie."
   (interactive (if mark-active
 		   (list (region-beginning) (region-end) current-prefix-arg)
-		 (list (point) (point) current-prefix-arg)))
+		 (list (line-beginning-position) (line-end-position 2)
+		       current-prefix-arg)))
   (if count
       (setq count (prefix-numeric-value count))
     (setq count python-indent))
@@ -2637,6 +2659,7 @@ See also \\[python-2-mode].
 (custom-add-option 'python-mode-hook 'abbrev-mode)
 (custom-add-option 'python-mode-hook 'python-setup-brm)
 (custom-add-option 'python-mode-hook 'flyspell-prog-mode)
+(custom-add-option 'python-mode-hook 'flymake-mode)
 
 ;;;###autoload
 (define-derived-mode jython-mode python-mode  "Jython"

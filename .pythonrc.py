@@ -5,7 +5,7 @@ def _pythonrc():
         import readline
     except ImportError:
         import sys
-        print >> sys.stderr, 'readline unavailable - tab completion disabled.'
+        sys.stderr.write('readline unavailable - tab completion disabled.\n')
     else:
         import rlcompleter
 
@@ -40,18 +40,24 @@ def _pythonrc():
 
     # Pretty print evaluated expressions
 
-    import __builtin__
+    try:
+        import __builtin__
+    except ImportError:
+        import builtins as __builtin__
     import inspect
     import pprint
     import pydoc
     import sys
     import types
 
-    help_types = (types.BuiltinFunctionType, types.BuiltinMethodType,
+    help_types = [types.BuiltinFunctionType, types.BuiltinMethodType,
                   types.FunctionType, types.MethodType, types.ModuleType,
-                  types.TypeType, types.UnboundMethodType,
+                  type,
                   # method_descriptor
-                  type(list.remove))
+                  type(list.remove)]
+    if hasattr(types, 'UnboundMethodType'):
+        help_types.append(types.UnboundMethodType)
+    help_types = tuple(help_types)
 
     def formatargs(func):
         """Returns a string representing a function's argument specification,
@@ -126,10 +132,12 @@ def _pythonrc():
                     reprstr = ' '.join(parts) + '>'
             except TypeError:
                 pass
-            print reprstr
+            sys.stdout.write(reprstr)
+            sys.stdout.write('\n')
             if getattr(value, '__doc__', None):
-                print
-                print pydoc.getdoc(value)
+                sys.stdout.write('\n')
+                sys.stdout.write(pydoc.getdoc(value))
+                sys.stdout.write('\n')
         else:
             pprint.pprint(value, width=get_width() or 80)
 
@@ -183,7 +191,7 @@ def _pythonrc():
         fullname = filename
         try:
             stat = os.stat(fullname)
-        except os.error, msg:
+        except os.error:
             basename = os.path.split(filename)[1]
 
             if module_globals and '__loader__' in module_globals:
@@ -222,7 +230,7 @@ def _pythonrc():
             fp = open(fullname, 'rU')
             lines = fp.readlines()
             fp.close()
-        except IOError, msg:
+        except IOError:
             return []
         size, mtime = stat.st_size, stat.st_mtime
         cache[filename] = size, mtime, lines, fullname
@@ -266,8 +274,8 @@ def source(obj):
             raise TypeError()
         s = getsource(obj)
     except TypeError:
-        print >> sys.stderr, ("Source code unavailable (maybe it's part of "
-                              "a C extension?)")
+        sys.stderr.write("Source code unavailable (maybe it's part of "
+                         "a C extension?)\n")
         return
 
     import re

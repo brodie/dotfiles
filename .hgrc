@@ -1,7 +1,18 @@
 [ui]
 ssh = ssh -C
 username = Brodie Rao <me+hg@dackz.net>
-verbose = True
+
+[defaults]
+commit = -v
+incoming = -v
+log = -v
+outgoing = -v
+qseries = -v
+tip = -v
+
+[diff]
+git = True
+showfunc = True
 
 [merge-tools]
 mergevim.executable = vim
@@ -20,7 +31,6 @@ graphlog =
 highlight =
 mq =
 patchbomb =
-purge =
 rebase =
 record =
 transplant =
@@ -34,16 +44,12 @@ attend = annotate, diff, glog, incoming, last, log, outgoing, qdiff, tip
 [color]
 diff.deleted = red bold
 
-[diff]
-git = True
-showfunc = True
+[email]
+from = Brodie Rao <dackze@gmail.com>
 
 [extdiff]
 cmd.vimdiff = vim
 opts.vimdiff = -f '+next' '+execute "DirDiff" argv(0) argv(1)'
-
-[email]
-from = Brodie Rao <dackze@gmail.com>
 
 [smtp]
 host = smtp.gmail.com

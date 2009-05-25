@@ -6,7 +6,7 @@
 ;;; Copyright 2003-2008 Steffen Schwigon
 
 ;;; Author: Steffen Schwigon <ss5@renormalist.net>
-;;; Version: 0.501
+;;; Version: 0.502
 ;;; Keywords: perl pod
 ;;; X-URL: http://search.cpan.org/~schwigon/pod-mode/
 
