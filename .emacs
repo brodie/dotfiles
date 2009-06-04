@@ -1,16 +1,17 @@
 (add-to-list 'load-path "~/.emacs.d/plugins")
 
 ; Plugins
-(require 'sudo)
-(require 'flymake-point)
-(autoload 'yas/minor-mode "yasnippet-bundle" nil t)
+(require 'sudo) ; open/save files with sudo
+(require 'flymake-point) ; shows errors in the minibuffer when highlighted
+(autoload 'yas/minor-mode "yasnippet-bundle" nil t) ; like TextMate snippets
 (autoload 'js2-mode "js2" nil t)
-(autoload 'rst-mode "rst" nil t)
+(autoload 'rst-mode "rst" nil t) ; restructured text mode
 (autoload 'markdown-mode "markdown-mode" nil t)
 (autoload 'pod-mode "pod-mode" nil t)
 (autoload 'po-mode "po-mode" nil t)
 (autoload 'css-mode "css-mode" nil t)
 
+; File/mode associations
 (add-to-list 'auto-mode-alist '("\\.js$" . js2-mode))
 (add-to-list 'auto-mode-alist '("\\.rst$" . rst-mode))
 (add-to-list 'auto-mode-alist '("\\.text$" . markdown-mode))
@@ -21,11 +22,12 @@
 (add-to-list 'auto-mode-alist '("\\.m$" . objc-mode))
 
 ; Indentation settings
-(setq-default indent-tabs-mode nil)
+(setq-default indent-tabs-mode nil) ; disable tab character insertion
 (setq standard-indent 4)
-(setq c-default-style "bsd")
+(setq c-default-style "bsd") ; brackets go on a separate line
 (setq c-basic-offset 4)
 (setq-default c-indent-level 4)
+; line up args on separate lines with opening parens
 (setq c-offsets-alist
       '((arglist-intro c-lineup-arglist-intro-after-pern)))
 (setq tab-stop-list '(4 8 12 16 20 24 28 32 36 40 44 48 52 56 60 64 68 72 76
@@ -35,27 +37,30 @@
 (setq-default show-trailing-whitespace t)
 (setq-default rst-level-face-base-color nil)
 (setq longlines-show-hard-newlines t)
-(setq transient-mark-mode t)
+(setq transient-mark-mode t) ; highlight marked text (i.e. selected text)
 ;(setq vc-handled-backends nil)
 (setq inhibit-splash-screen t)
-(show-paren-mode 1)
-(column-number-mode 1)
-(delete-selection-mode 1)
-(savehist-mode 1)
+(show-paren-mode 1) ; highlight matching parens
+(column-number-mode 1) ; show the column number in the status bar
+(delete-selection-mode 1) ; backspace deletes selected text
+(savehist-mode 1) ; save command history
+; camel case word navigation
 (add-hook 'after-change-major-mode-hook '(lambda () (c-subword-mode 1)))
+; add missing trailing newline one both visit and save
 (setq require-final-newline 'visit-save)
 (menu-bar-mode -1)
-(ido-mode t)
+(ido-mode t) ; fancy file navigation
 (setq ido-enable-flex-matching t)
 (when window-system
   (tool-bar-mode -1)
   (scroll-bar-mode -1)
   (server-start))
-(setq mac-option-modifier 'meta)
+(setq mac-option-modifier 'meta) ; option is alt
+; make sentence navigation more useful
 (setq sentence-end-double-space nil)
 (setq sentence-end "[.?!][]\"')]\\($\\|\t\\| \\)[ \t\n]")
 
-; Backup
+; Smart backup/autosave into secure directory in /tmp (instead of littering)
 (defvar user-temporary-file-directory
   (concat temporary-file-directory "emacs-" user-login-name "/"))
 (make-directory user-temporary-file-directory t)
@@ -74,7 +79,7 @@
 (setq auto-save-file-name-transforms
       `((".*" ,user-temporary-file-directory t)))
 
-; Mouse settings
+; Mouse wheel scrolling in xterm
 (unless window-system
   (xterm-mouse-mode 1)
   (mouse-wheel-mode 1)
@@ -127,6 +132,7 @@
           '(lambda ()
              (define-key ido-completion-map (kbd "SPC") 'self-insert-command)))
 
+; Extra bindings for various terminals
 (global-set-key (kbd "M-[ h") 'beginning-of-line)
 (global-set-key (kbd "M-[ f") 'end-of-line)
 (global-set-key (kbd "M-[ 5 d") 'backward-word)
@@ -139,7 +145,7 @@
 ; FIXME: This needs something like vim's ttimeout setting
 ;(global-set-key (kbd "ESC ESC") 'keyboard-quit)
 
-; Spelling
+; On-the-fly spell checking
 (add-hook 'markdown-mode-hook '(lambda () (flyspell-mode 1)))
 (add-hook 'rst-mode-hook '(lambda () (flyspell-mode 1)))
 (add-hook 'text-mode-hook '(lambda () (flyspell-mode 1)))
@@ -147,7 +153,7 @@
 (add-hook 'python-mode-hook '(lambda () (flyspell-prog-mode)))
 (add-hook 'sh-mode-hook '(lambda () (flyspell-prog-mode)))
 
-; flymake/pyflakes
+; On-the-fly pyflakes checking
 (setq python-check-command "pyflakes")
 (when (load "flymake" t)
   (defun flymake-pyflakes-init ()
