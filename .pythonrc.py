@@ -1,6 +1,5 @@
 def _pythonrc():
     # Enable readline, tab completion, and history
-
     try:
         import readline
     except ImportError:
@@ -9,17 +8,14 @@ def _pythonrc():
     else:
         import rlcompleter
 
-        old_complete = rlcompleter.Completer.complete
-        def complete(self, text, state):
+        old_complete = readline.get_completer()
+        def complete(text, state):
             if not text:
                 return ('    ', None)[state]
             else:
                 return old_complete(self, text, state)
-        rlcompleter.Completer.complete = complete
-
-        if rlcompleter.Completer.complete != complete:
-            readline.parse_and_bind('tab: complete')
-            readline.set_completer(rlcompleter.Completer().complete)
+        readline.parse_and_bind('tab: complete')
+        readline.set_completer(rlcompleter.Completer().complete)
 
         import atexit
         import os
@@ -284,10 +280,11 @@ def source(obj):
         m = re.search(r'coding[:=]\s*([-\w.]+)', line)
         if m:
             enc = m.group(1)
-    try:
-        s = s.decode(enc, 'replace')
-    except LookupError:
-        s = s.decode('ascii', 'replace')
+    if hasattr(s, 'decode'):
+        try:
+            s = s.decode(enc, 'replace')
+        except LookupError:
+            s = s.decode('ascii', 'replace')
 
     try:
         if sys.platform == 'win32':
@@ -305,7 +302,10 @@ def source(obj):
     lessopts = os.environ.get('LESS', '')
     try:
         os.environ['LESS'] = lessopts + ' -R'
-        pager(s.encode(sys.stdout.encoding, 'replace'))
+        if hasattr(s, 'decode'):
+            pager(s.encode(sys.stdout.encoding, 'replace'))
+        else:
+            pager(s)
     finally:
         if has_lessopts:
             os.environ['LESS'] = lessopts
