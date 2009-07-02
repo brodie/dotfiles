@@ -20,7 +20,6 @@ mergevim.args = -d $local $other $base
 mergevim.checkchanged = true
 
 [extensions]
-alias =
 autopager = ~/.hgext/autopager.py
 bookmarks =
 color = ~/.hgext/color.py
@@ -39,7 +38,7 @@ transplant =
 last = log --limit=5
 
 [autopager]
-attend = annotate, diff, glog, incoming, last, log, outgoing, qdiff, tip
+attend = annotate, diff, glog, help, incoming, last, log, outgoing, qdiff, tip
 
 [color]
 diff.deleted = red bold

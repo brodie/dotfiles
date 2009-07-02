@@ -36,6 +36,12 @@ Tips for using this extension with less:
 * If you're using another extension that colorizes a command's output, try
   the -R/--RAW-CONTROL-CHARS switch. This will cause less to avoid escaping
   color control codes.
+
+Debugging tips:
+
+* If you get an exception without the traceback, try setting the
+  DEBUGAUTOPAGER environment variable when running hg. The extension will
+  then wrap only stdout.
 """
 
 import atexit
@@ -45,7 +51,7 @@ import signal
 import sys
 import unicodedata
 
-from mercurial import dispatch, extensions, util
+from mercurial import dispatch, encoding, extensions, util
 
 def _ioctl_dimensions(fd):
     from fcntl import ioctl
@@ -98,7 +104,7 @@ def get_dimensions():
     return height, width
 
 
-def wrap_output(pager, height, width):
+def wrap_output(pager, height, width, wrap_stderr):
     """Wraps stdout/stderr and sends output to pager if the number of lines
     written exceeds the terminal dimensions, otherwise the buffer is flushed
     with atexit.
@@ -115,9 +121,13 @@ def wrap_output(pager, height, width):
         # count by one).
         if (exiting and line_count[0] >= height and col_count[0] >= width
             and buf[0]):
-            sys.stdout = sys.stderr = popen(pager, 'wb')
+            sys.stdout = popen(pager, 'wb')
+            if wrap_stderr:
+                sys.stderr = sys.stdout
         if hasattr(sys.stdout, '_bypass'):
-            sys.stdout._bypass = sys.stderr._bypass = True
+            sys.stdout._bypass = True
+            if wrap_stderr:
+                sys.stderr._bypass = True
         for is_stderr, s in buf[0]:
             if is_stderr:
                 sys.stderr.write(s)
@@ -129,6 +139,11 @@ def wrap_output(pager, height, width):
     # Flush the buffer and remove the output wrappers for interactive prompts.
     # Note: This doesn't work if the pager is already launched.
     def wrapper(orig, *args, **kwargs):
+        if sys.stdout != sys.__stdout__:
+            if getattr(sys.stdout, '_stream') != sys.__stdout__:
+                sys.stdout._stream.close()
+            sys.stdout = sys.__stdout__
+            sys.stderr = sys.__stderr__
         flush()
         return orig(*args, **kwargs)
 
@@ -166,7 +181,7 @@ def wrap_output(pager, height, width):
             # Try to determine the width of the string as it would appear in
             # the terminal.
             try:
-                s = s.decode(util._encoding, util._encodingmode)
+                s = s.decode(encoding.encoding, encoding.encodingmode)
                 s = unicodedata.normalize('NFC', s)
             except UnicodeError:
                 pass
@@ -176,12 +191,14 @@ def wrap_output(pager, height, width):
                     line_count[0] += 1
                     col_count[0] = 0
             if line_count[0] > height:
-                sys.stdout._stream = sys.stderr._stream = popen(pager, 'wb')
-                sys.stdout._bypass = sys.stderr._bypass = True
+                sys.stdout._stream = popen(pager, 'wb')
+                if wrap_stderr:
+                    sys.stderr._stream = sys.stdout._stream
                 flush()
 
     sys.stdout = FileProxy(sys.stdout)
-    sys.stderr = FileProxy(sys.stderr, True)
+    if wrap_stderr:
+        sys.stderr = FileProxy(sys.stderr, True)
 
 
 def _setup_pager(ui, pager):
@@ -192,7 +209,8 @@ def _setup_pager(ui, pager):
             if ui.configbool('autopager', 'quiet'):
                 signal.signal(signal.SIGPIPE, signal.SIG_DFL)
             promptsize = int(ui.config('autopager', 'promptsize', 1))
-            wrap_output(pager, height - promptsize, width)
+            wrap_output(pager, height - promptsize, width,
+                        'DEBUGAUTOPAGER' not in os.environ)
 
 
 def uisetup(ui, *args, **kwargs):
