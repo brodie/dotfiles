@@ -13,9 +13,9 @@ def _pythonrc():
             if not text:
                 return ('    ', None)[state]
             else:
-                return old_complete(self, text, state)
+                return old_complete(text, state)
         readline.parse_and_bind('tab: complete')
-        readline.set_completer(rlcompleter.Completer().complete)
+        readline.set_completer(complete)
 
         import atexit
         import os
