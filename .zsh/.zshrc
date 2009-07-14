@@ -65,9 +65,9 @@ ZLS_COLORS="$LS_COLORS"
 if [[ -n "$(command -v emacs-snapshot)" ]]
 then
     alias emacs='emacs-snapshot -nw'
-elif [[ -x '/Applications/Aquamacs Emacs.app/Contents/MacOS/bin/emacsclient' ]]
+elif [[ -x '/Applications/Macports/Emacs.app/Contents/MacOS/bin/emacsclient' ]]
 then
-    alias emacs='/Applications/Aquamacs\ Emacs.app/Contents/MacOS/bin/emacsclient -n'
+    alias emacs='/Applications/Macports/Emacs.app/Contents/MacOS/bin/emacsclient -n'
 else
     alias emacs='emacs -nw'
 fi

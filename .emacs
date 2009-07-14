@@ -1,6 +1,20 @@
-(add-to-list 'load-path "~/.emacs.d/plugins")
+; Set PATH/exec-path based on the shell's configuration
+(defun set-path-from-shell ()
+  (if (get-buffer "*set-path-from-shell*")
+      (kill-buffer "*set-path-from-shell*"))
+  (call-process-shell-command "echo $PATH" nil "*set-path-from-shell*")
+  (with-current-buffer "*set-path-from-shell*"
+    (let ((output (buffer-substring (point-min) (- (point-max) 1)))
+          (emacs-path (nth 0 (last exec-path))))
+      (setenv "PATH" (concat output emacs-path))
+      (setq exec-path `(,@(split-string output ":") ,emacs-path))
+      (kill-buffer))))
+(set-path-from-shell)
 
 ; Plugins
+(add-to-list 'load-path "~/.emacs.d/plugins")
+(require 'color-theme) ; load color themes
+(color-theme-billw) ; set color theme
 (require 'sudo) ; open/save files with sudo
 (require 'flymake-point) ; shows errors in the minibuffer when highlighted
 (autoload 'yas/minor-mode "yasnippet-bundle" nil t) ; like TextMate snippets
@@ -34,6 +48,7 @@
                         80 84 88 92 96 100 104 108 112 116 120))
 
 ; Other settings
+(set-fringe-style 'none) ; disable fringes
 (setq-default show-trailing-whitespace t)
 (setq-default rst-level-face-base-color nil)
 (setq longlines-show-hard-newlines t)
@@ -59,6 +74,10 @@
 ; make sentence navigation more useful
 (setq sentence-end-double-space nil)
 (setq sentence-end "[.?!][]\"')]\\($\\|\t\\| \\)[ \t\n]")
+
+; Disable the fringe for all frames
+(add-to-list 'default-frame-alist '(left-fringe . 0))
+(add-to-list 'default-frame-alist '(right-fringe . 0))
 
 ; Smart backup/autosave into secure directory in /tmp (instead of littering)
 (defvar user-temporary-file-directory
