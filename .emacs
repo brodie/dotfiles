@@ -1,3 +1,11 @@
+; Set up GUI-related stuff as soon as possible
+(when window-system
+  (unless (eq system-type 'darwin)
+    (menu-bar-mode -1))
+  (tool-bar-mode -1)
+  (scroll-bar-mode -1)
+  (server-start))
+
 ; Set PATH/exec-path based on the shell's configuration
 (defun set-path-from-shell ()
   (if (get-buffer "*set-path-from-shell*")
@@ -14,7 +22,8 @@
 ; Plugins
 (add-to-list 'load-path "~/.emacs.d/plugins")
 (require 'color-theme) ; load color themes
-(color-theme-billw) ; set color theme
+(require 'color-theme-brodie)
+(color-theme-brodie) ; set color theme
 (require 'sudo) ; open/save files with sudo
 (require 'flymake-point) ; shows errors in the minibuffer when highlighted
 (autoload 'yas/minor-mode "yasnippet-bundle" nil t) ; like TextMate snippets
@@ -63,13 +72,8 @@
 (add-hook 'after-change-major-mode-hook '(lambda () (c-subword-mode 1)))
 ; add missing trailing newline one both visit and save
 (setq require-final-newline 'visit-save)
-(menu-bar-mode -1)
 (ido-mode t) ; fancy file navigation
 (setq ido-enable-flex-matching t)
-(when window-system
-  (tool-bar-mode -1)
-  (scroll-bar-mode -1)
-  (server-start))
 (setq mac-option-modifier 'meta) ; option is alt
 ; make sentence navigation more useful
 (setq sentence-end-double-space nil)
