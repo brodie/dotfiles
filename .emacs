@@ -1,6 +1,7 @@
 ; Set up GUI-related stuff as soon as possible
 (when window-system
-  (unless (eq system-type 'darwin)
+  (if (eq system-type 'darwin)
+      (add-to-list 'default-frame-alist '(alpha 92 92))
     (menu-bar-mode -1))
   (tool-bar-mode -1)
   (scroll-bar-mode -1)
