@@ -16,15 +16,16 @@ then
         export LANG=C
 fi
 
-
-[[ -d /usr/X11R6/bin ]] && export PATH="$PATH:/usr/X11R6/bin"
-[[ -d /usr/local/X11R6/bin ]] && export PATH="$PATH:/usr/local/X11R6/bin"
 [[ -d /usr/local/bin ]] && export PATH="/usr/local/bin:$PATH"
 [[ -d /usr/local/sbin ]] && export PATH="/usr/local/sbin:$PATH"
 [[ -d /usr/local/mysql/bin ]] && export PATH="/usr/local/mysql/bin:$PATH"
 [[ -d /opt/local/bin ]] && export PATH="/opt/local/bin:$PATH"
 [[ -d /opt/local/sbin ]] && export PATH="/opt/local/sbin:$PATH"
+[[ -d /opt/local/Library/Frameworks/Python.framework/Versions/2.6/bin ]] && \
+ export PATH="$PATH:/opt/local/Library/Frameworks/Python.framework/Versions/2.6/bin"
 [[ -d "$HOME/bin" ]] && export PATH="$HOME/bin:$PATH"
+[[ -d /usr/X11R6/bin ]] && export PATH="$PATH:/usr/X11R6/bin"
+[[ -d /usr/local/X11R6/bin ]] && export PATH="$PATH:/usr/local/X11R6/bin"
 
 [[ -d /usr/X11/man ]] && export MANPATH="$MANPATH:/usr/X11/man"
 [[ -d /usr/X11R6/man ]] && export MANPATH="$MANPATH:/usr/X11R6/man"
