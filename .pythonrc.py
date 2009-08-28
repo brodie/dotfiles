@@ -55,36 +55,6 @@ def _pythonrc():
         help_types.append(types.UnboundMethodType)
     help_types = tuple(help_types)
 
-    def formatargs(func):
-        """Returns a string representing a function's argument specification,
-        as if it were from source code.
-
-        For example:
-
-        >>> class Foo(object):
-        ...     def bar(self, x=1, *y, **z):
-        ...         pass
-        ...
-        >>> formatargs(Foo.bar)
-        'self, x=1, *y, **z'
-        """
-
-        args, varargs, varkw, defs = inspect.getargspec(func)
-
-        # Fill in default values
-        if defs:
-            last = len(args) - 1
-            for i, val in enumerate(reversed(defs)):
-                args[last - i] = '%s=%r' % (args[last - i], val)
-
-        # Fill in variable arguments
-        if varargs:
-            args.append('*%s' % varargs)
-        if varkw:
-            args.append('**%s' % varkw)
-
-        return ', '.join(args)
-
     def _ioctl_width(fd):
 
         from fcntl import ioctl
@@ -106,6 +76,11 @@ def _pythonrc():
             width = os.environ.get('COLUMNS', 0)
         return width
 
+    if hasattr(inspect, 'getfullargspec'):
+        getargspec = inspect.getfullargspec
+    else:
+        getargspec = inspect.getargspec
+
     def pprinthook(value):
         """Pretty print an object to sys.stdout and also save it in
         __builtin__.
@@ -120,11 +95,11 @@ def _pythonrc():
             try:
                 if inspect.isfunction(value):
                     parts = reprstr.split(' ')
-                    parts[1] = '%s(%s)' % (parts[1], formatargs(value))
+                    parts[1] += inspect.formatargspec(*getargspec(value))
                     reprstr = ' '.join(parts)
                 elif inspect.ismethod(value):
                     parts = reprstr[:-1].split(' ')
-                    parts[2] = '%s(%s)' % (parts[2], formatargs(value))
+                    parts[2] += inspect.formatargspec(*getargspec(value))
                     reprstr = ' '.join(parts) + '>'
             except TypeError:
                 pass
