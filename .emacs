@@ -190,3 +190,18 @@
   (add-to-list 'flymake-allowed-file-name-masks
                '("\\.py\\'" flymake-pyflakes-init)))
 (add-hook 'python-mode-hook '(lambda () (flymake-mode 1)))
+
+; When dealing with two side-by-side windows, automatically resize the frame
+(defadvice split-window-horizontally (before resize-window)
+  (set-frame-width (selected-frame) 160))
+(ad-activate 'split-window-horizontally)
+
+(defadvice delete-window (after resize-window)
+  (if (= (count-windows) 1)
+      (set-frame-width (selected-frame) 80)))
+(ad-activate 'delete-window)
+
+(defadvice delete-other-windows (after resize-window)
+  (if (= (count-windows) 1)
+      (set-frame-width (selected-frame) 80)))
+(ad-activate 'delete-other-windows)
