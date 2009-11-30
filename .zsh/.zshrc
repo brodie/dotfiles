@@ -2,10 +2,10 @@
 
 # Options
 
-export EDITOR='vim'
-export PAGER='less'
-export BROWSER='open'
-export PYTHONSTARTUP="$HOME/.pythonrc.py"
+export EDITOR='vim' \
+       PAGER='less' \
+       BROWSER='open' \
+       PYTHONSTARTUP="$HOME/.pythonrc.py"
 
 setopt NO_clobber \
        extended_glob \
@@ -33,19 +33,19 @@ HISTFILE="$ZDOTDIR/.zsh_history"
 SAVEHIST=1000
 
 # Disable flow control, which makes ^S and ^Q work
-[[ -n "$(command -v stty)" ]] && stty -ixoff -ixon
+stty -ixoff -ixon
 
 # Aliases
 
 if [[ "$TERM" != dumb && -n "$(command -v dircolors)" ]]
 then
     eval "$(dircolors -b)"
-    alias ls='ls --color=auto'
-    alias dir='ls --color=auto --format=vertical'
-    alias vdir='ls --color=auto --format=long'
+    alias ls='ls --color=auto' \
+          dir='ls --color=auto --format=vertical' \
+          vdir='ls --color=auto --format=long'
 else
-    export CLICOLOR=1
-    export LSCOLORS=ExGxFxdaCxDaDaHbadabec
+    export CLICOLOR=1 \
+           LSCOLORS=ExGxFxdaCxDaDaHbadabec
     LS_COLORS='no=00:fi=00:di=01;34:ln=01;36:pi=40;33:so=01;35:do=01;35:'\
 'bd=40;33;01:cd=40;33;01:or=40;31;01:su=37;41:sg=30;43:tw=30;42:ow=34;42:'\
 'st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arj=01;31:*.taz=01;31:'\
@@ -56,18 +56,15 @@ else
 '*.mpeg=01;35:*.avi=01;35:*.fli=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:'\
 '*.xwd=01;35:*.flac=01;35:*.mp3=01;35:*.mpc=01;35:*.ogg=01;35:*.wav=01;35:'
     export LS_COLORS
-    alias dir='ls --format=vertical'
-    alias vdir='ls --format=long'
+    alias dir='ls --format=vertical' \
+          vdir='ls --format=long'
 fi
 
 ZLS_COLORS="$LS_COLORS"
 
-if [[ -n "$(command -v emacs-snapshot)" ]]
+if [[ -x '/Applications/Emacs.app/Contents/MacOS/bin/emacsclient' ]]
 then
-    alias emacs='emacs-snapshot -nw'
-elif [[ -x '/Applications/Macports/Emacs.app/Contents/MacOS/bin/emacsclient' ]]
-then
-    alias emacs='/Applications/Macports/Emacs.app/Contents/MacOS/bin/emacsclient -n'
+    alias emacs='/Applications/Emacs.app/Contents/MacOS/bin/emacsclient -n'
 else
     alias emacs='emacs -nw'
 fi
@@ -87,43 +84,22 @@ beep()
 if [[ "$TERM" != dumb && -n "$(command -v colordiff)" ]]
 then
     alias diff='colordiff -u'
-    svn()
-    {
-        for ARG in $@
-        do
-            if [[ "$ARG" == '--help' ]]
-            then
-                command svn $@
-                return $?
-            fi
-        done
-
-        case $1 in
-            diff)
-                command svn $@ 2>&1 | colordiff
-                ;;
-            *)
-                command svn $@
-                return $?
-                ;;
-        esac
-    }
 fi
 
 autoload -U colors && colors
 
 # less niceties
 
-export LESS='-iR'
-export LESSOPEN="| $HOME/bin/lesspipe %s"
-export LESS_TERMCAP_mb=${fg_bold[red]}
-export LESS_TERMCAP_md=${fg_bold[blue]}
-export LESS_TERMCAP_me=$reset_color
-export LESS_TERMCAP_se=$reset_color
+export LESS='-iR' \
+       LESSOPEN="| $HOME/bin/lesspipe %s" \
+       LESS_TERMCAP_mb=${fg_bold[red]} \
+       LESS_TERMCAP_md=${fg_bold[blue]} \
+       LESS_TERMCAP_me=$reset_color \
+       LESS_TERMCAP_se=$reset_color \
+       LESS_TERMCAP_ue=$reset_color \
+       LESS_TERMCAP_us=${fg_bold[green]}
 LESS_TERMCAP_so=$'\e['"${color[bold]};${color[bg-blue]};${color[yellow]}m"
 export LESS_TERMCAP_so
-export LESS_TERMCAP_ue=$reset_color
-export LESS_TERMCAP_us=${fg_bold[green]}
 
 # Completion
 
@@ -213,7 +189,7 @@ PROMPT="%n %{${fg[blue]}%}\$(_prompt_pwd)%{$reset_color%}: "
 
 case $TERM in
     xterm*|rxvt*)
-        precmd () { print -Pn "\e]0;%n@%M: $(_prompt_pwd)\a" }
+        precmd () { print -Pn "\e]0;%M: $(_prompt_pwd)\a" }
         ;;
     *)
         ;;

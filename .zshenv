@@ -4,34 +4,18 @@ setopt NO_global_rcs
 
 ZDOTDIR="$HOME/.zsh"
 
-if [[ -z "$LANG" ]]
-then
-    export LANG='en_US.UTF-8'
-elif [[ "$LANG" != "*.UTF-8" ]]
-then
-    export LANG="${LANG%.*}.UTF-8"
-fi
+[[ -z "$LANG" ]] && export LANG='en_US.UTF-8'
 
-if [[ -n "$(command -v locale)" ]]
-then
-    locale -a 2> /dev/null | grep -iq "^${LANG/-/-\?}\$" || \
-        export LANG="${LANG%.*}"
-    locale -a 2> /dev/null | grep -iq "^${LANG/-/-\?}\$" || \
-        export LANG=C
-fi
-
-[[ -d /usr/local/bin ]] && path=(/usr/local/bin $path)
-[[ -d /usr/local/sbin ]] && path=(/usr/local/sbin $path)
+path=(/usr/local/sbin /usr/local/bin $path)
 [[ -d /usr/local/mysql/bin ]] && path=(/usr/local/mysql/bin $path)
-[[ -d /opt/local/bin ]] && path=(/opt/local/bin $path)
-[[ -d /opt/local/sbin ]] && path=(/opt/local/sbin $path)
+[[ -d /sw/bin ]] && path=(/sw/sbin /sw/bin $path)
+[[ -d /opt/local/bin ]] && path=(/opt/local/sbin /opt/local/bin $path)
 [[ -d /opt/local/Library/Frameworks/Python.framework/Versions/2.6/bin ]] && \
  path=(/opt/local/Library/Frameworks/Python.framework/Versions/2.6/bin $path)
-[[ -d "$HOME/bin" ]] && path=("$HOME/bin" $path)
+path=("$HOME/bin" $path)
 [[ -d /usr/X11R6/bin ]] && path=($path /usr/X11R6/bin)
 [[ -d /usr/local/X11R6/bin ]] && path=($path /usr/local/X11R6/bin)
 
-[[ -d /usr/X11/man ]] && manpath=($manpath /usr/X11/man)
 [[ -d /usr/X11R6/man ]] && manpath=($manpath /usr/X11R6/man)
 [[ -d /usr/share/man ]] && manpath=(/usr/share/man $manpath)
 [[ -d /usr/local/share/man ]] && manpath=(/usr/local/share/man $manpath)
