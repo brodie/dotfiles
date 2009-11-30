@@ -1,33 +1,17 @@
 #!/usr/bin/env bash
 
-if [[ -z "$LANG" ]]
-then
-    export LANG='en_US.UTF-8'
-elif [[ "$LANG" != "*.UTF-8" ]]
-then
-    export LANG="${LANG%.*}.UTF-8"
-fi
+[[ -z "$LANG" ]] && export LANG='en_US.UTF-8'
 
-if [[ -n "$(command -v locale)" ]]
-then
-    locale -a 2> /dev/null | grep -iq "^${LANG/-/-\?}\$" || \
-        export LANG="${LANG%.*}"
-    locale -a 2> /dev/null | grep -iq "^${LANG/-/-\?}\$" || \
-        export LANG=C
-fi
-
-[[ -d /usr/local/bin ]] && export PATH="/usr/local/bin:$PATH"
-[[ -d /usr/local/sbin ]] && export PATH="/usr/local/sbin:$PATH"
+export PATH="/usr/local/sbin:/usr/local/bin:$PATH"
 [[ -d /usr/local/mysql/bin ]] && export PATH="/usr/local/mysql/bin:$PATH"
-[[ -d /opt/local/bin ]] && export PATH="/opt/local/bin:$PATH"
-[[ -d /opt/local/sbin ]] && export PATH="/opt/local/sbin:$PATH"
+[[ -d /sw/bin ]] && export PATH="/sw/sbin:/sw/bin:$PATH"
+[[ -d /opt/local/bin ]] && export PATH="/opt/local/sbin:/opt/local/bin:$PATH"
 [[ -d /opt/local/Library/Frameworks/Python.framework/Versions/2.6/bin ]] && \
  export PATH="$PATH:/opt/local/Library/Frameworks/Python.framework/Versions/2.6/bin"
-[[ -d "$HOME/bin" ]] && export PATH="$HOME/bin:$PATH"
+export PATH="$HOME/bin:$PATH"
 [[ -d /usr/X11R6/bin ]] && export PATH="$PATH:/usr/X11R6/bin"
 [[ -d /usr/local/X11R6/bin ]] && export PATH="$PATH:/usr/local/X11R6/bin"
 
-[[ -d /usr/X11/man ]] && export MANPATH="$MANPATH:/usr/X11/man"
 [[ -d /usr/X11R6/man ]] && export MANPATH="$MANPATH:/usr/X11R6/man"
 [[ -d /usr/share/man ]] && export MANPATH="/usr/share/man:$MANPATH"
 [[ -d /usr/local/share/man ]] && export MANPATH="/usr/local/share/man:$MANPATH"
@@ -39,10 +23,10 @@ fi
 
 # Options
 
-export EDITOR='vim'
-export PAGER='less'
-export BROWSER='open'
-export PYTHONSTARTUP="$HOME/.pythonrc.py"
+export EDITOR='vim' \
+       PAGER='less' \
+       BROWSER='open' \
+       PYTHONSTARTUP="$HOME/.pythonrc.py"
 
 shopt -s checkhash \
          checkwinsize \
@@ -54,7 +38,7 @@ HISTCONTROL=ignoreboth
 HISTFILESIZE=1000
 
 # Disable flow control, which makes ^S and ^Q work
-[[ -n "$(command -v stty)" ]] && stty -ixoff -ixon
+stty -ixoff -ixon
 
 # Aliases
 
@@ -86,27 +70,6 @@ beep()
 if [[ "$TERM" != dumb && -n "$(command -v colordiff)" ]]
 then
     alias diff=colordiff
-    svn()
-    {
-        for ARG in $@
-        do
-            if [[ "$ARG" == '--help' ]]
-            then
-                command svn $@
-                return $?
-            fi
-        done
-
-        case $1 in
-            diff)
-                command svn $@ 2>&1 | colordiff
-                ;;
-            *)
-                command svn $@
-                return $?
-                ;;
-        esac
-    }
 fi
 
 # less niceties
@@ -118,16 +81,15 @@ bg_blue=$(tput setab 4)
 fg_yellow=$(tput setaf 3)
 fg_green=$(tput setaf 2)
 
-export LESS='-R'
-export LESSOPEN="| $HOME/bin/lesspipe %s"
-export LESS_TERMCAP_mb="$bold_color$fg_blue"
-export LESS_TERMCAP_md="$bold_color$fg_blue"
-export LESS_TERMCAP_me=$reset_color
-export LESS_TERMCAP_se=$reset_color
-LESS_TERMCAP_so="$bold_color$bg_blue$fg_yellow"
-export LESS_TERMCAP_so
-export LESS_TERMCAP_ue=$reset_color
-export LESS_TERMCAP_us=$fg_green
+export LESS='-R' \
+       LESSOPEN="| $HOME/bin/lesspipe %s" \
+       LESS_TERMCAP_mb="$bold_color$fg_blue" \
+       LESS_TERMCAP_md="$bold_color$fg_blue" \
+       LESS_TERMCAP_me=$reset_color \
+       LESS_TERMCAP_se=$reset_color \
+       LESS_TERMCAP_so="$bold_color$bg_blue$fg_yellow" \
+       LESS_TERMCAP_ue=$reset_color \
+       LESS_TERMCAP_us=$fg_green
 
 # Prompt
 
