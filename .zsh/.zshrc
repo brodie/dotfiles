@@ -43,6 +43,14 @@ then
     alias ls='ls --color=auto' \
           dir='ls --color=auto --format=vertical' \
           vdir='ls --color=auto --format=long'
+elif [[ "$TERM" != dumb && -n "$(command -v gdircolors)" ]]
+then
+    eval "$(gdircolors -b)"
+    export CLICOLOR=1 \
+           LSCOLORS=ExGxFxdaCxDaDaHbadabec
+    alias ls='gls --color=auto' \
+          dir='gls --color=auto --format=vertical' \
+          vdir='gls --color=auto --format=long'
 else
     export CLICOLOR=1 \
            LSCOLORS=ExGxFxdaCxDaDaHbadabec

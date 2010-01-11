@@ -1,0 +1,7 @@
+[user]
+	name = Brodie Rao
+	email = brodie@bitheap.org
+[color]
+	ui = auto
+[alias]
+	glog = log --decorate --graph --all

@@ -65,8 +65,8 @@
 (setq transient-mark-mode t) ; highlight marked text (i.e. selected text)
 ;(setq vc-handled-backends nil)
 (setq inhibit-splash-screen t)
-(show-paren-mode 1) ; highlight matching parens
-(column-number-mode 1) ; show the column number in the status bar
+(show-paren-mode t) ; highlight matching parens
+(column-number-mode t) ; show the column number in the status bar
 (delete-selection-mode 1) ; backspace deletes selected text
 (savehist-mode 1) ; save command history
 ; camel case word navigation
@@ -79,6 +79,12 @@
 ; make sentence navigation more useful
 (setq sentence-end-double-space nil)
 (setq sentence-end "[.?!][]\"')]\\($\\|\t\\| \\)[ \t\n]")
+; handle duplicate buffer names better
+(require 'uniquify)
+(setq uniquify-buffer-name-style 'reverse)
+(setq uniquify-separator ":")
+(setq uniquify-after-kill-buffer-p t)
+(setq uniquify-ignore-buffers-re "^\\*")
 
 ; Disable the fringe for all frames
 (add-to-list 'default-frame-alist '(left-fringe . 0))
