@@ -65,12 +65,12 @@
 (setq transient-mark-mode t) ; highlight marked text (i.e. selected text)
 ;(setq vc-handled-backends nil)
 (setq inhibit-splash-screen t)
-(show-paren-mode 1) ; highlight matching parens
-(column-number-mode 1) ; show the column number in the status bar
+(show-paren-mode t) ; highlight matching parens
+(column-number-mode t) ; show the column number in the status bar
 (delete-selection-mode 1) ; backspace deletes selected text
 (savehist-mode 1) ; save command history
 ; camel case word navigation
-(add-hook 'after-change-major-mode-hook '(lambda () (c-subword-mode 1)))
+(add-hook 'after-change-major-mode-hook '(lambda () (subword-mode 1)))
 ; add missing trailing newline one both visit and save
 (setq require-final-newline 'visit-save)
 (ido-mode t) ; fancy file navigation
@@ -79,6 +79,12 @@
 ; make sentence navigation more useful
 (setq sentence-end-double-space nil)
 (setq sentence-end "[.?!][]\"')]\\($\\|\t\\| \\)[ \t\n]")
+; handle duplicate buffer names better
+(require 'uniquify)
+(setq uniquify-buffer-name-style 'reverse)
+(setq uniquify-separator ":")
+(setq uniquify-after-kill-buffer-p t)
+(setq uniquify-ignore-buffers-re "^\\*")
 
 ; Disable the fringe for all frames
 (add-to-list 'default-frame-alist '(left-fringe . 0))
@@ -162,7 +168,7 @@
 (global-set-key (kbd "M-[ 5 d") 'backward-word)
 (global-set-key (kbd "M-[ 5 c") 'forward-word)
 (global-set-key (kbd "DEL") 'delete-backward-indent)
-(global-set-key (kbd "M-g") 'goto-line)
+;(global-set-key (kbd "M-g") 'goto-line)
 (global-set-key (kbd "C-x M-s") 'sudo-unset-ro-or-save)
 (global-set-key (kbd "C-x M-f") 'sudo-find-file)
 (global-set-key (kbd "C--") 'undo)

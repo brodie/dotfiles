@@ -3,19 +3,15 @@ ssh = ssh -q -C
 username = Brodie Rao <me+hg@dackz.net>
 
 [defaults]
-incoming = -v
-log = -v
-outgoing = -v
 qseries = -v
-tip = -v
 
 [diff]
 git = True
 showfunc = True
 
-[hooks]
-commit.diffstat = python:~/.hgext/diffstathook.py:diffstat
-changegroup.diffstat = python:~/.hgext/diffstathook.py:diffstat
+;[hooks]
+;commit.diffstat = python:~/.hgext/diffstathook.py:diffstat
+;changegroup.diffstat = python:~/.hgext/diffstathook.py:diffstat
 
 [merge-tools]
 mergevim.executable = vim
@@ -24,7 +20,7 @@ mergevim.checkchanged = true
 
 [extensions]
 bookmarks =
-color = ~/.hgext/color.py
+color =
 convert =
 extdiff =
 gpg =
@@ -33,13 +29,16 @@ highlight =
 mq =
 pager =
 patchbomb =
-pbranch = ~/.hgext/pbranch.py
+progress =
 rebase =
 record =
 transplant =
+hgsubversion =
 
 [alias]
 last = log --limit=5
+slog = log --template '{rev}:{node|short} {desc|firstline}\n'
+qlog = log -pvr qbase:qtip
 
 [bookmarks]
 track.current = True
@@ -55,7 +54,8 @@ cmd.vimdiff = vim
 opts.vimdiff = -f '+next' '+execute "DirDiff" argv(0) argv(1)'
 
 [pager]
-attend = annotate, diff, glog, incoming, last, log, outgoing, qdiff
+attend = annotate, cat, diff, export, glog, incoming, last, log, outgoing,
+	 qdiff, qlog, slog
 
 [smtp]
 host = smtp.gmail.com

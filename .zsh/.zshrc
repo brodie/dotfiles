@@ -43,6 +43,14 @@ then
     alias ls='ls --color=auto' \
           dir='ls --color=auto --format=vertical' \
           vdir='ls --color=auto --format=long'
+elif [[ "$TERM" != dumb && -n "$(command -v gdircolors)" ]]
+then
+    eval "$(gdircolors -b)"
+    export CLICOLOR=1 \
+           LSCOLORS=ExGxFxdaCxDaDaHbadabec
+    alias ls='gls --color=auto' \
+          dir='gls --color=auto --format=vertical' \
+          vdir='gls --color=auto --format=long'
 else
     export CLICOLOR=1 \
            LSCOLORS=ExGxFxdaCxDaDaHbadabec
@@ -73,13 +81,11 @@ alias ll='ls -l' \
       la='ls -A' \
       l='less' \
       grep='grep --color=always' \
-      mq='hg -R $(hg root)/.hg/patches' \
+      mq='hg --cwd $(hg root)/.hg/patches' \
+      py='python -i /dev/null' \
       zgrep='zgrep --color=always'
 
-beep()
-{
-    echo -n '\a'
-}
+beep() { echo -n '\a' }
 
 if [[ "$TERM" != dumb && -n "$(command -v colordiff)" ]]
 then
@@ -182,7 +188,8 @@ _prompt_pwd()
     esac
 }
 
-PROMPT="%n %{${fg[blue]}%}\$(_prompt_pwd)%{$reset_color%}: "
+PROMPT="%{${fg[grey]}%}$%{$reset_color%} "
+RPROMPT="%{${fg[blue]}%}\$(_prompt_pwd)%{$reset_color%}"
 #PROMPT="%m %{${fg[blue]}%}\$(_prompt_pwd)%{$reset_color%}: "
 
 # Window title
