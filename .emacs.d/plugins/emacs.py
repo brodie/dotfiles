@@ -5,22 +5,20 @@
 
 # This file is part of GNU Emacs.
 
-# GNU Emacs is free software; you can redistribute it and/or modify
+# This file is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
-# the Free Software Foundation; either version 3, or (at your option)
-# any later version.
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 
-# GNU Emacs is distributed in the hope that it will be useful,
+# This file is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
 # You should have received a copy of the GNU General Public License
-# along with GNU Emacs; see the file COPYING.  If not, write to the
-# Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
-# Boston, MA 02110-1301, USA.
+# along with GNU Emacs.  If not, see <http://www.gnu.org/licenses/>.
 
-# $Revision: 1.16 $
+# $Revision: 1.19 $
 
 import os, sys, traceback, inspect, keyword
 
@@ -49,12 +47,9 @@ if not keyword.iskeyword ("print"): # Python 3
 else:				# Python 2
     # execit
     eval (compile ("""
-def execit (string, dict = None):
+def execit (string, globls = None, locls = None):
     "Compatibility with Python 3's `exec' for Python 2."
-    if dict:
-        exec string in dict
-    else:
-        exec string
+    exec string in globls, locls
 """,'emacs.py','single'))
     # printit
     eval (compile ("""
@@ -83,11 +78,14 @@ def eexecfile (file):
 
     try:
         try:
+            # Note that the file is closed by the (quasi-?) GC since
+            # there's no reference to it kept.
             execit (open(file).read(), __main__.__dict__)
         except:
             (etype, value, tb) = sys.exc_info ()
             # Lose the stack frame for this location and for execit.
             tb = tb.tb_next.tb_next
+            printit ("")        # Move off prompt
             if tb is None:      # print_exception won't do it
                 printit ("Traceback (most recent call last):")
             traceback.print_exception (etype, value, tb)
@@ -167,6 +165,8 @@ def all_names (object):
     return do_object (object, set ([]))
 
 # Fixme:  Should do multiple dotted components -- see rlcompleter.
+# Fixme:  Check whether we could just use rlcompleter in the Python
+# versions we require.
 def complete (name, imports):
     """Complete NAME and print a Lisp list of completions.
     Exec IMPORTS first."""
@@ -242,8 +242,11 @@ def eimport (mod, dir):
                 __dict__[mod] = __import__ (mod)
         except:
             (etype, value, tb) = sys.exc_info ()
-            printit ("Traceback (most recent call last):")
-            traceback.print_exception (etype, value, tb.tb_next)
+            tb = tb.tb_next     # Lose the "<stdin>" stack frame
+            printit ("")        # Move off prompt
+            if tb is None:
+                printit ("Traceback (most recent call last):")
+            traceback.print_exception (etype, value, tb)
     finally:
         sys.path[0] = path0
 

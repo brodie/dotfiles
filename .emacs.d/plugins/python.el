@@ -6,7 +6,7 @@
 ;; Created: Nov 2003
 ;; Keywords: languages
 ;; URL: http://www.loveshack.ukfsn.org/emacs/
-;; $Revision: 1.23 $
+;; $Revision: 1.32 $
 
 ;; This file is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -33,16 +33,16 @@
 ;; syntax functions with text properties maintained by font-lock makes
 ;; it more correct with arbitrary string and comment contents.
 
-;; This doesn't implement all the facilities of python-mode.el.  Some
-;; just need doing, e.g. catching exceptions in the inferior Python
-;; buffer (but see M-x pdb for debugging).  [Actually, the use of
-;; `compilation-shell-minor-mode' now is probably enough for that.]
-;; Others don't seem appropriate.  For instance,
-;; `forward-into-nomenclature' should be done separately, since it's
-;; not specific to Python, and I've installed a minor mode to do the
-;; job properly in Emacs 23.  [CC mode 5.31 contains an incompatible
-;; feature, `c-subword-mode' which is intended to have a similar
+;; This doesn't implement all the facilities of python-mode.el, some
+;; of which shouldn't be in specific language modes.
+;; `forward-into-nomenclature' is provided generally by
+;; `capitalized-words-mode' in Emacs 23.  [CC mode contains an
+;; incompatible feature, `c-subword-mode' intended to have a similar
 ;; effect, but actually only affects word-oriented keybindings.]
+;; Gud-like functionality in the inferior Python buffer should be
+;; provided by a Gud minor mode, if anything (I made a prototype), but
+;; the use of `compilation-shell-minor-mode' allows you to find the
+;; error location explicitly with C-x `.
 
 ;; Other things seem more natural or canonical here, e.g. the
 ;; {beginning,end}-of-defun implementation dealing with nested
@@ -57,12 +57,19 @@
 ;; with python-mode.el in some respects.  For instance, various key
 ;; bindings are changed to obey Emacs conventions.
 
-;; There is support for both Python 2 and Python 3 languages and
-;; interpreters using the emacs.py module in inferior processes.
+;; There is support for editing both Python 2 and Python 3 languages,
+;; and using interpreters for either version to run the emacs.py
+;; module in inferior processes.  See `python-default-version',
+;; `python-2-mode', and `python-3-mode'.
 
-;; The support for Jython probably isn't useful, since Jython seems
-;; only to implement the Python 2.2 language, and so won't run
-;; emacs.py.
+;; The support for Jython probably is only useful, with a recent (as
+;; of 2009-09) Jython -- previous ones only implement the Python 2.2
+;; language, and so won't run emacs.py.
+
+;; Python stopped shipping Info documentation after version 2.5, so
+;; the info-look functionality is increasingly useless.  I don't know
+;; what's involved in restoring Info generation and haven't had time
+;; to try.
 
 ;; TODO: See various Fixmes below.
 
@@ -95,7 +102,7 @@
 (defvar python-font-lock-keywords
   `(,(rx symbol-start
 	 ;; Originally from v 2.5 reference, § keywords, but now
-	 ;; modified for Pythin 2/3 compatibility.
+	 ;; modified for Python 2/3 compatibility.
 	 ;; def and class dealt with separately below.
 	 ;; See also the extra keywords below.
 	 (or "and" "as" "assert" "break" "continue" "del" "elif" "else"
@@ -750,7 +757,10 @@ corresponding block opening (or nil)."
        ;; Fixme: Maybe have a case here which indents (only) first
        ;; line after a lambda.
        (t
-	(let ((start (car (assoc (python-first-word) python-block-pairs))))
+	(let* ((start-pair (assoc (python-first-word) python-block-pairs))
+	       (start (car start-pair))
+	       (starters (cdr start-pair))
+	       finish)
 	  (python-previous-statement)
 	  ;; Is this a valid indentation for the line of interest?
 	  (unless (or (if start		; potentially only outdentable
@@ -758,21 +768,26 @@ corresponding block opening (or nil)."
 			  ;;   if ...: ...
 			  ;;   else ...:
 			  ;; where the second line need not be outdented.
-			  (not (member (python-first-word)
-				       (cdr (assoc start
-						   python-block-pairs)))))
+			  (not (member (python-first-word) starters)))
 		      ;; Not sensible to indent to the same level as
 		      ;; previous `return' &c.
 		      (python-close-block-statement-p))
 	    (push (cons (current-indentation) (python-initial-text))
 		  levels))
-	  (while (and (python-beginning-of-block)
+	  ;; Move up over enclosing blocks and note the indentations
+	  ;; which will close them.
+	  (while (and (not finish)
+		      (python-beginning-of-block)
 		      (not (assoc (current-indentation) levels)))
-	    (when (or (not start)
-		      (member (python-first-word)
-			      (cdr (assoc start python-block-pairs))))
-	      (push (cons (current-indentation) (python-initial-text))
-		    levels))))))
+	    (let ((word (python-first-word)))
+	      (when (or (not start)
+			(member (python-first-word) starters))
+		(push (cons (current-indentation) (python-initial-text))
+		      levels)
+		;; Don't move a statement which must terminate the try
+		;; suite.  (try is the only relevant case.)
+		(if (and start (equal word "try"))
+		    (setq finish t))))))))
       (prog1 (or levels (setq levels '((0 . ""))))
 	(setq python-indent-list levels
 	      python-indent-list-length (length python-indent-list))))))
@@ -1274,7 +1289,8 @@ Possible commands include `pychecker', `pyflakes', and `pylint'."
   :type '(choice
 	  (const "pychecker --stdlib")
 	  (const "pyflakes")
-	  (const "pylint -f parseable")
+	  (const "pylint -f parseable -r n --disable-msg-cat=CRI")
+	  (const "pep8.py --repeat") ; http://github.com/cburroughs/pep8.py
 	  (string :tag "Other command"))
   :group 'python)
 
@@ -1305,12 +1321,14 @@ See `python-check-command' for the default."
   "Flymake init function for Python.
 To be added to `flymake-init-create-temp-buffer-copy'."
   (let ((checker-elts (split-string python-check-command)))
-    (list (car checker-elts) (append (cdr checker-elts)
-				     (list (buffer-file-name))))))
+    (list (car checker-elts)
+	  (append (cdr checker-elts)
+		  (list (flymake-init-create-temp-buffer-copy
+			 'flymake-create-temp-inplace))))))
 
-;(eval-after-load "flymake"
-;  '(add-to-list 'flymake-allowed-file-name-masks
-;		'("\\.py\\'" python-flymake-init)))
+(eval-after-load "flymake"
+  '(add-to-list 'flymake-allowed-file-name-masks
+		'("\\.py\\'" python-flymake-init)))
 
 ;;;; Inferior mode stuff (following cmuscheme).
 
@@ -1385,6 +1403,7 @@ local value.")
     ;; This will inherit from comint-mode-map.
     (define-key map "\C-c\C-l" 'python-load-file)
     (define-key map "\C-c\C-v" 'python-check)
+    (define-key map "\C-c\C-z" 'python-switch-to-source)
     ;; Note that we _can_ still use these commands which send to the
     ;; Python process even at the prompt iff we have a normal prompt,
     ;; i.e. '>>> ' and not '... '.  See the comment before
@@ -1393,6 +1412,13 @@ local value.")
     ;; (define-key map [(meta ?\t)] 'python-complete-symbol)
     ;; (define-key map "\C-c\C-f" 'python-describe-symbol)
     map))
+
+(eval-and-compile
+(defconst python-basic-prompt-regexp
+  (rx (and (or ">>>" "..." "(Pdb)") " ")))
+(defconst python-prompt-regexp
+  (rx line-start (1+ (eval (list 'regexp python-basic-prompt-regexp))))
+  "Regexp matching a prompt in the inferior Python buffer."))
 
 ;; Fixme: This should inherit some stuff from `python-mode', but I'm
 ;; not sure how much: at least some keybindings, like C-c C-f;
@@ -1423,8 +1449,7 @@ For running multiple processes in multiple buffers, see `run-python' and
 	    nil t)
   ;; Still required by `comint-redirect-send-command', for instance
   ;; (and we need to match things like `>>> ... >>> '):
-  (set (make-local-variable 'comint-prompt-regexp)
-       (rx line-start (1+ (and (or (repeat 3 (any ">.")) "(Pdb)") " "))))
+  (set (make-local-variable 'comint-prompt-regexp) python-prompt-regexp)
   (set (make-local-variable 'compilation-error-regexp-alist)
        python-compilation-regexp-alist)
   (compilation-shell-minor-mode 1))
@@ -1450,6 +1475,26 @@ Don't save anything for STR matching `inferior-python-filter-regexp'."
 	  (t (let ((pos (string-match "[^ \t]" string)))
 	       (if pos (python-args-to-list (substring string pos))))))))
 
+;; Derived from `split-string'.
+(defun python-split-output (string)
+  "Split STRING at newlines into a list of newline-terminated strings.
+The end of the list doesn't end in a newline if STRING doesn't."
+  (let ((start 0)
+	notfirst list)
+    (while (and (string-match "\n" string
+			      (if (and notfirst
+				       (= start (match-beginning 0))
+				       (< start (length string)))
+				  (1+ start)
+				start))
+		(< start (length string)))
+      (setq notfirst t)
+      (setq list (cons (substring string start (match-end 0)) list))
+      (setq start (match-end 0)))
+    (if (< start (length string))
+	(setq list (cons (substring string start) list)))
+    (nreverse list)))
+
 (defvar python-preoutput-result nil
   "Data from last `_emacs_out' line seen by the preoutput filter.")
 
@@ -1458,41 +1503,62 @@ Don't save anything for STR matching `inferior-python-filter-regexp'."
 
 (defvar python-preoutput-leftover nil)
 
-;; Using this stops us getting lines in the buffer like
-;; >>> ... ... >>>
-;; Also look for (and delete) an `_emacs_ok' string and call
-;; `python-preoutput-continuation' if we get it.
 (defun python-preoutput-filter (s)
-  "`comint-preoutput-filter-functions' function: ignore prompts not at bol."
+  "`comint-preoutput-filter-functions' function.
+Deal with multiple consecutive prompts and with data following an
+`_emacs_out ' tag or with an `_emacs_ok' tag."
   (when python-preoutput-leftover
     (setq s (concat python-preoutput-leftover s))
     (setq python-preoutput-leftover nil))
-  (cond ((and (string-match (rx string-start (repeat 3 (any ".>"))
-				" " string-end)
-                            s)
-              (/= (let ((inhibit-field-text-motion t))
-                    (line-beginning-position))
-                  (point)))
-	 ;; The need for this seems to be system-dependent:
-	 (if (and (eq ?. (aref s 0)))
-	     (accept-process-output (get-buffer-process (current-buffer)) 1))
-         "")
-        ((string= s "_emacs_ok\n")
-         (when python-preoutput-continuation
-           (funcall python-preoutput-continuation)
-           (setq python-preoutput-continuation nil))
-         "")
-        ((string-match "_emacs_out \\(.*\\)\n" s)
-         (setq python-preoutput-result (match-string 1 s))
-         "")
-	((string-match ".*\n" s)
-	 s)
-	((or (eq t (compare-strings s nil nil "_emacs_ok\n" nil (length s)))
-	     (let ((end (min (length "_emacs_out ") (length s))))
-	       (eq t (compare-strings s nil end "_emacs_out " nil end))))
-	 (setq python-preoutput-leftover s)
+  ;; Collapse multiple prompts to the last one.
+  (setq s (replace-regexp-in-string
+	   (rx line-start (0+ (eval (list 'regexp python-basic-prompt-regexp)))
+	       (group (eval (list 'regexp python-basic-prompt-regexp))))
+	   "\\1" s))
+  (let* ((lines (python-split-output s))
+	 (done-one nil))
+    (mapconcat
+     (lambda (line)
+       ;; Zap prompt if we already have one on the current line and
+       ;; this is the first line in the output.
+       (if (and (not done-one)
+		(string-match python-prompt-regexp line))
+	   (if (/= (let ((inhibit-field-text-motion t))
+		     (line-beginning-position))
+		   (point))
+	       (setq line (replace-match "" nil nil line))))
+       (cond
+	;; Currently-unused magic string to invoke the function.
+	((string-match "_emacs_ok\n" line) ; 
+	 (when python-preoutput-continuation
+	   (funcall python-preoutput-continuation)
+	   (setq python-preoutput-continuation nil))
 	 "")
-        (t s)))
+	;; Magic string used to return the result of an evaluation.
+	((string-match "_emacs_out \\(.*\\)\n" line)
+	 ;; Stash the data.  We lose a leading prompt.
+	 (setq python-preoutput-result (match-string 1 line))
+	 "")
+	;; Pass anything else newline-terminated.
+	((string-match "\n" line)
+	 (setq done-one line))
+	;; An incomplete line which looks as if it should be an
+	;; "_emacs_out" line split by the output buffering.  We just
+	;; have to hope it doesn't get split in the middle of
+	;; "_emacs".  Stash it until we get the rest.
+	((string-match (rx (optional
+			    (eval (list 'regexp python-prompt-regexp)))
+			   "_emacs")
+		       line)
+	 (setq python-preoutput-leftover
+	       (concat python-preoutput-leftover line))
+	 (setq done-one ""))
+	;; Pass through anything else not new-line terminated, which is
+	;; either an incomplete line or the result of a
+	;; non-newline-terminated print.
+	(t
+	 (setq done-one line))))
+     lines "")))
 
 (autoload 'comint-check-proc "comint")
 
@@ -1559,9 +1625,14 @@ buffer for a list of commands.)"
 	      (cons (concat "PYTHONPATH="
 			    (if path (concat path path-separator))
 			    data-directory)
-		    process-environment))
-	     ;; Suppress use of pager for help output:
-	     (process-connection-type nil))
+		    process-environment)))
+	;; Suppress use of pager for help output.  We used to use
+	;; (process-connection-type nil), but that screws non-ASCII
+	;; character processing by the interpreter.  This should stop
+	;; paging, at least by the logic of the 2.5 pydoc.py.
+	;; Presumably just using cat will lose on Doze.
+	(setenv "PAGER")
+	(setenv "TERM" "dumb")
 	(set-buffer (apply 'make-comint-in-buffer "Python"
 			   (generate-new-buffer "*Python*")
 			   (car cmdlist) nil (cdr cmdlist)))
@@ -1585,8 +1656,10 @@ buffer for a list of commands.)"
 	;; directory, that's their lookout.  It's more convenient to
 	;; set things up here than in emacs.py, messing with sys.path
 	;; around the initial use of `os'.  See also comments below
-	;; about code loading.
-	(when (/= 0 (logand 2 (file-modes default-directory)))	; world-writable
+	;; about code loading.  [I'm not convinced this is a serious
+	;; risk, especially as it could happen with things outside
+	;; Emacs, but it got a CVE.]
+	(when (/= 0 (logand 2 (file-modes default-directory))) ; world-writable
 	  (message "Current directory world-writable --\
  suppressing Python imports from it")
 	  (python-send-string "import sys; sys.path.remove('')")))))
@@ -1612,10 +1685,14 @@ buffer for a list of commands.)"
     (let ((end (marker-position (process-mark (python-proc)))))
       (with-current-buffer python-buffer (goto-char (point-max)))
       (compilation-forget-errors)
-      (python-send-string command))))
+      (python-send-string command)
+      t)))
 
-(defun python-send-region (start end)
-  "Send the region to the inferior Python process."
+(autoload 'mm-find-mime-charset-region "mm-util")
+
+(defun python-send-region (start end &optional print-message)
+  "Send the region to the inferior Python process.
+May print a message, so only suitable for interactive use."
   ;; The region is evaluated from a temporary file.  This avoids
   ;; problems with blank lines, which have different semantics
   ;; interactively and in files.  It also saves the inferior process
@@ -1627,13 +1704,19 @@ buffer for a list of commands.)"
   ;;
   ;; The `compilation-shell-minor-mode' parsing takes care of relating
   ;; the reference to the temporary file to the source.
-  ;;
-  ;; Fixme: Write a `coding' header to the temp file if the region is
-  ;; non-ASCII.
-  (interactive "r")
+  (interactive "r\np")
   (let* ((f (make-temp-file "py"))
 	 (command (format "emacs.eexecfile(%S)" f))
-	 (orig-start (copy-marker start)))
+	 (orig-start (copy-marker start))
+	 ;; Prefer utf-8 rather than risking getting something that
+	 ;; Python doesn't know about.
+	 (mm-coding-system-priorities '(utf-8))
+	 (charset (car (mm-find-mime-charset-region start end))))
+    (if charset
+	;; Assume all valid mime charsets have coding system of the same
+	;; name, as they should have.
+	(write-region (format "# -*- coding: %s -*-\n" charset)
+		      nil f nil 'nomsg))
     (when (save-excursion
 	    (goto-char start)
 	    (/= 0 (current-indentation))) ; need dummy block
@@ -1641,14 +1724,22 @@ buffer for a list of commands.)"
 	(goto-char orig-start)
 	;; Wrong if we had indented code at buffer start.
 	(set-marker orig-start (line-beginning-position 0)))
-      (write-region "if True:\n" nil f nil 'nomsg))
-    (write-region start end f t 'nomsg)
-    (python-send-command command)
-    (with-current-buffer (process-buffer (python-proc))
-      ;; Tell compile.el to redirect error locations in file `f' to
-      ;; positions past marker `orig-start'.  It has to be done *after*
-      ;; `python-send-command''s call to `compilation-forget-errors'.
-      (compilation-fake-loc orig-start f))))
+      (write-region "if True:\n" nil f t 'nomsg))
+    (let ((coding-system-for-write charset))
+      (write-region start end f t 'nomsg))
+    (if (python-send-command command)
+	(progn
+	  (with-current-buffer (process-buffer (python-proc))
+	    ;; Tell compile.el to redirect error locations in file `f'
+	    ;; to positions past marker `orig-start'.  It has to be
+	    ;; done *after* `python-send-command''s call to
+	    ;; `compilation-forget-errors'.
+	    (compilation-fake-loc orig-start f))
+	  t)
+      (progn
+	(if print-message
+	    (message "Can't execute: not at prompt in inferior buffer"))
+	nil))))
 
 (defun python-send-string (string)
   "Evaluate STRING in inferior Python process."
@@ -1669,21 +1760,39 @@ buffer for a list of commands.)"
   (save-excursion (python-send-region (progn (beginning-of-defun) (point))
 				      (progn (end-of-defun) (point)))))
 
+;; Maybe should be buffer-local.
+(defvar python-switched-from nil
+  "Position from which \\[python-switch-to-python] was last called.
+\\[python-switch-to-source] will return here.")
+
 (defun python-switch-to-python (eob-p)
   "Switch to the Python process buffer, maybe starting new process.
 With prefix arg, position cursor at end of buffer."
   (interactive "P")
+  (setq python-switched-from (point-marker))
   (pop-to-buffer (process-buffer (python-proc)) t) ;Runs python if needed.
   (when eob-p
     (push-mark)
     (goto-char (point-max))))
 
+(defun python-switch-to-source ()
+  "Return whence \\[python-switch-to-python] was last called.
+Only succeeds once after each use of \\[python-switch-to-python]."
+  (interactive)
+  (if python-switched-from
+      (let ((buffer (marker-buffer python-switched-from)))
+	(set-buffer buffer)
+	(goto-char python-switched-from)
+	(pop-to-buffer buffer)
+	(setq python-switched-from nil))
+    (message "No stored source position")))
+
 (defun python-send-region-and-go (start end)
   "Send the region to the inferior Python process.
 Then switch to the process buffer."
   (interactive "r")
-  (python-send-region start end)
-  (python-switch-to-python t))
+  (if (python-send-region start end)
+      (python-switch-to-python t)))
 
 (defcustom python-source-modes '(python-mode jython-mode)
   "*Used to determine if a buffer contains Python source code.
@@ -1712,15 +1821,21 @@ module-qualified names."
   (setq python-prev-dir/file (cons (file-name-directory file-name)
 				   (file-name-nondirectory file-name)))
   (with-current-buffer (process-buffer (python-proc)) ;Runs python if needed.
-    ;; Fixme: I'm not convinced by this logic from python-mode.el.
-    (python-send-command
-     (if (string-match "\\.py\\'" file-name)
-	 (let ((module (file-name-sans-extension
-			(file-name-nondirectory file-name))))
-	   (format "emacs.eimport(%S,%S)"
-		   module (file-name-directory file-name)))
-       (format "execfile(%S)" file-name)))
-    (message "%s loaded" file-name)))
+    (let ((world-writable
+	   ;; Directory is world-writable (see `run-python').
+	   (/= 0 (logand 2 (file-modes default-directory)))))
+      (if (python-send-command
+	   (if (and (string-match "\\.py\\'" file-name)
+		    (not world-writable))
+	       (let ((module (file-name-sans-extension
+			      (file-name-nondirectory file-name))))
+		 (format "emacs.eimport(%S,%S)"
+			 module (file-name-directory file-name)))
+	     (format "execfile(%S)" file-name)))
+	  (if world-writable
+	      (message "Not loading as module from world-writable directory")
+	    (message "%s loaded" file-name))
+	(message "Can't execute: not at prompt in inferior buffer")))))
 
 (defun python-proc ()
   "Return the current Python process.
@@ -1829,7 +1944,10 @@ If there isn't, it's probably not appropriate to send input to return
 Eldoc information etc.  If PROC is non-nil, check the buffer for that
 process."
   (with-current-buffer (process-buffer (or proc (python-proc)))
+    (goto-char (point-max))
     (save-excursion
+      ;; The prompt really should be `>>>', not `...', or `(pdb)',
+      ;; say, else we can't sensibly send stuff to evaluate.
       (save-match-data (re-search-backward ">>> \\=" nil t)))))
 
 ;; Fixme:  Is there anything reasonable we can do with random methods?
@@ -1839,11 +1957,13 @@ process."
 Only works when point is in a function name, not its arg list, for
 instance.  Assumes an inferior Python is running."
   (with-syntax-table python-dotty-syntax-table
-    (let ((symbol (current-word)))
+    (let ((symbol (current-word))
+	  result)
       ;; First try the symbol we're on.
       (or (and symbol
-	       (python-send-receive (format "emacs.eargs(%S, %s)"
-					    symbol python-imports)))
+	       (setq result
+		     (python-send-receive (format "emacs.eargs(%S, %s)"
+						  symbol python-imports))))
 	  ;; Try moving to symbol before enclosing parens.
 	  (let ((s (syntax-ppss)))
 	    (unless (zerop (car s))
@@ -1854,10 +1974,15 @@ instance.  Assumes an inferior Python is running."
 		  (let ((point (point)))
 		    (skip-syntax-backward "w_")
 		    (if (< (point) point)
-			(python-send-receive
-			 (format "emacs.eargs(%S, %s)"
-				 (buffer-substring-no-properties (point) point)
-				 python-imports))))))))))))
+			(setq result
+			      (python-send-receive
+			       (format "emacs.eargs(%S, %s)"
+				       (buffer-substring-no-properties
+					(point) point)
+				       python-imports))))))))))
+      (if (equal result "")
+	  nil
+	result))))
 
 ;;;; Info-look functionality.
 
@@ -2451,13 +2576,81 @@ without confirmation."
   (add-hook 'post-command-hook 'python-abbrev-pc-hook nil t))
 (modify-syntax-entry ?/ "w" python-abbrev-syntax-table)
 
-(defvar python-basic-mode-map python-mode-map)
-(defvar python-basic-mode-syntax-table python-mode-syntax-table)
-(defvar python-basic-mode-abbrev-table python-mode-abbrev-table)
+(defvar python-outline-regexp
+  (rx (* space) (or "class" "def" "elif" "else" "except" "finally"
+		    "for" "if" "try" "while" "with")
+      symbol-end))
 
-(define-derived-mode python-basic-mode fundamental-mode "Python"
-  "Basic Python mode, from which the Python2 and Python3 modes derive."
+(defcustom python-default-version 2
+  "Which version of the language is supported by \\[python-mode].
+Either `2' (for the Python 2.6 language) or `3' (for the Python 3.0
+language)."
   :group 'python
+  :type '(choice (const 2) (const 3)))
+
+(defvar python-version nil
+  "The Python language version set for the current Python mode buffer.
+It stores the value of `python-default-version' when `python-mode'
+was invoked.")
+
+;;;###autoload
+(define-derived-mode python-mode fundamental-mode "Python"
+  "Major mode for editing Python files.
+
+The version of the language supported depends on
+`python-default-version' (q.v.).  `python-2-mode' and `python-3-mode'
+invoke `python-mode' with the appropriate version set, and are
+particularly useful in file variables to specify the language in the
+file.
+
+`python-python-command' determines which interpreter is used by the
+Python sub-shell, and you may want to ensure it corresponds to the
+language version you edit if version 2 and 3 variants are both
+available.  `jython-mode', which is invoked if the buffer appears to
+contain Jython code, differs from `python-mode' only in setting
+`python-python-command'.
+
+Turns on Font Lock mode unconditionally since it is currently required
+for correct parsing of the source.
+See also `run-python' and associated Python mode
+commands for running Python under Emacs.
+
+The Emacs commands which work with `defun's, e.g. \\[beginning-of-defun], deal
+with nested `def' and `class' blocks.  They take the innermost one as
+current without distinguishing method and class definitions.  Used multiple
+times, they move over others at the same indentation level until they reach
+the end of definitions at that level, when they move up a level.
+\\<python-mode-map>
+Colon is electric: it outdents the line if appropriate, e.g. for
+an else statement.  \\[python-backspace] at the beginning of an indented statement
+deletes a level of indentation to close the current block; otherwise it
+deletes a character backward.  TAB indents the current line relative to
+the preceding code.  Successive TABs, with no intervening command, cycle
+through the possibilities for indentation on the basis of enclosing blocks.
+
+\\[fill-paragraph] fills comments and multi-line strings appropriately, but has no
+effect outside them.
+
+Supports Eldoc mode (only for functions, using a Python process),
+Info-Look and Imenu.  (Unfortunately the Info docs required for
+info-look aren't currently available for Python versions after 2.5.)
+In Outline minor mode, `class' and `def' lines count as headers.
+
+Symbol completion is available similarly to the `rlcompleter' module
+in the Python shell.  This completion is added to the Hippie Expand
+functions locally if Hippie Expand mode is turned on.  Completion of
+symbols of the form x.y only works if the components are literal
+module/attribute names, not variables.  An abbrev table is set up with
+skeleton expansions for compound statement templates.  Turn on Abbrev
+mode to use it.
+
+\\{python-mode-map}"
+  :group 'python
+  (set (make-local-variable 'python-font-lock-keywords)
+       (append python-font-lock-keywords
+	       (if (equal 2 python-default-version)
+		   python-2-font-lock-keywords
+		 python-3-font-lock-keywords)))
   (set (make-local-variable 'font-lock-defaults)
        '(python-font-lock-keywords nil nil nil nil
 				   (font-lock-syntactic-keywords
@@ -2479,11 +2672,8 @@ without confirmation."
   (set (make-local-variable 'require-final-newline) mode-require-final-newline)
   (set (make-local-variable 'add-log-current-defun-function)
        #'python-current-defun)
-  (set (make-local-variable 'outline-regexp)
-       (rx (* space) (or "class" "def" "elif" "else" "except" "finally"
-			 "for" "if" "try" "while" "with")
-	   symbol-end))
-  (set (make-local-variable 'outline-heading-end-regexp) ":\\s-*\n")
+  (set (make-local-variable 'outline-regexp) python-outline-regexp)
+  (set (make-local-variable 'outline-heading-end-regexp) ":\\s-*\\(\n\\|#\\)")
   (set (make-local-variable 'outline-level) #'python-outline-level)
   (set (make-local-variable 'open-paren-in-column-0-is-defun-start) nil)
   (make-local-variable 'python-saved-check-command)
@@ -2501,19 +2691,13 @@ without confirmation."
        'python-partial-symbol)
   (set (make-local-variable 'symbol-completion-completions-function)
        'python-symbol-completions)
-  ;; This was added in Emacs, but seems to be of limited use since it
-  ;; isn't (can't be) indentation-based.  Also hide-level doesn't seem
-  ;; to work properly.
-  (add-to-list 'hs-special-modes-alist
-	       `(python-mode "^\\s-*\\(?:def\\|class\\)\\>" nil "#"
-		 ,(lambda (arg)
-		    (python-end-of-defun)
-		    (skip-chars-backward " \t\n"))
-		 nil))
   (set (make-local-variable 'skeleton-further-elements)
        '((< '(backward-delete-char-untabify (min python-indent
 						 (current-column))))
 	 (^ '(- (1+ (current-indentation))))))
+  (setq mode-name
+	(if (equal python-default-version 2) "Python2" "Python3"))
+  (set (make-local-variable 'python-version) python-default-version)
   (add-hook 'pre-abbrev-expand-hook 'python-pea-hook nil t)
   (if (featurep 'hippie-exp)
       (set (make-local-variable 'hippie-expand-try-functions-list)
@@ -2529,121 +2713,17 @@ without confirmation."
     (let ((python-mode-running t))
       (python-maybe-jython))))
 
-;;;###autoload
-(define-derived-mode python-2-mode python-basic-mode "Python"
-  "Major mode for editing Python 2.x files.
-Supports the syntax and builtins of Python 2.6.
+(defun python-2-mode ()
+  "Turn on Python mode with Python 2 keywords."
+  (interactive)
+  (let ((python-default-version 2))
+    (python-mode)))
 
-Turns on Font Lock mode unconditionally since it is currently required
-for correct parsing of the source.
-See also `jython-mode', which is actually invoked if the buffer appears to
-contain Jython code.  See also `run-python' and associated Python mode
-commands for running Python under Emacs.
-
-The Emacs commands which work with `defun's, e.g. \\[beginning-of-defun], deal
-with nested `def' and `class' blocks.  They take the innermost one as
-current without distinguishing method and class definitions.  Used multiple
-times, they move over others at the same indentation level until they reach
-the end of definitions at that level, when they move up a level.
-\\<python-mode-map>
-Colon is electric: it outdents the line if appropriate, e.g. for
-an else statement.  \\[python-backspace] at the beginning of an indented statement
-deletes a level of indentation to close the current block; otherwise it
-deletes a character backward.  TAB indents the current line relative to
-the preceding code.  Successive TABs, with no intervening command, cycle
-through the possibilities for indentation on the basis of enclosing blocks.
-
-\\[fill-paragraph] fills comments and multi-line strings appropriately, but has no
-effect outside them.
-
-Supports Eldoc mode (only for functions, using a Python process),
-Info-Look and Imenu.  In Outline minor mode, `class' and `def' lines
-count as headers.
-
-Symbol completion is available similarly to the `rlcompleter' module
-in the Python shell.  This completion is added to the Hippie Expand
-functions locally if Hippie Expand mode is turned on.  Completion of
-symbols of the form x.y only works if the components are literal
-module/attribute names, not variables.  An abbrev table is set up with
-skeleton expansions for compound statement templates.  Turn on Abbrev
-mode to use it.
-
-See also \\[python-3-mode].
-
-\\{python-mode-map}"
-  (font-lock-add-keywords nil python-2-font-lock-keywords 'append)
-  ;; Not propagating as it does in Emacs 21 for some reason.
-  (setq local-abbrev-table python-mode-abbrev-table))
-
-(defcustom python-default-version 2
-  "Which version of the language is supported by \\[python-mode].
-Either `2' (for the Python 2.6 language) or `3' (for the Python 3.0
-language)."
-  :group 'python
-  :type '(choice (const 2) (const 3)))
-
-;;;###autoload
-(define-derived-mode python-mode fundamental-mode "Python"
-  "Major mode for editing Python files.
-
-The version of the language supported depends on
-`python-default-version':  either `python-2-mode' or `python-3-mode',
-q.v., is invoked.  `python-python-command' determines which
-interpreter is used by the Python sub-shell, and you may want to
-ensure it corresponds to the language version you edit if version 2
-and 3 variants are both available."
-  ;; Fixme:  Is this a good idea?  We end up with a different
-  ;; major-mode from the one we invoked.  We could also have
-  ;; python-python-command customization flip an alias.
-  (if (eq 2 python-default-version)
-      (python-2-mode)
-    (python-3-mode)))
-
-;;;###autoload
-(define-derived-mode python-3-mode python-basic-mode "Python"
-  "Major mode for editing Python 3.x files.
-Supports the syntax and builtins of Python 3.0.
-
-Turns on Font Lock mode unconditionally since it is currently required
-for correct parsing of the source.
-See also `jython-mode', which is actually invoked if the buffer appears to
-contain Jython code.  See also `run-python' and associated Python mode
-commands for running Python under Emacs.
-
-The Emacs commands which work with `defun's, e.g. \\[beginning-of-defun], deal
-with nested `def' and `class' blocks.  They take the innermost one as
-current without distinguishing method and class definitions.  Used multiple
-times, they move over others at the same indentation level until they reach
-the end of definitions at that level, when they move up a level.
-\\<python-mode-map>
-Colon is electric: it outdents the line if appropriate, e.g. for
-an else statement.  \\[python-backspace] at the beginning of an indented statement
-deletes a level of indentation to close the current block; otherwise it
-deletes a character backward.  TAB indents the current line relative to
-the preceding code.  Successive TABs, with no intervening command, cycle
-through the possibilities for indentation on the basis of enclosing blocks.
-
-\\[fill-paragraph] fills comments and multi-line strings appropriately, but has no
-effect outside them.
-
-Supports Eldoc mode (only for functions, using a Python process),
-Info-Look and Imenu.  In Outline minor mode, `class' and `def' lines
-count as headers.
-
-Symbol completion is available similarly to the `rlcompleter' module
-in the Python shell.  This completion is added to the Hippie Expand
-functions locally if Hippie Expand mode is turned on.  Completion of
-symbols of the form x.y only works if the components are literal
-module/attribute names, not variables.  An abbrev table is set up with
-skeleton expansions for compound statement templates.  Turn on Abbrev
-mode to use it.
-
-See also \\[python-2-mode].
-
-\\{python-mode-map}"
-  (font-lock-add-keywords nil python-3-font-lock-keywords 'append)
-  ;; Not propagating as it does in Emacs 21 for some reason.
-  (setq local-abbrev-table python-mode-abbrev-table))
+(defun python-3-mode ()
+  "Turn on Python mode with Python 3 keywords."
+  (interactive)
+  (let ((python-default-version 3))
+    (python-mode)))
 
 ;; Not done automatically in Emacs 21 or 22.
 (defcustom python-mode-hook nil
@@ -2660,6 +2740,21 @@ See also \\[python-2-mode].
 (custom-add-option 'python-mode-hook 'python-setup-brm)
 (custom-add-option 'python-mode-hook 'flyspell-prog-mode)
 (custom-add-option 'python-mode-hook 'flymake-mode)
+(when (fboundp 'capitalized-words-mode)
+  (custom-add-option 'python-mode-hook 'capitalized-words-mode))
+
+;; This seems to be of limited use since it isn't (can't be)
+;; indentation-based.  Also hide-level doesn't seem to work properly.
+(dolist (mode '(python-mode jython-mode))
+  (add-to-list 'hs-special-modes-alist
+	       (list mode
+		     "^\\s-*\\(?:def\\|class\\|if\\|else\\|elif\\|while\\|\
+for\\|try\\|except\\|finally\\|with\\)\\>"
+	       nil "#"
+	       (lambda (arg)
+		 (python-end-of-block)
+		 (skip-chars-backward " \t\n"))
+	       nil)))
 
 ;;;###autoload
 (define-derived-mode jython-mode python-mode  "Jython"
