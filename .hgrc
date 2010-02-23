@@ -1,4 +1,5 @@
 [ui]
+ignore = ~/.hgignore
 ssh = ssh -q -C
 username = Brodie Rao <me+hg@dackz.net>
 

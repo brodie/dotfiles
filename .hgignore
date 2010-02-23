@@ -1,0 +1,25 @@
+syntax: glob
+
+*.elc
+*.orig
+*.rej
+*~
+*.mergebackup
+*.o
+*.so
+*.py[cdo]
+*.swp
+*.prof
+\#*\#
+.\#*
+build
+dist
+MANIFEST
+.DS_Store
+tags
+cscope.*
+*.db
+
+syntax: regexp
+^\.pc/
+^\.(pydev)?project
