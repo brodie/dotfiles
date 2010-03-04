@@ -188,8 +188,8 @@ _prompt_pwd()
     esac
 }
 
-PROMPT="%{${fg[grey]}%}$%{$reset_color%} "
-RPROMPT="%{${fg[blue]}%}\$(_prompt_pwd)%{$reset_color%}"
+PROMPT="%{${fg[blue]}%}$%{$reset_color%} "
+RPROMPT="%{${fg[cyan]}%}\$(_prompt_pwd)%{$reset_color%}"
 #PROMPT="%m %{${fg[blue]}%}\$(_prompt_pwd)%{$reset_color%}: "
 
 # Window title

@@ -15,9 +15,12 @@ showfunc = True
 ;changegroup.diffstat = python:~/.hgext/diffstathook.py:diffstat
 
 [merge-tools]
+kdiff3.args = $base $local $other -o $output
+kdiff3.symlink = True
+kdiff3.gui = True
 mergevim.executable = vim
 mergevim.args = -d $local $other $base
-mergevim.checkchanged = true
+mergevim.checkchanged = True
 
 [extensions]
 bookmarks =
@@ -31,6 +34,7 @@ mq =
 pager =
 patchbomb =
 progress =
+purge =
 rebase =
 record =
 transplant =
