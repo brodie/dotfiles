@@ -1,7 +1,6 @@
 [ui]
 ignore = ~/.hgignore
 ssh = ssh -q -C
-username = Brodie Rao <me+hg@dackz.net>
 
 [defaults]
 qseries = -v
@@ -10,20 +9,14 @@ qseries = -v
 git = True
 showfunc = True
 
-;[hooks]
-;commit.diffstat = python:~/.hgext/diffstathook.py:diffstat
-;changegroup.diffstat = python:~/.hgext/diffstathook.py:diffstat
-
 [merge-tools]
-kdiff3.args = $base $local $other -o $output
-kdiff3.symlink = True
-kdiff3.gui = True
 mergevim.executable = vim
 mergevim.args = -d $local $other $base
 mergevim.checkchanged = True
 
 [extensions]
 bookmarks =
+churn =
 color =
 convert =
 extdiff =
@@ -51,9 +44,6 @@ track.current = True
 [color]
 diff.deleted = red bold
 
-[email]
-from = Brodie Rao <dackze@gmail.com>
-
 [extdiff]
 cmd.vimdiff = vim
 opts.vimdiff = -f '+next' '+execute "DirDiff" argv(0) argv(1)'
@@ -62,8 +52,4 @@ opts.vimdiff = -f '+next' '+execute "DirDiff" argv(0) argv(1)'
 attend = annotate, cat, diff, export, glog, incoming, last, log, outgoing,
 	 qdiff, qlog, slog
 
-[smtp]
-host = smtp.gmail.com
-port = 587
-tls = true
-username = dackze@gmail.com
+%include .hguser
