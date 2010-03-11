@@ -1,8 +1,8 @@
 ; Set up GUI-related stuff as soon as possible
+(menu-bar-mode -1)
 (when window-system
   (if (eq system-type 'darwin)
-      (add-to-list 'default-frame-alist '(alpha 92 92))
-    (menu-bar-mode -1))
+      (add-to-list 'default-frame-alist '(alpha 92 92)))
   (tool-bar-mode -1)
   (scroll-bar-mode -1)
   (server-start))
@@ -17,7 +17,7 @@
           (emacs-path (nth 0 (last exec-path))))
       (setenv "PATH" (concat output emacs-path))
       (setq exec-path `(,@(split-string output ":") ,emacs-path))
-      (kill-buffer))))
+      (kill-buffer "*set-path-from-shell*"))))
 (set-path-from-shell)
 
 ; Plugins
@@ -58,19 +58,22 @@
                         80 84 88 92 96 100 104 108 112 116 120))
 
 ; Other settings
-(set-fringe-style 'none) ; disable fringes
+
+(when (fboundp 'set-fringe-style)
+  (set-fringe-style 'none)) ; disable fringes
 (setq-default show-trailing-whitespace t)
 (setq-default rst-level-face-base-color nil)
 (setq longlines-show-hard-newlines t)
 (setq transient-mark-mode t) ; highlight marked text (i.e. selected text)
-;(setq vc-handled-backends nil)
+(setq vc-handled-backends nil)
 (setq inhibit-splash-screen t)
 (show-paren-mode t) ; highlight matching parens
 (column-number-mode t) ; show the column number in the status bar
 (delete-selection-mode 1) ; backspace deletes selected text
 (savehist-mode 1) ; save command history
 ; camel case word navigation
-(add-hook 'after-change-major-mode-hook '(lambda () (subword-mode 1)))
+(when (boundp 'subword-mode)
+  (add-hook 'after-change-major-mode-hook '(lambda () (subword-mode 1))))
 ; add missing trailing newline one both visit and save
 (setq require-final-newline 'visit-save)
 (ido-mode t) ; fancy file navigation
