@@ -2,9 +2,10 @@
 
 # Options
 
-export EDITOR='vim' \
+export BROWSER='open' \
+       EDITOR='vim' \
+       GREP_OPTIONS='--color=always' \
        PAGER='less' \
-       BROWSER='open' \
        PYTHONSTARTUP="$HOME/.pythonrc.py"
 
 setopt NO_clobber \
@@ -72,18 +73,16 @@ ZLS_COLORS="$LS_COLORS"
 
 if [[ -x '/Applications/Emacs.app/Contents/MacOS/bin/emacsclient' ]]
 then
-    alias emacs='/Applications/Emacs.app/Contents/MacOS/bin/emacsclient -n'
+    alias ec='/Applications/Emacs.app/Contents/MacOS/bin/emacsclient -n'
 else
-    alias emacs='emacs -nw'
+    alias ec='emacs -nw'
 fi
 
 alias ll='ls -l' \
       la='ls -A' \
       l='less' \
-      grep='grep --color=always' \
       mq='hg --cwd $(hg root)/.hg/patches' \
       py='python -i /dev/null' \
-      zgrep='zgrep --color=always'
 
 beep() { echo -n '\a' }
 

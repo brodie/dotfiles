@@ -1,31 +1,11 @@
 #!/usr/bin/env bash
 
-[[ -z "$LANG" ]] && export LANG='en_US.UTF-8'
-
-export PATH="/usr/local/sbin:/usr/local/bin:$PATH"
-[[ -d /usr/local/mysql/bin ]] && export PATH="/usr/local/mysql/bin:$PATH"
-[[ -d /sw/bin ]] && export PATH="/sw/sbin:/sw/bin:$PATH"
-[[ -d /opt/local/bin ]] && export PATH="/opt/local/sbin:/opt/local/bin:$PATH"
-[[ -d /opt/local/Library/Frameworks/Python.framework/Versions/2.6/bin ]] && \
- export PATH="$PATH:/opt/local/Library/Frameworks/Python.framework/Versions/2.6/bin"
-[[ -d /usr/X11R6/bin ]] && export PATH="$PATH:/usr/X11R6/bin"
-[[ -d /usr/local/X11R6/bin ]] && export PATH="$PATH:/usr/local/X11R6/bin"
-export PATH="$HOME/bin:$PATH"
-
-[[ -d /usr/X11R6/man ]] && export MANPATH="$MANPATH:/usr/X11R6/man"
-[[ -d /usr/share/man ]] && export MANPATH="/usr/share/man:$MANPATH"
-[[ -d /usr/local/share/man ]] && export MANPATH="/usr/local/share/man:$MANPATH"
-[[ -d /usr/local/man ]] && export MANPATH="/usr/local/man:$MANPATH"
-[[ -d /opt/local/share/man ]] && export MANPATH="/opt/local/share/man:$MANPATH"
-
-# Interactive-only settings follow
-[[ -z "$PS1" ]] && return
-
 # Options
 
-export EDITOR='vim' \
+export BROWSER='open' \
+       EDITOR='vim' \
+       GREP_OPTIONS='--color=always' \
        PAGER='less' \
-       BROWSER='open' \
        PYTHONSTARTUP="$HOME/.pythonrc.py"
 
 shopt -s checkhash \
@@ -45,22 +25,46 @@ stty -ixoff -ixon
 if [[ "$TERM" != dumb && -n "$(command -v dircolors)" ]]
 then
     eval "$(dircolors -b)"
-    alias ls='ls --color=auto'
-    alias dir='ls --color=auto --format=vertical'
-    alias vdir='ls --color=auto --format=long'
+    alias ls='ls --color=auto' \
+          dir='ls --color=auto --format=vertical' \
+          vdir='ls --color=auto --format=long'
+elif [[ "$TERM" != dumb && -n "$(command -v gdircolors)" ]]
+then
+    eval "$(gdircolors -b)"
+    export CLICOLOR=1 \
+           LSCOLORS=ExGxFxdaCxDaDaHbadabec
+    alias ls='gls --color=auto' \
+          dir='gls --color=auto --format=vertical' \
+          vdir='gls --color=auto --format=long'
 else
-    export CLICOLOR=1
-    export LSCOLORS=ExGxFxdaCxDaDaHbadabec
-    alias dir='ls --format=vertical'
-    alias vdir='ls --format=long'
+    export CLICOLOR=1 \
+           LSCOLORS=ExGxFxdaCxDaDaHbadabec
+    LS_COLORS='no=00:fi=00:di=01;34:ln=01;36:pi=40;33:so=01;35:do=01;35:'\
+'bd=40;33;01:cd=40;33;01:or=40;31;01:su=37;41:sg=30;43:tw=30;42:ow=34;42:'\
+'st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arj=01;31:*.taz=01;31:'\
+'*.lzh=01;31:*.zip=01;31:*.z=01;31:*.Z=01;31:*.gz=01;31:*.bz2=01;31:'\
+'*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.jpg=01;35:*.jpeg=01;35:*.gif=01;35:'\
+'*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:'\
+'*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.mov=01;35:*.mpg=01;35:'\
+'*.mpeg=01;35:*.avi=01;35:*.fli=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:'\
+'*.xwd=01;35:*.flac=01;35:*.mp3=01;35:*.mpc=01;35:*.ogg=01;35:*.wav=01;35:'
+    export LS_COLORS
+    alias dir='ls --format=vertical' \
+          vdir='ls --format=long'
 fi
 
-alias emacs='emacs -nw' \
-      ll='ls -l' \
+if [[ -x '/Applications/Emacs.app/Contents/MacOS/bin/emacsclient' ]]
+then
+    alias ec='/Applications/Emacs.app/Contents/MacOS/bin/emacsclient -n'
+else
+    alias ec='emacs -nw'
+fi
+
+alias ll='ls -l' \
       la='ls -A' \
-      l='ls -CF' \
-      grep='grep --color=always' \
-      zgrep='zgrep --color=always'
+      l='less' \
+      mq='hg --cwd $(hg root)/.hg/patches' \
+      py='python -i /dev/null' \
 
 beep()
 {
@@ -69,7 +73,7 @@ beep()
 
 if [[ "$TERM" != dumb && -n "$(command -v colordiff)" ]]
 then
-    alias diff=colordiff
+    alias diff='colordiff -u'
 fi
 
 # less niceties
