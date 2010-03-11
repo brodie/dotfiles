@@ -1,8 +1,9 @@
 ; Set up GUI-related stuff as soon as possible
 (menu-bar-mode -1)
 (when window-system
-  (if (eq system-type 'darwin)
-      (add-to-list 'default-frame-alist '(alpha 92 92)))
+  (add-to-list 'default-frame-alist '(alpha 92 92))
+  (add-to-list 'default-frame-alist '(width . 80))
+  (add-to-list 'default-frame-alist '(height . 42))
   (tool-bar-mode -1)
   (scroll-bar-mode -1)
   (server-start))
