@@ -199,7 +199,7 @@ _prompt_vcs()
         echo -n " %{$fg[green]%}$b"
         if [[ -f "$vcs_dir_path/.hg/patches/status" ]]
         then
-            local p=${${(s-:-)$(cat .hg/patches/status)}[2]}
+            local p=${${(s-:-)$(cat "$vcs_dir_path/.hg/patches/status")}[2]}
             if [[ -n "$p" ]]
             then
                 echo -n "/%{$fg[yellow]%}$p"
@@ -209,7 +209,7 @@ _prompt_vcs()
         vcs_dir .git
         if [[ -n "$vcs_dir_path" ]]
         then
-            local b=$(git name-rev --name-only HEAD)
+            local b=${${(s:/:)$(cat "$vcs_dir_path/.git/HEAD")}[-1]}
             echo -n " %{$fg[green]%}$b"
         fi
     fi
