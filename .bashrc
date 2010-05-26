@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+export LANG='en_US.UTF-8'
+
 # Options
 
 export BROWSER='open' \
@@ -115,14 +117,7 @@ PS1="\u \[$fg_blue\]\$(_prompt_pwd)\[$reset_color\]: "
 #PS1="\h \[$fg_blue\]\$(_prompt_pwd)\[$reset_color\]: "
 
 # Window title
-
-case $TERM in
-    xterm*|rxvt*)
-        PROMPT_COMMAND='echo -ne "\e]0;${USER}@${HOSTNAME}: $(_prompt_pwd)\a"'
-        ;;
-    *)
-        ;;
-esac
+PROMPT_COMMAND='printf "\e]0;${HOSTNAME}: $(_prompt_pwd)\a"'
 
 # Completion
 

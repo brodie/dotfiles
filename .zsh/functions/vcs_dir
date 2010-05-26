@@ -1,0 +1,34 @@
+## vim:ft=zsh
+## Written by Frank Terbeck <ft@bewatermyfriend.org>
+## Distributed under the same BSD-ish license as zsh itself.
+
+_vcs_dir_realpath()
+{
+    setopt localoptions NO_shwordsplit chaselinks
+    # -q to avoid chpwd() invocations
+    ( builtin cd -q $1 2>/dev/null && pwd; )
+}
+
+setopt localoptions NO_shwordsplit
+local dirname=$1
+local detect=$2
+local basedir="." realbasedir
+
+realbasedir="$(_vcs_dir_realpath ${basedir})"
+while [[ ${realbasedir} != '/' ]]; do
+    [[ -r ${realbasedir} ]] || return 1
+    if [[ -n ${detect} ]] ; then
+        [[ -d ${basedir}/${dirname} ]] && \
+        [[ -e ${basedir}/${dirname}/${detect} ]] && \
+            break
+    else
+        [[ -d ${basedir}/${dirname} ]] && break
+    fi
+
+    basedir=${basedir}/..
+    realbasedir="$(_vcs_dir_realpath ${basedir})"
+done
+
+[[ ${realbasedir} == "/" ]] && return 1
+vcs_dir_path=${realbasedir}
+return 0

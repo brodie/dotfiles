@@ -1,5 +1,7 @@
 #!/usr/bin/env zsh
 
+export LANG='en_US.UTF-8'
+
 # Options
 
 export BROWSER='open' \
@@ -91,7 +93,7 @@ then
     alias diff='colordiff -u'
 fi
 
-autoload -U colors && colors
+autoload -Uz colors && colors
 
 # less niceties
 
@@ -109,7 +111,7 @@ export LESS_TERMCAP_so
 # Completion
 
 zmodload -i zsh/complist
-autoload -U compinit && compinit
+autoload -Uz compinit && compinit
 
 # Formatting
 zstyle ':completion:*' verbose yes
@@ -187,30 +189,43 @@ _prompt_pwd()
     esac
 }
 
+autoload -Uz vcs_dir
+_prompt_vcs()
+{
+    vcs_dir .hg && (
+        local b=$(cat "$vcs_dir_path/.hg/branch")
+        echo -n " %{$fg[green]%}$b"
+        if [[ -f "$vcs_dir_path/.hg/patches/status" ]]
+        then
+            local p=${${(s-:-)$(cat .hg/patches/status)}[2]}
+            if [[ -n "$p" ]]
+            then
+                echo -n "/%{$fg[yellow]%}$p"
+            fi
+        fi
+    ) || (vcs_dir .git && (
+        local b=$(git name-rev --name-only HEAD)
+        echo -n " %{$fg[green]%}$b"
+    ))
+}
+
+
 PROMPT="%{${fg[blue]}%}$%{$reset_color%} "
-RPROMPT="%{${fg[cyan]}%}\$(_prompt_pwd)%{$reset_color%}"
-#PROMPT="%m %{${fg[blue]}%}\$(_prompt_pwd)%{$reset_color%}: "
+RPROMPT="%{${fg[cyan]}%}\$(_prompt_pwd)\$(_prompt_vcs)%{$reset_color%}"
 
 # Window title
-
-case $TERM in
-    xterm*|rxvt*)
-        precmd () { print -Pn "\e]0;%M: $(_prompt_pwd)\a" }
-        ;;
-    *)
-        ;;
-esac
+precmd () { print -Pn "\e]0;%M: $(_prompt_pwd)\a" }
 
 # Load/configure key bindings
 
 bindkey -e # Revert back to emacs mode
 WORDCHARS='' # Use emacs-style word matching
 
-autoload -U select-word-style
+autoload -Uz select-word-style
 select-word-style normal
 zstyle ':zle:*' word-style subword
 
-autoload -U down-line-or-beginning-search up-line-or-beginning-search
+autoload -Uz down-line-or-beginning-search up-line-or-beginning-search
 zle -N down-line-or-history down-line-or-beginning-search
 zle -N up-line-or-history up-line-or-beginning-search
 
@@ -234,7 +249,7 @@ then
             '\e[1;3C' forward-word
 fi
 
-autoload -U zkbd
+autoload -Uz zkbd
 [[ ! -d "$ZDOTDIR/.zkbd" ]] && mkdir "$ZDOTDIR/.zkbd"
 [[ ! -f "$ZDOTDIR/.zkbd/$TERM-$VENDOR-$OSTYPE" ]] && zkbd
 source "$ZDOTDIR/.zkbd/$TERM-$VENDOR-$OSTYPE"

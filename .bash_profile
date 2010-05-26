@@ -1,6 +1,4 @@
-#!/usr/bin/env zsh
-
-[[ -z "$LANG" ]] && export LANG='en_US.UTF-8'
+#!/usr/bin/env bash
 
 export PATH="/usr/local/sbin:/usr/local/bin:$PATH"
 [[ -d /usr/local/mysql/bin ]] && export PATH="/usr/local/mysql/bin:$PATH"

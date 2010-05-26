@@ -4,8 +4,6 @@ setopt NO_global_rcs
 
 ZDOTDIR="$HOME/.zsh"
 
-[[ -z "$LANG" ]] && export LANG='en_US.UTF-8'
-
 path=(/usr/local/sbin /usr/local/bin $path)
 [[ -d /usr/local/mysql/bin ]] && path=(/usr/local/mysql/bin $path)
 [[ -d /sw/bin ]] && path=(/sw/sbin /sw/bin $path)
