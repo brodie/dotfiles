@@ -29,6 +29,9 @@ while [[ ${realbasedir} != '/' ]]; do
     realbasedir="$(_vcs_dir_realpath ${basedir})"
 done
 
-[[ ${realbasedir} == "/" ]] && return 1
+if [[ ${realbasedir} == "/" ]]; then
+    vcs_dir_path=
+    return 1
+fi
 vcs_dir_path=${realbasedir}
 return 0

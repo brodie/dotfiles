@@ -192,7 +192,9 @@ _prompt_pwd()
 autoload -Uz vcs_dir
 _prompt_vcs()
 {
-    vcs_dir .hg && (
+    vcs_dir .hg
+    if [[ -n "$vcs_dir_path" ]]
+    then
         local b=$(cat "$vcs_dir_path/.hg/branch")
         echo -n " %{$fg[green]%}$b"
         if [[ -f "$vcs_dir_path/.hg/patches/status" ]]
@@ -203,10 +205,14 @@ _prompt_vcs()
                 echo -n "/%{$fg[yellow]%}$p"
             fi
         fi
-    ) || (vcs_dir .git && (
-        local b=$(git name-rev --name-only HEAD)
-        echo -n " %{$fg[green]%}$b"
-    ))
+    else
+        vcs_dir .git
+        if [[ -n "$vcs_dir_path" ]]
+        then
+            local b=$(git name-rev --name-only HEAD)
+            echo -n " %{$fg[green]%}$b"
+        fi
+    fi
 }
 
 
