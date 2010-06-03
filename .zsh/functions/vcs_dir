@@ -10,19 +10,18 @@ _vcs_dir_realpath()
 }
 
 setopt localoptions NO_shwordsplit
-local dirname=$1
-local detect=$2
 local basedir="." realbasedir
 
 realbasedir="$(_vcs_dir_realpath ${basedir})"
+vcs_dir_type=
 while [[ ${realbasedir} != '/' ]]; do
     [[ -r ${realbasedir} ]] || return 1
-    if [[ -n ${detect} ]] ; then
-        [[ -d ${basedir}/${dirname} ]] && \
-        [[ -e ${basedir}/${dirname}/${detect} ]] && \
-            break
-    else
-        [[ -d ${basedir}/${dirname} ]] && break
+    if [[ -d ${basedir}/.hg ]]; then
+        vcs_dir_type=hg
+        break
+    elif [[ -d ${basedir}/.git ]]; then
+        vcs_dir_type=git
+        break
     fi
 
     basedir=${basedir}/..
