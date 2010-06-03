@@ -200,10 +200,7 @@ _prompt_vcs()
         if [[ -f "$vcs_dir_path/.hg/patches/status" ]]
         then
             local p=${${(s-:-)$(cat "$vcs_dir_path/.hg/patches/status")}[2]}
-            if [[ -n "$p" ]]
-            then
-                echo -n "/%{$fg[yellow]%}$p"
-            fi
+            [[ -n "$p" ]] && echo -n "/%{$fg[yellow]%}$p"
         fi
     elif [[ "$vcs_dir_type" == git ]]
     then
