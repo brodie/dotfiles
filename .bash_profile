@@ -15,3 +15,5 @@ export PATH="$HOME/bin:$PATH"
 [[ -d /usr/local/share/man ]] && export MANPATH="/usr/local/share/man:$MANPATH"
 [[ -d /usr/local/man ]] && export MANPATH="/usr/local/man:$MANPATH"
 [[ -d /opt/local/share/man ]] && export MANPATH="/opt/local/share/man:$MANPATH"
+
+. "$HOME/.bashrc"

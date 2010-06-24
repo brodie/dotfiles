@@ -1,7 +1,13 @@
 [user]
 	name = Brodie Rao
 	email = brodie@bitheap.org
+[alias]
+	ci = commit
+	dc = diff --cached
+	glog = log --decorate --graph --all
+	slog = log --pretty=oneline
+	st = status
 [color]
 	ui = auto
-[alias]
-	glog = log --decorate --graph --all
+[diff]
+	renames = copies

@@ -11,7 +11,6 @@ export BROWSER='open' \
        PYTHONSTARTUP="$HOME/.pythonrc.py"
 
 setopt NO_clobber \
-       extended_glob \
        extended_history \
        glob_complete \
        hist_allow_clobber \
@@ -85,6 +84,7 @@ alias ll='ls -l' \
       l='less' \
       mq='hg --cwd $(hg root)/.hg/patches' \
       py='python -i /dev/null' \
+      tm='tmux a -d'
 
 beep() { echo -n '\a' }
 
@@ -217,7 +217,7 @@ PROMPT="%{${fg[blue]}%}$%{$reset_color%} "
 RPROMPT="%{${fg[cyan]}%}\$(_prompt_pwd)\$(_prompt_vcs)%{$reset_color%}"
 
 # Window title
-precmd () { print -Pn "\e]0;%M: $(_prompt_pwd)\a" }
+precmd () { print -Pn "\e]0;%m: $(_prompt_pwd)\a" }
 
 # Load/configure key bindings
 
@@ -232,13 +232,20 @@ autoload -Uz down-line-or-beginning-search up-line-or-beginning-search
 zle -N down-line-or-history down-line-or-beginning-search
 zle -N up-line-or-history up-line-or-beginning-search
 
+tmux-copy-mode-pageup() { [[ "$TMUX" != "" ]] && tmux copy-mode -u }
+tmux-copy-mode() { [[ "$TMUX" != "" ]] && tmux copy-mode }
+zle -N tmux-copy-mode-pageup tmux-copy-mode-pageup
+zle -N tmux-copy-mode tmux-copy-mode
+
 # Make ^W work like it does in bash (while leaving other bindings alone)
 zle -N backward-kill-word-bash backward-kill-word-match
 zstyle ':zle:backward-kill-word-bash' word-style whitespace
 
 bindkey '^Q' quoted-insert \
         '^U' vi-kill-line \
-        '^W' backward-kill-word-bash
+        '^W' backward-kill-word-bash \
+        '\ev'  tmux-copy-mode-pageup \
+        '^V' tmux-copy-mode
 
 if [[ "$TERM" = xterm* ]]
 then
@@ -261,10 +268,10 @@ source "$ZDOTDIR/.zkbd/$TERM-$VENDOR-$OSTYPE"
                                         backward-delete-char
 [[ -n "${key[Insert]}" ]] && bindkey "${key[Insert]}" beep
 [[ -n "${key[Home]}" ]] && bindkey "${key[Home]}" beginning-of-line
-[[ -n "${key[PageUp]}" ]] && bindkey "${key[PageUp]}" beep
+[[ -n "${key[PageUp]}" ]] && bindkey "${key[PageUp]}" tmux-copy-mode-pageup
 [[ -n "${key[Delete]}" ]] && bindkey "${key[Delete]}" delete-char
 [[ -n "${key[End]}" ]] && bindkey "${key[End]}" end-of-line
-[[ -n "${key[PageDown]}" ]] && bindkey "${key[PageDown]}" beep
+[[ -n "${key[PageDown]}" ]] && bindkey "${key[PageDown]}" tmux-copy-mode
 [[ -n "${key[Up]}" ]] && bindkey "${key[Up]}" up-line-or-history && \
                          bindkey "\e${key[Up]}" up-line-or-history
 [[ -n "${key[Left]}" ]] && bindkey "${key[Left]}" backward-char && \
