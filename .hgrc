@@ -25,6 +25,7 @@ graphlog =
 highlight =
 mq =
 pager =
+parentrevspec =
 patchbomb =
 progress =
 purge =
