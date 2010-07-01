@@ -31,12 +31,15 @@ purge =
 rebase =
 record =
 transplant =
-hgsubversion =
+remotebranches = ~/.hgext/hg_remotebranches.py
+;hgsubversion =
 
 [alias]
 last = log --limit=5
-slog = log --template '{rev}:{node|short} {desc|firstline}\n'
+nudge = push -r .
 qlog = log -pvr qbase:qtip
+show = log -pvr
+slog = log --template '{rev}:{node|short} {desc|firstline}\n'
 
 [bookmarks]
 track.current = True
@@ -50,6 +53,6 @@ opts.vimdiff = -f '+next' '+execute "DirDiff" argv(0) argv(1)'
 
 [pager]
 attend = annotate, cat, diff, export, glog, incoming, last, log, outgoing,
-	 qdiff, qlog, slog
+	 qdiff, qlog, show, slog
 
 %include .hguser

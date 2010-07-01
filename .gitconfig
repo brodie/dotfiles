@@ -4,6 +4,7 @@
 [alias]
 	ci = commit
 	dc = diff --cached
+	head = show HEAD
 	glog = log --decorate --graph --all
 	slog = log --pretty=oneline
 	st = status
