@@ -6,7 +6,6 @@ ssh = ssh -q -C
 qseries = -v
 
 [diff]
-git = True
 showfunc = True
 
 [merge-tools]
@@ -36,11 +35,18 @@ remotebranches = ~/.hgext/hg_remotebranches.py
 ;hgsubversion =
 
 [alias]
-last = log --limit=5
+dlog = log --style ~/.hgext/map-cmdline.dlog
+last = log -l 5
 nudge = push -r .
+nlog = log --style ~/.hgext/map-cmdline.nlog
 qlog = log -pvr qbase:qtip
 show = log -pvr
-slog = log --template '{rev}:{node|short} {desc|firstline}\n'
+slog = log --style ~/.hgext/map-cmdline.slog
+sglog = glog --style ~/.hgext/map-cmdline.sglog
+. = summary
+, = sglog -vl 30
+,+ = sglog -v
+- = status
 
 [bookmarks]
 track.current = True
@@ -53,7 +59,7 @@ cmd.vimdiff = vim
 opts.vimdiff = -f '+next' '+execute "DirDiff" argv(0) argv(1)'
 
 [pager]
-attend = annotate, cat, diff, export, glog, incoming, last, log, outgoing,
-	 qdiff, qlog, show, slog
+attend = annotate, cat, diff, dlog, export, glog, incoming, last, log, nlog,
+         outgoing, qdiff, qlog, show, sglog, slog, ",", ",+"
 
 %include .hguser
