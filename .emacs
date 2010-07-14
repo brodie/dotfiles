@@ -12,7 +12,7 @@
 (defun set-path-from-shell ()
   (if (get-buffer "*set-path-from-shell*")
       (kill-buffer "*set-path-from-shell*"))
-  (call-process-shell-command "echo $PATH" nil "*set-path-from-shell*")
+  (call-process-shell-command "zsh -c 'echo $PATH'" nil "*set-path-from-shell*")
   (with-current-buffer "*set-path-from-shell*"
     (let ((output (buffer-substring (point-min) (- (point-max) 1)))
           (emacs-path (nth 0 (last exec-path))))
@@ -35,10 +35,22 @@
 (autoload 'pod-mode "pod-mode" nil t)
 (autoload 'po-mode "po-mode" nil t)
 (autoload 'css-mode "css-mode" nil t)
+(autoload 'rainbow-paren-mode "rainbow-parens" nil t)
+
+; org-mode
+(require 'org-install)
+(add-to-list 'auto-mode-alist '("\\.org$" . org-mode))
+(define-key global-map "\C-cl" 'org-store-link)
+(define-key global-map "\C-ca" 'org-agenda)
+(setq org-log-done t)
+(setq org-agenda-files (list "~/Documents/work.org"
+                             "~/Documents/school.org"
+                             "~/Documents/home.org"))
 
 ; File/mode associations
 (add-to-list 'auto-mode-alist '("\\.js$" . js2-mode))
 (add-to-list 'auto-mode-alist '("\\.rst$" . rst-mode))
+(add-to-list 'auto-mode-alist '("\\.md$" . markdown-mode))
 (add-to-list 'auto-mode-alist '("\\.text$" . markdown-mode))
 (add-to-list 'auto-mode-alist '("\\.pod$" . pod-mode))
 (add-to-list 'auto-mode-alist '("\\.po\\'\\|\\.\\." . po-mode))
@@ -215,3 +227,7 @@
   (if (= (count-windows) 1)
       (set-frame-width (selected-frame) 80)))
 (ad-activate 'delete-other-windows)
+
+; Hide uninteresting files
+(eval-after-load "dired" '(require 'dired-x))
+(add-hook 'dired-mode-hook (lambda () (dired-omit-mode 1)))
