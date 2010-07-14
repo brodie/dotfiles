@@ -8,7 +8,13 @@ export BROWSER='open' \
        EDITOR='vim' \
        GREP_OPTIONS='--color=always' \
        PAGER='less' \
-       PYTHONSTARTUP="$HOME/.pythonrc.py"
+       PYTHONSTARTUP="$HOME/.pythonrc.py" \
+       WORKON_HOME=~/Documents/Envs \
+       VIRTUALENV_USE_DISTRIBUTE=1 \
+       PIP_VIRTUALENV_BASE="$WORKON_HOME" \
+       PIP_RESPECT_VIRTUALENV=true
+
+source virtualenvwrapper.sh
 
 setopt NO_clobber \
        extended_history \
@@ -199,7 +205,7 @@ _prompt_vcs()
         echo -n " %{$fg[green]%}$b"
         if [[ -f "$vcs_dir_path/.hg/patches/status" ]]
         then
-            local p=${${(s-:-)$(cat "$vcs_dir_path/.hg/patches/status")}[2]}
+            local p=${${(s-:-)$(tail -1 "$vcs_dir_path/.hg/patches/status")}[2]}
             [[ -n "$p" ]] && echo -n "/%{$fg[yellow]%}$p"
         fi
     elif [[ "$vcs_dir_type" == git ]]
