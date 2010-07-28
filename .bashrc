@@ -20,7 +20,7 @@ HISTCONTROL=ignoreboth
 HISTFILESIZE=1000
 
 # Disable flow control, which makes ^S and ^Q work
-stty -ixoff -ixon
+[[ "$TERM" != dumb ]] && stty -ixoff -ixon
 
 # Aliases
 
@@ -80,12 +80,15 @@ fi
 
 # less niceties
 
-reset_color=$(tput sgr0)
-bold_color=$(tput bold)
-fg_blue=$(tput setaf 4)
-bg_blue=$(tput setab 4)
-fg_yellow=$(tput setaf 3)
-fg_green=$(tput setaf 2)
+if [[ "$TERM" != dumb ]]
+then
+    reset_color=$(tput sgr0)
+    bold_color=$(tput bold)
+    fg_blue=$(tput setaf 4)
+    bg_blue=$(tput setab 4)
+    fg_yellow=$(tput setaf 3)
+    fg_green=$(tput setaf 2)
+fi
 
 export LESS='-R' \
        LESSOPEN="| $HOME/bin/lesspipe %s" \
