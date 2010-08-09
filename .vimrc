@@ -114,4 +114,6 @@ if has("gui_macvim")
     set timeoutlen=100 " Lower ESC timeout
     set columns=80 lines=44 " Set default window size
     set fuoptions+=maxhorz
+    autocmd FileType c,changelog,cheetah,cpp,cs,csh,css,django,dosini,haskell,java,javascript,mysql,objc,objcpp,perl,po,pyrex,python,rl,rst,ruby,sh,sql,tcsh,vim,zsh setlocal colorcolumn=80
+    hi ColorColumn guibg=#121212
 endif
