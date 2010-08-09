@@ -8,7 +8,7 @@ export PATH="/usr/local/sbin:/usr/local/bin:$PATH"
  export PATH="/opt/local/Library/Frameworks/Python.framework/Versions/2.6/bin:$PATH"
 [[ -d /usr/X11R6/bin ]] && export PATH="$PATH:/usr/X11R6/bin"
 [[ -d /usr/local/X11R6/bin ]] && export PATH="$PATH:/usr/local/X11R6/bin"
-export PATH="$HOME/bin:$PATH"
+export PATH="$HOME/.bin:$PATH"
 
 [[ -d /usr/X11R6/man ]] && export MANPATH="$MANPATH:/usr/X11R6/man"
 [[ -d /usr/share/man ]] && export MANPATH="/usr/share/man:$MANPATH"

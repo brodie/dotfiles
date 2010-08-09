@@ -8,7 +8,14 @@ export BROWSER='open' \
        EDITOR='vim' \
        GREP_OPTIONS='--color=always' \
        PAGER='less' \
-       PYTHONSTARTUP="$HOME/.pythonrc.py"
+       PYTHONSTARTUP="$HOME/.pythonrc.py" \
+       WORKON_HOME="$HOME/Documents/Envs" \
+       VIRTUALENV_USE_DISTRIBUTE=1 \
+       PIP_VIRTUALENV_BASE="$WORKON_HOME" \
+       PIP_RESPECT_VIRTUALENV=true \
+       ACK_COLOR_FILENAME='magenta' \
+       ACK_COLOR_MATCH='red' \
+       ACK_PAGER='less'
 
 shopt -s checkhash \
          checkwinsize \
@@ -55,9 +62,9 @@ else
           vdir='ls --format=long'
 fi
 
-if [[ -x '/Applications/Emacs.app/Contents/MacOS/bin/emacsclient' ]]
+if [[ -x '/Applications/MacPorts/Emacs.app/Contents/MacOS/bin/emacsclient' ]]
 then
-    alias ec='/Applications/Emacs.app/Contents/MacOS/bin/emacsclient -n'
+    alias ec='/Applications/MacPorts/Emacs.app/Contents/MacOS/bin/emacsclient -n'
 else
     alias ec='emacs -nw'
 fi
@@ -91,7 +98,7 @@ then
 fi
 
 export LESS='-R' \
-       LESSOPEN="| $HOME/bin/lesspipe %s" \
+       LESSOPEN="| $HOME/.bin/lesspipe %s" \
        LESS_TERMCAP_mb="$bold_color$fg_blue" \
        LESS_TERMCAP_md="$bold_color$fg_blue" \
        LESS_TERMCAP_me=$reset_color \
@@ -116,8 +123,8 @@ _prompt_pwd()
     esac
 }
 
-PS1="\u \[$fg_blue\]\$(_prompt_pwd)\[$reset_color\]: "
-#PS1="\h \[$fg_blue\]\$(_prompt_pwd)\[$reset_color\]: "
+#PS1="\u \[$fg_blue\]\$(_prompt_pwd)\[$reset_color\]: "
+PS1="\[$fg_blue\]\$(_prompt_pwd) \[$fg_green\]$ \[$reset_color\]"
 
 # Window title
 PROMPT_COMMAND='printf "\e]0;${HOSTNAME}: $(_prompt_pwd)\a"'

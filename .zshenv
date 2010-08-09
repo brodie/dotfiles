@@ -12,7 +12,7 @@ path=(/usr/local/sbin /usr/local/bin $path)
  path=(/opt/local/Library/Frameworks/Python.framework/Versions/2.7/bin $path)
 [[ -d /usr/X11R6/bin ]] && path+=/usr/X11R6/bin
 [[ -d /usr/local/X11R6/bin ]] && path+=/usr/local/X11R6/bin
-path=("$HOME/bin" $path)
+path=("$HOME/.bin" $path)
 
 [[ -d /usr/X11R6/man ]] && manpath+=/usr/X11R6/man
 [[ -d /usr/share/man ]] && manpath=(/usr/share/man $manpath)

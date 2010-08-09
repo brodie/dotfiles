@@ -1,16 +1,8 @@
 " Always use bash
 set shell=/bin/bash
 
-" Enable colors if available
-if &term == "xterm-color"
-    set t_Co=16
-elseif &term == "xterm-256color"
-    set t_Co=256
-endif
-
 " Helpful defaults
 set nocompatible " Disable complete vi compatibility
-set background=light " Easier-to-read colors for dark backgrounds
 set backspace=indent,eol,start " Smarter backspacing
 set history=50 " Keep command line history
 set ignorecase " Case-insensitive searching
@@ -29,7 +21,13 @@ set smartcase " Case-sensitive searching for searches with uppercase letters
 set textwidth=0 " No hard line wrapping
 set viminfo=\"50,'20 " Store session info in ~/.viminfo
 set wildmode=list:longest " More useful command completion
+" Hide annoying files from wildmenu/netrw/fuzzyfinder
+set wildignore=*.orig,*.rej,*~,*.o,*.so,*.py[cdo],*.swp,*.prof
+let g:netrw_list_hide='\.orig$,\.rej$,\.~$,\.s?o$,\.py[cdo]$,\.swp$,\.prof$'
 fixdel " Try to fix backspace if it's broken
+" Enable automatic filetype and ft plugins
+filetype on
+filetype plugin on
 
 " Syntax highlighting settings
 if has("syntax")
@@ -41,8 +39,8 @@ endif
 " Auto-commands
 if has("autocmd")
     " Tabbing settings
-    autocmd FileType c,changelog,cheetah,cpp,cs,csh,css,django,dosini,haskell,java,javascript,mysql,objc,objcpp,perl,po,pyrex,python,rst,ruby,sh,sql,tcsh,vim,zsh setlocal autoindent tabstop=4 shiftwidth=4 expandtab softtabstop=4
-    autocmd FileType ant,dtml,genshi,html,htmlcheetah,htmldjango,kid,mako,php,sgml,smarty,xhtml,xml,xslt setlocal autoindent tabstop=2 shiftwidth=2 expandtab softtabstop=2
+    autocmd FileType c,changelog,cheetah,cpp,cs,csh,css,django,dosini,haskell,java,javascript,mysql,objc,objcpp,perl,po,pyrex,python,rl,rst,ruby,sh,sql,tcsh,vim,zsh setlocal autoindent expandtab tabstop=8 shiftwidth=4 softtabstop=4
+    autocmd FileType ant,dtml,genshi,html,htmlcheetah,htmldjango,kid,mako,php,sgml,smarty,xhtml,xml,xslt setlocal autoindent expandtab tabstop=8 shiftwidth=2 softtabstop=2
 endif
 
 " Convenience command to map something to every mode
@@ -55,13 +53,7 @@ AllMap <C-A> <Home>
 AllMap <C-E> <End>
 AllMap <C-P> <Up>
 AllMap <C-N> <Down>
-AllMap <C-F> <Right>
-AllMap <C-B> <Left>
-AllMap <Esc>v <PageUp>
-AllMap <C-V> <PageDown>
 AllMap <C-G> <Esc><Esc>
-AllMap <Esc>f <C-Right>
-AllMap <Esc>b <C-Left>
 AllMap <Esc><Right> <C-Right>
 AllMap <Esc><Left> <C-Left>
 
@@ -71,17 +63,14 @@ AllMap <Esc>[F <xEnd>
 AllMap <Esc>[5D <C-Left>
 AllMap <Esc>[5C <C-Right>
 
+" Fuzzy finder
+AllMap <C-F> <Esc>:FufFileWithCurrentBufferDir<Return>
+AllMap <C-B> <Esc>:FufBuffer<Return>
+
 delcommand AllMap
 
 " :Man for man pages
 runtime ftplugin/man.vim
-
-" A nicer-looking tabline (vim7 only)
-if exists(":tabnew") == 2
-    highlight TabLine term=underline cterm=bold,underline ctermfg=Grey gui=underline
-    highlight TabLineFill term=underline cterm=bold,underline gui=underline guibg=DarkGrey
-    highlight TabLineSel term=reverse cterm=reverse gui=reverse
-endif
 
 " Enable spell checking (vim7 only)
 if has("spell")
@@ -98,4 +87,29 @@ if has("spell")
         " Spell check where it works properly
         autocmd FileType c,changelog,cheetah,cpp,cs,csh,css,java,javascript,perl,po,python,rst,ruby,sh,tcsh,vim,dtml,genshi,html,htmlcheetah,htmldjango,kid,mako,php,smarty,xhtml,xml,xslt setlocal spell
     endif
+endif
+
+" Enable colors if available
+if &term == "xterm-color"
+    set t_Co=16
+elseif &term == "xterm-256color"
+    set t_Co=256
+endif
+
+" Set color scheme
+if has("gui")
+    set background=dark
+    colorscheme billw
+else
+    set background=light
+endif
+
+" MacVim settings
+if has("gui_macvim")
+    set guifont=DejaVu\ Sans\ Mono:h12
+    set guioptions-=T " Disable toolbar
+    set guioptions-=r " Disable scrollbar
+    "set transparency=15 " Transparency's broken in 7.3e!
+    set timeoutlen=100 " Lower ESC timeout
+    set columns=80 lines=44 " Set default window size
 endif

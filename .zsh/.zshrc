@@ -9,12 +9,15 @@ export BROWSER='open' \
        GREP_OPTIONS='--color=always' \
        PAGER='less' \
        PYTHONSTARTUP="$HOME/.pythonrc.py" \
-       WORKON_HOME=~/Documents/Envs \
+       WORKON_HOME="$HOME/Documents/Envs" \
        VIRTUALENV_USE_DISTRIBUTE=1 \
        PIP_VIRTUALENV_BASE="$WORKON_HOME" \
-       PIP_RESPECT_VIRTUALENV=true
+       PIP_RESPECT_VIRTUALENV=true \
+       ACK_COLOR_FILENAME='magenta' \
+       ACK_COLOR_MATCH='red' \
+       ACK_PAGER='less'
 
-source virtualenvwrapper.sh
+[[ -n "$(command -v virtualenvwrapper.sh)" ]] && source virtualenvwrapper.sh
 
 setopt NO_clobber \
        extended_history \
@@ -41,7 +44,7 @@ HISTFILE="$ZDOTDIR/.zsh_history"
 SAVEHIST=1000
 
 # Disable flow control, which makes ^S and ^Q work
-stty -ixoff -ixon
+[[ "$TERM" != dumb ]] && stty -ixoff -ixon
 
 # Aliases
 
@@ -78,9 +81,9 @@ fi
 
 ZLS_COLORS="$LS_COLORS"
 
-if [[ -x '/Applications/Emacs.app/Contents/MacOS/bin/emacsclient' ]]
+if [[ -x '/Applications/MacPorts/Emacs.app/Contents/MacOS/bin/emacsclient' ]]
 then
-    alias ec='/Applications/Emacs.app/Contents/MacOS/bin/emacsclient -n'
+    alias ec='/Applications/MacPorts/Emacs.app/Contents/MacOS/bin/emacsclient -n'
 else
     alias ec='emacs -nw'
 fi
@@ -89,7 +92,6 @@ alias ll='ls -l' \
       la='ls -A' \
       l='less' \
       mq='hg --cwd $(hg root)/.hg/patches' \
-      py='python -i /dev/null' \
       tm='tmux a -d'
 
 beep() { echo -n '\a' }
@@ -99,12 +101,15 @@ then
     alias diff='colordiff -u'
 fi
 
+[[ -n "$(command -v bpython)" ]] \
+    && alias py=bpython || alias py='python -i /dev/null'
+
 autoload -Uz colors && colors
 
 # less niceties
 
 export LESS='-iR' \
-       LESSOPEN="| $HOME/bin/lesspipe %s" \
+       LESSOPEN="| $HOME/.bin/lesspipe %s" \
        LESS_TERMCAP_mb=${fg_bold[red]} \
        LESS_TERMCAP_md=${fg_bold[blue]} \
        LESS_TERMCAP_me=$reset_color \

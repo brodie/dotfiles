@@ -185,5 +185,4 @@ widget, custom, latex, ediff."
      (gnus-cite-face-9 ((t (:foreground "violet"))))
      (gnus-cite-face-10 ((t (:foreground "medium purple"))))
      (gnus-cite-face-11 ((t (:foreground "turquoise")))))))
-
-(provide 'color-theme-brodie)
+(add-to-list 'color-themes '(color-theme-brodie  "Brodie" "Brodie Rao"))
