@@ -109,7 +109,9 @@ if has("gui_macvim")
     set guifont=DejaVu\ Sans\ Mono:h12
     set guioptions-=T " Disable toolbar
     set guioptions-=r " Disable scrollbar
+    set guioptions-=L " Disable left-hand scrollbar
     "set transparency=15 " Transparency's broken in 7.3e!
     set timeoutlen=100 " Lower ESC timeout
     set columns=80 lines=44 " Set default window size
+    set fuoptions+=maxhorz
 endif
