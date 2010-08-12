@@ -9,8 +9,12 @@ qseries = -v
 showfunc = True
 
 [merge-tools]
+;kdiff3.args=--auto --L1 base --L2 local --L3 other $base $local $other -o $output
+;kdiff3.gui=True
+;kdiff3.diffargs=--L1 '$plabel1' --L2 '$clabel' $parent $child
+
 mergevim.executable = vim
-mergevim.args = -d $local $other $base
+mergevim.args = -d $local $other $base -c 'windo set nomodifiable | 2winc h | set modifiable'
 mergevim.checkchanged = True
 
 [extensions]
@@ -30,15 +34,18 @@ progress =
 purge =
 rebase =
 record =
+schemes =
 transplant =
-remotebranches = ~/.hgext/hg_remotebranches.py
+;remotebranches = ~/.hgext/hg_remotebranches.py
 ;hgsubversion =
 
 [alias]
+bm = bookmark
+df = diff
 dlog = log --style ~/.hgext/map-cmdline.dlog
 last = log -l 5
-nudge = push -r .
 nlog = log --style ~/.hgext/map-cmdline.nlog
+nudge = push -r .
 qlog = log -pvr qbase:qtip
 show = log -pvr
 slog = log --style ~/.hgext/map-cmdline.slog
@@ -59,7 +66,7 @@ cmd.vimdiff = vim
 opts.vimdiff = -f '+next' '+execute "DirDiff" argv(0) argv(1)'
 
 [pager]
-attend = annotate, cat, diff, dlog, export, glog, incoming, last, log, nlog,
-         outgoing, qdiff, qlog, show, sglog, slog, ",", ",+"
+attend = annotate, cat, df, diff, dlog, export, glog, incoming, last, log,
+         nlog, outgoing, qdiff, qlog, show, sglog, slog, ",", ",+"
 
 %include .hguser
