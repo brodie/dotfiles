@@ -4,6 +4,7 @@ set shell=/bin/bash
 " Helpful defaults
 set nocompatible " Disable complete vi compatibility
 set backspace=indent,eol,start " Smarter backspacing
+set timeoutlen=500 " Lower ESC timeout
 set history=50 " Keep command line history
 set ignorecase " Case-insensitive searching
 set matchtime=2 " Time between bracket jumping for showmatch
@@ -27,7 +28,6 @@ let g:netrw_list_hide='\.orig$,\.rej$,\.~$,\.s?o$,\.py[cdo]$,\.swp$,\.prof$'
 fixdel " Try to fix backspace if it's broken
 " Enable automatic filetype and ft plugins
 filetype on
-filetype plugin on
 
 " Syntax highlighting settings
 if has("syntax")
@@ -63,11 +63,15 @@ AllMap <Esc>[F <xEnd>
 AllMap <Esc>[5D <C-Left>
 AllMap <Esc>[5C <C-Right>
 
+let mapleader = "\\"
 " Fuzzy finder
-AllMap <C-F> <Esc>:FufFileWithCurrentBufferDir<Return>
-AllMap <C-B> <Esc>:FufBuffer<Return>
+map <Leader>f <Esc>:FufFileWithCurrentBufferDir<Return>
+map <Leader>b <Esc>:FufBuffer<Return>
 
 delcommand AllMap
+
+" Sudo to write
+cmap w!! w !sudo tee % > /dev/null
 
 " :Man for man pages
 runtime ftplugin/man.vim
@@ -111,9 +115,9 @@ if has("gui_macvim")
     set guioptions-=r " Disable scrollbar
     set guioptions-=L " Disable left-hand scrollbar
     "set transparency=15 " Transparency's broken in 7.3e!
-    set timeoutlen=100 " Lower ESC timeout
     set columns=80 lines=44 " Set default window size
     set fuoptions+=maxhorz
     autocmd FileType c,changelog,cheetah,cpp,cs,csh,css,django,dosini,haskell,java,javascript,mysql,objc,objcpp,perl,po,pyrex,python,rl,rst,ruby,sh,sql,tcsh,vim,zsh setlocal colorcolumn=80
     hi ColorColumn guibg=#121212
+    filetype plugin on
 endif
