@@ -72,7 +72,10 @@ alias ll='ls -l' \
       ecn='emacsclient -n' \
       ec='emacsclient -nw'
 
-beep() { echo -n '\a' }
+beep()
+{
+    echo -n '\a'
+}
 
 if [[ "$TERM" != dumb && -n "$(command -v colordiff)" ]]
 then
