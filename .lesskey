@@ -1,8 +1,10 @@
 #command
 \e[H goto-line
 \eOH goto-line
+\e[1~ goto-line
 \e[F goto-end
 \eOF goto-end
+\e[4~ goto-end
 ^S forw-search
 #line-edit
 \ed word-delete

@@ -2,26 +2,25 @@
 ignore = ~/.hgignore
 ssh = ssh -q -C
 
-[defaults]
-qseries = -v
-
 [diff]
 showfunc = True
 
 [merge-tools]
-;kdiff3.args=--auto --L1 base --L2 local --L3 other $base $local $other -o $output
-;kdiff3.gui=True
-;kdiff3.diffargs=--L1 '$plabel1' --L2 '$clabel' $parent $child
+p4merge.args=$base $local $other $output
+p4merge.gui=True
+p4merge.diffargs=$parent $child
+p4merge.executable=/Applications/p4merge.app/Contents/MacOS/p4merge
 
-mergevim.executable = vim
-mergevim.args = -d $local $other $base -c 'windo set nomodifiable | 2winc h | set modifiable'
-mergevim.checkchanged = True
+;emacsclient.args = --eval "(ediff-merge-with-ancestor \"$local\" \"$other\" \"$base\" nil \"$output\")"
+vimdiff.args = $local $other $base -c 'windo set nomodifiable | 2winc h | set modifiable'
+vimdiff.priority = -1
 
 [extensions]
 bookmarks =
 churn =
 color =
 convert =
+debugshell = ~/.hgext/debugshell.py
 extdiff =
 gpg =
 graphlog =
@@ -50,6 +49,8 @@ qlog = log -pvr qbase:qtip
 show = log -pvr
 slog = log --style ~/.hgext/map-cmdline.slog
 sglog = glog --style ~/.hgext/map-cmdline.sglog
+qexport = export -r qbase:qtip
+qst = qseries -v
 . = summary
 , = sglog -vl 30
 ,+ = sglog -v

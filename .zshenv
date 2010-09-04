@@ -10,6 +10,8 @@ path=(/usr/local/sbin /usr/local/bin $path)
 [[ -d /opt/local/bin ]] && path=(/opt/local/sbin /opt/local/bin $path)
 [[ -d /opt/local/Library/Frameworks/Python.framework/Versions/2.7/bin ]] && \
  path=(/opt/local/Library/Frameworks/Python.framework/Versions/2.7/bin $path)
+#[[ -d /Applications/MacPorts/Emacs.app/Contents/MacOS/bin ]] && \
+# path=(/Applications/MacPorts/Emacs.app/Contents/MacOS/bin $path)
 [[ -d /usr/X11R6/bin ]] && path+=/usr/X11R6/bin
 [[ -d /usr/local/X11R6/bin ]] && path+=/usr/local/X11R6/bin
 path=("$HOME/.bin" $path)

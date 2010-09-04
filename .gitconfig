@@ -4,11 +4,15 @@
 [alias]
 	ci = commit
 	dc = diff --cached
+	df = diff
 	head = show HEAD
 	glog = log --decorate --graph --all
 	slog = log --pretty=oneline
+	sglog = log --decorate --graph --all --pretty=oneline
 	st = status
 [color]
 	ui = auto
+[core]
+	excludesfile = ~/.gitignore
 [diff]
 	renames = copies

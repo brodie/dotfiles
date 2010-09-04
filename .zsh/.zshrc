@@ -5,7 +5,9 @@ export LANG='en_US.UTF-8'
 # Options
 
 export BROWSER='open' \
-       EDITOR='vim' \
+       EDITOR='emacsclient -nw' \
+       VISUAL='emacsclient -nw' \
+       ALTERNATE_EDITOR='emacs' \
        GREP_OPTIONS='--color=always' \
        PAGER='less' \
        PYTHONSTARTUP="$HOME/.pythonrc.py" \
@@ -81,18 +83,13 @@ fi
 
 ZLS_COLORS="$LS_COLORS"
 
-if [[ -x '/Applications/MacPorts/Emacs.app/Contents/MacOS/bin/emacsclient' ]]
-then
-    alias ec='/Applications/MacPorts/Emacs.app/Contents/MacOS/bin/emacsclient -n'
-else
-    alias ec='emacs -nw'
-fi
-
 alias ll='ls -l' \
       la='ls -A' \
       l='less' \
       mq='hg --cwd $(hg root)/.hg/patches' \
-      tm='tmux a -d'
+      tm='tmux a -d' \
+      ecn='emacsclient -n' \
+      ec='emacsclient -nw'
 
 beep() { echo -n '\a' }
 

@@ -1,0 +1,5 @@
+set autoindent
+set historylog
+set morespace
+set regexp
+set suspend

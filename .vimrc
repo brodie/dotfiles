@@ -23,8 +23,8 @@ set textwidth=0 " No hard line wrapping
 set viminfo=\"50,'20 " Store session info in ~/.viminfo
 set wildmode=list:longest " More useful command completion
 " Hide annoying files from wildmenu/netrw/fuzzyfinder
-set wildignore=*.orig,*.rej,*~,*.o,*.so,*.py[cdo],*.swp,*.prof
-let g:netrw_list_hide='\.orig$,\.rej$,\.~$,\.s?o$,\.py[cdo]$,\.swp$,\.prof$'
+set wildignore=*.orig,*~,*.o,*.so,*.py[cdo],*.swp,*.prof
+let g:netrw_list_hide='\.orig$,\.~$,\.s?o$,\.py[cdo]$,\.swp$,\.prof$'
 fixdel " Try to fix backspace if it's broken
 " Enable automatic filetype and ft plugins
 filetype on

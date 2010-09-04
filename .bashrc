@@ -5,7 +5,9 @@ export LANG='en_US.UTF-8'
 # Options
 
 export BROWSER='open' \
-       EDITOR='vim' \
+       EDITOR='emacsclient -nw' \
+       VISUAL='emacsclient -nw' \
+       ALTERNATE_EDITOR='emacs' \
        GREP_OPTIONS='--color=always' \
        PAGER='less' \
        PYTHONSTARTUP="$HOME/.pythonrc.py" \
@@ -62,28 +64,23 @@ else
           vdir='ls --format=long'
 fi
 
-if [[ -x '/Applications/MacPorts/Emacs.app/Contents/MacOS/bin/emacsclient' ]]
-then
-    alias ec='/Applications/MacPorts/Emacs.app/Contents/MacOS/bin/emacsclient -n'
-else
-    alias ec='emacs -nw'
-fi
-
 alias ll='ls -l' \
       la='ls -A' \
       l='less' \
       mq='hg --cwd $(hg root)/.hg/patches' \
-      py='python -i /dev/null' \
+      tm='tmux a -d' \
+      ecn='emacsclient -n' \
+      ec='emacsclient -nw'
 
-beep()
-{
-    echo -n '\a'
-}
+beep() { echo -n '\a' }
 
 if [[ "$TERM" != dumb && -n "$(command -v colordiff)" ]]
 then
     alias diff='colordiff -u'
 fi
+
+[[ -n "$(command -v bpython)" ]] \
+    && alias py=bpython || alias py='python -i /dev/null'
 
 # less niceties
 

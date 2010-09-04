@@ -1,18 +1,48 @@
 ; Set up GUI-related stuff as soon as possible
 (menu-bar-mode -1)
-(when window-system
-  (add-to-list 'default-frame-alist '(alpha 92 92))
-  ;(add-to-list 'default-frame-alist '(width . 80))
-  ;(add-to-list 'default-frame-alist '(height . 42))
-  (tool-bar-mode -1)
-  (scroll-bar-mode -1)
-  (server-start))
+(add-to-list 'default-frame-alist '(background-color . "black"))
+(add-to-list 'default-frame-alist '(alpha 92 92))
+(add-to-list 'default-frame-alist '(width . 80))
+(add-to-list 'default-frame-alist '(height . 42))
+
+; Color theme
+(add-to-list 'load-path "~/.emacs.d/plugins")
+(require 'color-theme) ; load color themes
+(color-theme-initialize)
+(setq color-theme-is-global nil)
+(add-hook 'window-setup-hook
+          (lambda ()
+            (when window-system
+              (color-theme-brodie))))
+(add-hook 'after-make-frame-functions
+          (lambda (frame)
+            (select-frame frame)
+            (if (window-system frame)
+                (progn
+                  (color-theme-brodie)
+                  (tool-bar-mode -1)
+		  (scroll-bar-mode -1))
+              (color-theme-default))))
+
+; Mouse wheel scrolling in xterm
+(add-hook 'server-switch-hook
+	  (lambda ()
+	    (unless window-system
+	      (require 'mouse)
+	      (xterm-mouse-mode 1)
+	      (global-set-key [mouse-4] '(lambda ()
+					   (interactive)
+					   (scroll-down 1)))
+	      (global-set-key [mouse-5] '(lambda ()
+					   (interactive)
+					   (scroll-up 1))))))
 
 ; Set PATH/exec-path based on the shell's configuration
 (defun set-path-from-shell ()
   (if (get-buffer "*set-path-from-shell*")
       (kill-buffer "*set-path-from-shell*"))
-  (call-process-shell-command "zsh -c 'echo $PATH'" nil "*set-path-from-shell*")
+  (call-process-shell-command "zsh -c 'echo $PATH'" nil
+                              "*set-path-from-shell*")
   (with-current-buffer "*set-path-from-shell*"
     (let ((output (buffer-substring (point-min) (- (point-max) 1)))
           (emacs-path (nth 0 (last exec-path))))
@@ -22,10 +52,6 @@
 (set-path-from-shell)
 
 ; Plugins
-(add-to-list 'load-path "~/.emacs.d/plugins")
-(require 'color-theme) ; load color themes
-(color-theme-initialize)
-(color-theme-brodie) ; set color theme
 (require 'sudo) ; open/save files with sudo
 (require 'flymake-point) ; shows errors in the minibuffer when highlighted
 (autoload 'yas/minor-mode "yasnippet-bundle" nil t) ; like TextMate snippets
@@ -85,8 +111,7 @@
 (delete-selection-mode 1) ; backspace deletes selected text
 (savehist-mode 1) ; save command history
 ; camel case word navigation
-(when (boundp 'subword-mode)
-  (add-hook 'after-change-major-mode-hook '(lambda () (subword-mode 1))))
+(add-hook 'after-change-major-mode-hook '(lambda () (subword-mode 1)))
 ; add missing trailing newline one both visit and save
 (setq require-final-newline 'visit-save)
 (ido-mode t) ; fancy file navigation
@@ -101,14 +126,6 @@
 (setq uniquify-separator ":")
 (setq uniquify-after-kill-buffer-p t)
 (setq uniquify-ignore-buffers-re "^\\*")
-
-; Highlight the 80th column
-(require 'column-marker)
-(add-hook 'emacs-lisp-mode-hook '(lambda () (interactive) (column-marker-3 80)))
-(add-hook 'c-mode-common-mode-hook
-          '(lambda () (interactive) (column-marker-3 80)))
-(add-hook 'python-mode-hook '(lambda () (interactive) (column-marker-3 80)))
-(add-hook 'sh-mode-hook '(lambda () (interactive) (column-marker-3 80)))
 
 ; Disable the fringe for all frames
 (add-to-list 'default-frame-alist '(left-fringe . 0))
@@ -132,17 +149,6 @@
       (concat user-temporary-file-directory "auto-saves-"))
 (setq auto-save-file-name-transforms
       `((".*" ,user-temporary-file-directory t)))
-
-; Mouse wheel scrolling in xterm
-(unless window-system
-  (require 'mouse)
-  (xterm-mouse-mode 1)
-  (global-set-key [mouse-4] '(lambda ()
-                               (interactive)
-                               (scroll-down 1)))
-  (global-set-key [mouse-5] '(lambda ()
-                               (interactive)
-                               (scroll-up 1))))
 
 ; Bindings
 (defun delete-backward-indent (&optional arg)
@@ -192,16 +198,31 @@
 (global-set-key (kbd "M-[ 5 d") 'backward-word)
 (global-set-key (kbd "M-[ 5 c") 'forward-word)
 (global-set-key (kbd "DEL") 'delete-backward-indent)
-;(global-set-key (kbd "M-g") 'goto-line)
 (global-set-key (kbd "C-x M-s") 'sudo-unset-ro-or-save)
 (global-set-key (kbd "C-x M-f") 'sudo-find-file)
 (global-set-key (kbd "C--") 'undo)
 (when (fboundp 'ns-toggle-fullscreen)
   (global-set-key (kbd "s-<return>") 'ns-toggle-fullscreen))
-; FIXME: This needs something like vim's ttimeout setting
-;(global-set-key (kbd "ESC ESC") 'keyboard-quit)
+(when window-system
+  (global-set-key (kbd "s-1")
+                  (lambda ()
+                    (interactive)
+                    (set-frame-width (selected-frame) 80)
+                    (balance-windows)))
+  (global-set-key (kbd "s-2")
+                  (lambda ()
+                    (interactive)
+                    (set-frame-width (selected-frame) 160)
+                    (balance-windows)))
+  (global-set-key (kbd "s-3")
+                  (lambda ()
+                    (interactive)
+                    (set-frame-width (selected-frame) 240)
+                    (balance-windows))))
+
 
 ; On-the-fly spell checking
+(setq flyspell-issue-message-flag nil)
 (add-hook 'markdown-mode-hook '(lambda () (flyspell-mode 1)))
 (add-hook 'rst-mode-hook '(lambda () (flyspell-mode 1)))
 (add-hook 'text-mode-hook '(lambda () (flyspell-mode 1)))
@@ -222,22 +243,6 @@
   (add-to-list 'flymake-allowed-file-name-masks
                '("\\.py\\'" flymake-pyflakes-init)))
 (add-hook 'python-mode-hook '(lambda () (flymake-mode 1)))
-
-; When dealing with two side-by-side windows, automatically resize the frame
-;(when window-system
-;  (defadvice split-window-horizontally (before resize-window)
-;    (set-frame-width (selected-frame) 160))
-;  (ad-activate 'split-window-horizontally)
-;
-;  (defadvice delete-window (after resize-window)
-;    (if (= (count-windows) 1)
-;        (set-frame-width (selected-frame) 80)))
-;  (ad-activate 'delete-window)
-;
-;  (defadvice delete-other-windows (after resize-window)
-;    (if (= (count-windows) 1)
-;        (set-frame-width (selected-frame) 80)))
-;  (ad-activate 'delete-other-windows))
 
 ; Hide uninteresting files
 (eval-after-load "dired" '(require 'dired-x))

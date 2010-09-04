@@ -4,8 +4,10 @@ export PATH="/usr/local/sbin:/usr/local/bin:$PATH"
 [[ -d /usr/local/mysql/bin ]] && export PATH="/usr/local/mysql/bin:$PATH"
 [[ -d /sw/bin ]] && export PATH="/sw/sbin:/sw/bin:$PATH"
 [[ -d /opt/local/bin ]] && export PATH="/opt/local/sbin:/opt/local/bin:$PATH"
-[[ -d /opt/local/Library/Frameworks/Python.framework/Versions/2.6/bin ]] && \
- export PATH="/opt/local/Library/Frameworks/Python.framework/Versions/2.6/bin:$PATH"
+[[ -d /opt/local/Library/Frameworks/Python.framework/Versions/2.7/bin ]] && \
+ export PATH="/opt/local/Library/Frameworks/Python.framework/Versions/2.7/bin:$PATH"
+#[[ -d /Applications/MacPorts/Emacs.app/Contents/MacOS/bin ]] && \
+# export PATH="/Applications/MacPorts/Emacs.app/Contents/MacOS/bin:$PATH"
 [[ -d /usr/X11R6/bin ]] && export PATH="$PATH:/usr/X11R6/bin"
 [[ -d /usr/local/X11R6/bin ]] && export PATH="$PATH:/usr/local/X11R6/bin"
 export PATH="$HOME/.bin:$PATH"
