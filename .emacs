@@ -98,6 +98,9 @@
 
 ; Other settings
 
+(setq server-kill-new-buffers nil) ; preserve new buffers when closing clients
+(setq server-temp-file-regexp
+      (substitute-in-file-name "^$TMPDIR/.*"))
 (when (fboundp 'set-fringe-style)
   (set-fringe-style 'none)) ; disable fringes
 (setq-default show-trailing-whitespace t)

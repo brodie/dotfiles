@@ -3,6 +3,7 @@ ignore = ~/.hgignore
 ssh = ssh -q -C
 
 [diff]
+git = True
 showfunc = True
 
 [merge-tools]
@@ -35,6 +36,7 @@ rebase =
 record =
 schemes =
 transplant =
+involving = ~/.hgext/involving.py
 ;remotebranches = ~/.hgext/hg_remotebranches.py
 ;hgsubversion =
 
@@ -51,10 +53,7 @@ slog = log --style ~/.hgext/map-cmdline.slog
 sglog = glog --style ~/.hgext/map-cmdline.sglog
 qexport = export -r qbase:qtip
 qst = qseries -v
-. = summary
-, = sglog -vl 30
-,+ = sglog -v
-- = status
+top = !"$HG" log --template '{author|person}\n' | sed 's/"//g' | sort | uniq -c | sort -rn | head -n `expr "$1" \| 10`
 
 [bookmarks]
 track.current = True
@@ -67,7 +66,7 @@ cmd.vimdiff = vim
 opts.vimdiff = -f '+next' '+execute "DirDiff" argv(0) argv(1)'
 
 [pager]
-attend = annotate, cat, df, diff, dlog, export, glog, incoming, last, log,
-         nlog, outgoing, qdiff, qlog, show, sglog, slog, ",", ",+"
+attend = annotate, cat, df, diff, dlog, export, glog, incoming, involving,
+         last, log, nlog, outgoing, qdiff, qlog, show, sglog, slog
 
 %include .hguser
