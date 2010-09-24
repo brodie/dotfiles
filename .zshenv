@@ -23,3 +23,5 @@ path=("$HOME/.bin" $path)
 [[ -d /opt/local/share/man ]] && manpath=(/opt/local/share/man $manpath)
 
 [[ -d "$ZDOTDIR/functions" ]] && fpath=("$ZDOTDIR/functions" $fpath)
+
+[[ -d "$HOME/tmp" ]] && export TMPDIR="$HOME/tmp"
