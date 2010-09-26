@@ -233,18 +233,18 @@
 (add-hook 'python-mode-hook '(lambda () (flyspell-prog-mode)))
 (add-hook 'sh-mode-hook '(lambda () (flyspell-prog-mode)))
 
-; On-the-fly pyflakes checking
-(setq python-check-command "pyflakes")
+; On-the-fly pyflakes/pep8 checking
+(setq python-check-command "flypy")
 (when (load "flymake" t)
-  (defun flymake-pyflakes-init ()
+  (defun flymake-flypy-init ()
     (let* ((temp-file (flymake-init-create-temp-buffer-copy
                        'flymake-create-temp-inplace))
            (local-file (file-relative-name
                         temp-file
                         (file-name-directory buffer-file-name))))
-      (list "pyflakes" (list local-file))))
+      (list "flypy" (list local-file))))
   (add-to-list 'flymake-allowed-file-name-masks
-               '("\\.py\\'" flymake-pyflakes-init)))
+               '("\\.py\\'" flymake-flypy-init)))
 (add-hook 'python-mode-hook '(lambda () (flymake-mode 1)))
 
 ; Hide uninteresting files

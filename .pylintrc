@@ -1,0 +1,55 @@
+[MASTER]
+ignore=CVS
+ignore=.hg
+ignore=.git
+ignore=.svn
+ignore=_darcs
+
+[MESSAGES CONTROL]
+# The design check gives mostly useless advice.
+# W0142: * or ** arguments
+# W0403: relative import
+# W0212: protected member access
+# W0613: unused argument
+# C0111: missing docstring
+# W0703: except Exception:
+# E1101: class has no member
+# E1103: class has no member (couldn't infer types)
+# R0201: method could be a function
+# W0704: except: pass
+disable=design,W0142,W0403,W0212,W0613,C0111,W0703,E1103,R0201,W0704
+
+[REPORTS]
+include-ids=yes
+
+[TYPECHECK]
+ignored-classes=
+generated-members=
+
+[BASIC]
+no-docstring-rgx=__.*__
+module-rgx=(([a-z_][a-z0-9_]*)|([A-Z][a-zA-Z0-9]+))$
+const-rgx=(([a-zA-Z_][a-zA-Z0-9_]{2,30})|(__[a-z0-9_]{2,30}__))$
+class-rgx=[a-zA-Z_][a-zA-Z0-9]{2,30}$
+function-rgx=[a-z_][a-z0-9_]{2,30}$
+method-rgx=[a-z_][a-z0-9_]{2,30}$
+attr-rgx=[a-z_][a-z0-9_]{0,30}$
+argument-rgx=[a-z_][a-z0-9_]{0,30}$
+variable-rgx=[a-z_][a-z0-9_]{0,30}$
+inlinevar-rgx=[A-Za-z_][A-Za-z0-9_]*$
+bad-names=foo,bar,baz,toto,tutu,tata
+bad-functions=apply,callable,cmp,filter,input,map,range,reduce
+
+[CLASSES]
+ignore-iface-methods=
+defining-attr-methods=__init__,__new__
+
+[IMPORTS]
+deprecated-modules=regsub,TERMIOS,Bastion,rexec
+
+[FORMAT]
+max-line-length=80
+max-module-lines=5000
+
+[MISCELLANEOUS]
+notes=FIXME,XXX,TODO

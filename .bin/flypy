@@ -1,0 +1,6 @@
+#!/bin/sh
+
+pyflakes "$1"
+pep8 --ignore=E302 --repeat "$1"
+epylint "$1" 2>/dev/null
+true
