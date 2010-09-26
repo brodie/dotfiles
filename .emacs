@@ -223,7 +223,6 @@
                     (set-frame-width (selected-frame) 240)
                     (balance-windows))))
 
-
 ; On-the-fly spell checking
 (setq flyspell-issue-message-flag nil)
 (add-hook 'markdown-mode-hook '(lambda () (flyspell-mode 1)))
@@ -235,6 +234,7 @@
 
 ; On-the-fly pyflakes/pep8 checking
 (setq python-check-command "flypy")
+(setq python-saved-check-command "flypy")
 (when (load "flymake" t)
   (defun flymake-flypy-init ()
     (let* ((temp-file (flymake-init-create-temp-buffer-copy
@@ -245,10 +245,7 @@
       (list "flypy" (list local-file))))
   (add-to-list 'flymake-allowed-file-name-masks
                '("\\.py\\'" flymake-flypy-init)))
-(add-hook 'python-mode-hook
-          '(lambda ()
-             (defun python-flymake-init nil)
-             (flymake-mode 1)))
+(add-hook 'python-mode-hook '(lambda () (flymake-mode 1)))
 
 ; Hide uninteresting files
 (eval-after-load "dired" '(require 'dired-x))
