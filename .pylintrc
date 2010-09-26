@@ -17,7 +17,10 @@ ignore=_darcs
 # E1103: class has no member (couldn't infer types)
 # R0201: method could be a function
 # W0704: except: pass
-disable=design,W0142,W0403,W0212,W0613,C0111,W0703,E1103,R0201,W0704
+# W0603: global statement
+# W0232: no __init__
+# W0201: attribute defined outside of __init__
+disable=design,W0142,W0403,W0212,W0613,C0111,W0703,E1103,R0201,W0704,W0603,W0232,W0201
 
 [REPORTS]
 include-ids=yes
