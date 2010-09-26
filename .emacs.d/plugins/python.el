@@ -1,12 +1,17 @@
 ;;; python.el --- silly walks for Python  -*- coding: iso-8859-1 -*-
 
-;; Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009  Free Software Foundation, Inc.
+;; Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008  Free Software Foundation, Inc.
+;; Copyright (C) 2009, 2010  David Love
+
+;; Note that this is no longer covered by FSF copyright assignment --
+;; that isn't useful since the forked version in Emacs is being
+;; replaced by unassigned code.
 
 ;; Author: Dave Love <fx@gnu.org>
 ;; Created: Nov 2003
 ;; Keywords: languages
 ;; URL: http://www.loveshack.ukfsn.org/emacs/
-;; $Revision: 1.32 $
+;; $Revision: 1.36 $
 
 ;; This file is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -36,13 +41,14 @@
 ;; This doesn't implement all the facilities of python-mode.el, some
 ;; of which shouldn't be in specific language modes.
 ;; `forward-into-nomenclature' is provided generally by
-;; `capitalized-words-mode' in Emacs 23.  [CC mode contains an
-;; incompatible feature, `c-subword-mode' intended to have a similar
-;; effect, but actually only affects word-oriented keybindings.]
-;; Gud-like functionality in the inferior Python buffer should be
-;; provided by a Gud minor mode, if anything (I made a prototype), but
-;; the use of `compilation-shell-minor-mode' allows you to find the
-;; error location explicitly with C-x `.
+;; `capitalized-words-mode' in Emacs 23, although it doesn't work
+;; properly in Emacs 23.1.  [CC mode contains an incompatible feature,
+;; `c-subword-mode' intended to have a similar effect, but which
+;; actually only affects word-oriented keybindings.]  Gud-like
+;; functionality in the inferior Python buffer should be provided by a
+;; Gud minor mode, if anything (I made a prototype), but the use of
+;; `compilation-shell-minor-mode' allows you to find the error
+;; location explicitly with C-x `.
 
 ;; Other things seem more natural or canonical here, e.g. the
 ;; {beginning,end}-of-defun implementation dealing with nested
@@ -118,7 +124,10 @@
     (,(rx symbol-start (group "def") (1+ space) (group (1+ (or word ?_))))
      (1 font-lock-keyword-face) (2 font-lock-function-name-face))
     ;; Top-level assignments are worth highlighting.
-    (,(rx line-start (group (1+ (or word ?_))) (0+ space) "=")
+    (,(rx line-start (group (1+ (or word ?_))) (0+ space)
+          ;; `augmented'
+          (opt (or "+" "-" "*" "/" "//" "%" "**" ">>" "<<" "&" "^" "|"))
+          "=")
      (1 font-lock-variable-name-face))
     ;; decorators
     (,(rx line-start (* (any " \t")) (group "@" (1+ (or word ?_ ?.))))
@@ -1286,10 +1295,15 @@ Repeat ARG times."
 (defcustom python-check-command "pychecker --stdlib"
   "*Command used to check a Python file.
 Possible commands include `pychecker', `pyflakes', and `pylint'."
-  :type '(choice
+  :type `(choice
 	  (const "pychecker --stdlib")
 	  (const "pyflakes")
-	  (const "pylint -f parseable -r n --disable-msg-cat=CRI")
+	  (const ,(concat
+		   (if (executable-find "epylint")
+		       ;; Reformats `[W, foo]' to `Warning (foo)'
+		       "epylint"
+		     "pylint")
+		   " -f parseable -r n --disable-msg-cat=CRI"))
 	  (const "pep8.py --repeat") ; http://github.com/cburroughs/pep8.py
 	  (string :tag "Other command"))
   :group 'python)
@@ -1317,10 +1331,12 @@ See `python-check-command' for the default."
 	       compilation-error-regexp-alist)))
     (compilation-start command)))
 
+(autoload 'flymake-init-create-temp-buffer-copy "flymake")
+
 (defun python-flymake-init ()
   "Flymake init function for Python.
 To be added to `flymake-init-create-temp-buffer-copy'."
-  (let ((checker-elts (split-string python-check-command)))
+  (let ((checker-elts (split-string python-saved-check-command)))
     (list (car checker-elts)
 	  (append (cdr checker-elts)
 		  (list (flymake-init-create-temp-buffer-copy
@@ -2044,26 +2060,22 @@ Used with `eval-after-load'."
      ;; instance.)
      (if versioned
 	 ;; The empty prefix just gets us highlighted terms.
-	 `((,(concat "(python" version "-ref)Miscellaneous Index") nil "")
-	   (,(concat "(python" version "-ref)Module Index" nil ""))
-	   (,(concat "(python" version "-ref)Function-Method-Variable Index"
-		     nil ""))
-	   (,(concat "(python" version "-ref)Class-Exception-Object Index"
-		     nil ""))
-	   (,(concat "(python" version "-lib)Module Index" nil ""))
-	   (,(concat "(python" version "-lib)Class-Exception-Object Index"
-		     nil ""))
-	   (,(concat "(python" version "-lib)Function-Method-Variable Index"
-		     nil ""))
-	   (,(concat "(python" version "-lib)Miscellaneous Index" nil "")))
-       '(("(python-ref)Miscellaneous Index" nil "")
-	 ("(python-ref)Module Index" nil "")
-	 ("(python-ref)Function-Method-Variable Index" nil "")
-	 ("(python-ref)Class-Exception-Object Index" nil "")
-	 ("(python-lib)Module Index" nil "")
-	 ("(python-lib)Class-Exception-Object Index" nil "")
-	 ("(python-lib)Function-Method-Variable Index" nil "")
-	 ("(python-lib)Miscellaneous Index" nil ""))))))
+	 `((,(concat "(python" version "-ref)Miscellaneous Index"))
+	   (,(concat "(python" version "-ref)Module Index"))
+	   (,(concat "(python" version "-ref)Function-Method-Variable Index"))
+	   (,(concat "(python" version "-ref)Class-Exception-Object Index"))
+	   (,(concat "(python" version "-lib)Module Index"))
+	   (,(concat "(python" version "-lib)Class-Exception-Object Index"))
+	   (,(concat "(python" version "-lib)Function-Method-Variable Index"))
+	   (,(concat "(python" version "-lib)Miscellaneous Index")))
+       '(("(python-ref)Miscellaneous Index")
+	 ("(python-ref)Module Index")
+	 ("(python-ref)Function-Method-Variable Index")
+	 ("(python-ref)Class-Exception-Object Index")
+	 ("(python-lib)Module Index")
+	 ("(python-lib)Class-Exception-Object Index")
+	 ("(python-lib)Function-Method-Variable Index")
+	 ("(python-lib)Miscellaneous Index"))))))
 (eval-after-load "info-look" '(python-after-info-look))
 
 ;;;; Miscellany.
@@ -2261,33 +2273,33 @@ Uses `python-beginning-of-block', `python-end-of-block'."
   "String of top-level import statements updated by `python-find-imports'.")
 (make-variable-buffer-local 'python-imports)
 
-;; Fixme: Should font-lock try to run this when it deals with an import?
-;; Maybe not a good idea if it gets run multiple times when the
-;; statement is being edited, and is more likely to end up with
+;; font-lock could try to run this when it deals with an import, but
+;; that's probably not a good idea if it gets run multiple times when
+;; the statement is being edited, and is more likely to end up with
 ;; something syntactically incorrect.
-;; However, what we should do is to trundle up the block tree from point
-;; to extract imports that appear to be in scope, and add those.
-;; Also note constructs effectively at top-level:
+;; Fixme: currently doesn't deal with constructs which are effectively
+;; at top-level:
 ;; if ...:
 ;;     import ...
 (defun python-find-imports ()
-  "Find top-level imports, updating `python-imports'."
+  "Find top-level import statements, updating `python-imports'."
   (interactive)
   (save-excursion
-      (let (lines)
-	(goto-char (point-min))
-	(while (re-search-forward "^import\\>\\|^from\\>" nil t)
-	  (unless (syntax-ppss-context (syntax-ppss))
-	    (let ((start (line-beginning-position)))
-	      ;; Skip over continued lines.
-	      (while (and (eq ?\\ (char-before (line-end-position)))
-			  (= 0 (forward-line 1)))
-		t)
-	      (push (buffer-substring start (line-beginning-position 2))
-		    lines))))
-	(setq python-imports
-	      (if lines
-		  (apply #'concat
+    (let (lines)
+      (goto-char (point-min))
+      (while (re-search-forward "^import\\>\\|^from\\>" nil t)
+	(unless (syntax-ppss-context (syntax-ppss)) ; avoid comment/string
+	  (let ((start (line-beginning-position)))
+	    ;; Skip over continued lines.
+	    (while (and (eq ?\\ (char-before (line-end-position)))
+			(= 0 (forward-line 1)))
+	      t)
+	    (push (buffer-substring-no-properties
+		   start (line-beginning-position 2))
+		  lines))))
+      (setq python-imports
+	    (if lines
+		(apply #'concat
 ;; This is probably best left out since you're unlikely to need the
 ;; doc for a function in the buffer and the import will lose if the
 ;; Python sub-process' working directory isn't the same as the
@@ -2297,15 +2309,56 @@ Uses `python-beginning-of-block', `python-end-of-block'."
 ;; 			      "import "
 ;; 			      (file-name-sans-extension
 ;; 			       (file-name-nondirectory buffer-file-name))))
-			 (nreverse lines))
-		"None"))
-	(when lines
-	  (set-text-properties 0 (length python-imports) nil python-imports)
-	  ;; The output ends up in the wrong place if the string we
-	  ;; send contains newlines (from the imports).
-	  (setq python-imports
-		(replace-regexp-in-string "\n" "\\n"
-					  (format "%S" python-imports) t t))))))
+		       (nreverse lines))
+	      "None"))
+      (when lines
+	;; The output ends up in the wrong place if the string we
+	;; send contains newlines (from the imports).
+	(setq python-imports
+	      (replace-regexp-in-string "\n" "\\n"
+					;; format does quoting
+					(format "%S" python-imports) t t))))))
+
+;; Fixme:  This assumes imports precede the use of the relevant names,
+;; which isn't necessary with the strange Python scoping.  Rather than
+;; declare that we should have import before use, we could also look
+;; forward in the enclosing blocks for imports.
+(defun python-find-local-imports ()
+  "Find import statements apparently in scope and return string of them.
+The criterion is that import statements found looking backwards
+in surrounding blocks are indented at the top level of the block."
+  (save-excursion
+    (if (or (python-blank-line-p) (python-comment-line-p))
+	(python-previous-statement))
+    (let ((to (point))		 ; search to here for each block level
+	  (indent (current-indentation))
+	  bob			   ; beginning-of-block for each level
+	  lines)		   ; accumulated import lines
+      (while (python-beginning-of-block)
+	(setq bob (point))
+	(save-excursion
+	  (while (re-search-forward "^\\s-+\\(?:import\\|from\\)\\>" to t)
+	    (unless (or (syntax-ppss-context (syntax-ppss)) ; avoid comment/string
+			(> (current-indentation) indent)) ; right scope
+	      (let ((start (save-excursion
+			     (back-to-indentation)
+			     (point))))
+		;; Skip over continued lines.
+		(while (and (eq ?\\ (char-before (line-end-position)))
+			    (= 0 (forward-line 1)))
+		  t)
+		(push (buffer-substring-no-properties
+		       start (line-beginning-position 2))
+		      lines)))))
+	(setq to bob
+	      indent (current-indentation)))
+      (if lines				; Per python-find-imports
+	  (let ((lines (format "%S" (apply #'concat lines))))
+	    (concat (if (equal python-imports "None")
+			nil
+		      python-imports)
+	    (replace-regexp-in-string "\n" "\\n" lines t t)))
+	python-imports))))
 
 ;; Fixme: This fails the first time if the sub-process isn't already
 ;; running.  Presumably a timing issue with i/o to the process.
@@ -2318,7 +2371,9 @@ Uses `python-imports' to load modules against which to complete."
 	   (condition-case ()
 	       (car (read-from-string
 		     (python-send-receive
-		      (format "emacs.complete(%S,%s)" symbol python-imports))))
+		      (format "emacs.complete(%S,%s)" symbol
+			      (concat python-imports
+				      (python-find-local-imports))))))
 	     (error nil))))
       (sort
        ;; We can get duplicates from the above -- don't know why.

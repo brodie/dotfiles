@@ -178,7 +178,6 @@
           '(lambda ()
              (hs-minor-mode 1)
              (define-key python-mode-map (kbd "RET") 'newline-maybe-indent)
-             (define-key python-mode-map (kbd "DEL") 'delete-backward-indent)
              (define-key python-mode-map (kbd "M-RET") 'hs-toggle-hiding)))
 (add-hook 'c-mode-common-hook
           '(lambda ()
@@ -246,7 +245,10 @@
       (list "flypy" (list local-file))))
   (add-to-list 'flymake-allowed-file-name-masks
                '("\\.py\\'" flymake-flypy-init)))
-(add-hook 'python-mode-hook '(lambda () (flymake-mode 1)))
+(add-hook 'python-mode-hook
+          '(lambda ()
+             (defun python-flymake-init nil)
+             (flymake-mode 1)))
 
 ; Hide uninteresting files
 (eval-after-load "dired" '(require 'dired-x))
