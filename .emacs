@@ -54,6 +54,7 @@
 ; Plugins
 (require 'sudo) ; open/save files with sudo
 (require 'flymake-point) ; shows errors in the minibuffer when highlighted
+(require 'revbufs)
 (autoload 'yas/minor-mode "yasnippet-bundle" nil t) ; like TextMate snippets
 (autoload 'js2-mode "js2" nil t)
 (autoload 'rst-mode "rst" nil t) ; restructured text mode
