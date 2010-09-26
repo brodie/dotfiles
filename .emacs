@@ -62,7 +62,6 @@
 (autoload 'po-mode "po-mode" nil t)
 (autoload 'css-mode "css-mode" nil t)
 (autoload 'rainbow-paren-mode "rainbow-parens" nil t)
-(autoload 'python-mode "python-mode" nil t)
 
 ; org-mode
 (require 'org-install)
@@ -167,9 +166,18 @@
             (delete-backward-char n))
         (delete-backward-char 1)))))
 
+(defun newline-maybe-indent ()
+  "Like newline-and-indent, but doesn't indent if the previous line is blank"
+  (interactive "*")
+  (if (= (line-beginning-position) (line-end-position))
+      (newline)
+    (newline-and-indent)))
+
 (add-hook 'python-mode-hook
           '(lambda ()
              (hs-minor-mode 1)
+             (define-key python-mode-map (kbd "RET") 'newline-maybe-indent)
+             (define-key python-mode-map (kbd "DEL") 'delete-backward-indent)
              (define-key python-mode-map (kbd "M-RET") 'hs-toggle-hiding)))
 (add-hook 'c-mode-common-hook
           '(lambda ()
