@@ -1,9 +1,9 @@
 def _pythonrc():
     # Enable readline, tab completion, and history
+    import sys
     try:
         import readline
     except ImportError:
-        import sys
         sys.stderr.write('readline unavailable - tab completion disabled.\n')
     else:
         import rlcompleter
@@ -35,6 +35,41 @@ def _pythonrc():
             readline.set_history_length(1000)
 
     # Pretty print evaluated expressions
+
+    try:
+        if sys.platform == 'win32':
+            raise ImportError()
+        try:
+            from cStringIO import StringIO
+        except ImportError:
+            from StringIO import StringIO
+        from pygments import highlight
+        from pygments.lexers import PythonLexer, PythonTracebackLexer
+        from pygments.formatters import TerminalFormatter
+
+        def pphighlight(o, *a, **kw):
+            s = pprint.pformat(o, *a, **kw)
+            sys.stdout.write(highlight(s, PythonLexer(), TerminalFormatter()))
+
+        _old_excepthook = sys.excepthook
+        def excepthook(exctype, value, traceback):
+            """Prints exceptions to sys.stderr and colorizes them"""
+
+            # traceback.format_exception() isn't used because it's
+            # inconsistent with the built-in formatter
+            old_stderr = sys.stderr
+            sys.stderr = StringIO()
+            try:
+                _old_excepthook(exctype, value, traceback)
+                s = sys.stderr.getvalue()
+                s = highlight(s, PythonTracebackLexer(), TerminalFormatter())
+                old_stderr.write(s)
+            finally:
+                sys.stderr = old_stderr
+
+        sys.excepthook = excepthook
+    except ImportError:
+        pphighlight = pprint.pprint
 
     try:
         import __builtin__
@@ -110,40 +145,9 @@ def _pythonrc():
                 sys.stdout.write(pydoc.getdoc(value))
                 sys.stdout.write('\n')
         else:
-            pprint.pprint(value, width=get_width() or 80)
+            pphighlight(value, width=get_width() or 80)
 
     sys.displayhook = pprinthook
-
-    try:
-        if sys.platform == 'win32':
-            raise ImportError()
-        try:
-            from cStringIO import StringIO
-        except ImportError:
-            from StringIO import StringIO
-        from pygments import highlight
-        from pygments.lexers import PythonTracebackLexer
-        from pygments.formatters import TerminalFormatter
-
-        _old_excepthook = sys.excepthook
-        def excepthook(exctype, value, traceback):
-            """Prints exceptions to sys.stderr and colorizes them"""
-
-            # traceback.format_exception() isn't used because it's
-            # inconsistent with the built-in formatter
-            old_stderr = sys.stderr
-            sys.stderr = StringIO()
-            try:
-                _old_excepthook(exctype, value, traceback)
-                s = sys.stderr.getvalue()
-                s = highlight(s, PythonTracebackLexer(), TerminalFormatter())
-                old_stderr.write(s)
-            finally:
-                sys.stderr = old_stderr
-
-        sys.excepthook = excepthook
-    except ImportError:
-        pass
 
     # linecache.updatecache() replacement that actually works with zips
     import os
