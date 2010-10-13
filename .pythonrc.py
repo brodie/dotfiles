@@ -35,7 +35,7 @@ def _pythonrc():
             readline.set_history_length(1000)
 
     # Pretty print evaluated expressions
-
+    import pprint
     try:
         if sys.platform == 'win32':
             raise ImportError()
@@ -76,7 +76,6 @@ def _pythonrc():
     except ImportError:
         import builtins as __builtin__
     import inspect
-    import pprint
     import pydoc
     import sys
     import types
@@ -290,3 +289,6 @@ def source(obj):
             os.environ['LESS'] = lessopts
         else:
             os.environ.pop('LESS', None)
+
+import __builtin__
+__builtin__.source = source
