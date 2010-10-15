@@ -4,20 +4,21 @@ export LANG='en_US.UTF-8'
 
 # Options
 
-export BROWSER='open' \
-       EDITOR='emacsclient -nw' \
-       VISUAL='emacsclient -nw' \
+export ACK_COLOR_MATCH='red' \
+       ACK_COLOR_FILENAME='magenta' \
+       ACK_PAGER='less' \
        ALTERNATE_EDITOR='emacs' \
+       BROWSER='open' \
+       EDITOR='emacsclient -nw' \
        GREP_OPTIONS='--color=always' \
        PAGER='less' \
-       PYTHONSTARTUP="$HOME/.pythonrc.py" \
-       WORKON_HOME="$HOME/Documents/Envs" \
-       VIRTUALENV_USE_DISTRIBUTE=1 \
-       PIP_VIRTUALENV_BASE="$WORKON_HOME" \
        PIP_RESPECT_VIRTUALENV=true \
-       ACK_COLOR_FILENAME='magenta' \
-       ACK_COLOR_MATCH='red' \
-       ACK_PAGER='less'
+       PIP_VIRTUALENV_BASE="$WORKON_HOME" \
+       PYTHONSTARTUP="$HOME/.pythonrc.py" \
+       TZ='America/Los_Angeles' \
+       VIRTUALENV_USE_DISTRIBUTE=1 \
+       VISUAL='emacsclient -nw' \
+       WORKON_HOME="$HOME/Documents/Envs"
 
 shopt -s checkhash \
          checkwinsize \
@@ -72,10 +73,7 @@ alias ll='ls -l' \
       ecn='emacsclient -n' \
       ec='emacsclient -nw'
 
-beep()
-{
-    echo -n '\a'
-}
+beep() { echo -n '\a' }
 
 if [[ "$TERM" != dumb && -n "$(command -v colordiff)" ]]
 then
