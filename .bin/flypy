@@ -4,7 +4,7 @@
 # E301: expected blank line
 # E302: two new lines between functions/etc.
 # E401: multiple imports on one line
-pep8 --ignore=E261,E301,E302,E401 --repeat "$1"
+#pep8 --ignore=E261,E301,E302,E401 --repeat "$1"
 pyflakes "$1"
-epylint "$1" 2>/dev/null
+#epylint "$1" 2>/dev/null
 true
