@@ -263,6 +263,44 @@ def _pythonrc_fix_linecache():
     import linecache
     linecache.updatecache = updatecache
 
+def _pythonrc_editable_console(*args, **kwargs):
+    import os
+    import tempfile
+    from code import InteractiveConsole
+
+    class EditableConsole(InteractiveConsole):
+        def __init__(self, *args, **kwargs):
+            self._lastcmd = ''
+            InteractiveConsole.__init__(self, *args, **kwargs)
+
+        def runsource(self, source, *args, **kwargs):
+            self._lastcmd = source
+            return InteractiveConsole.runsource(self, source, *args, **kwargs)
+
+        def raw_input(self, *args, **kwargs):
+            line = InteractiveConsole.raw_input(self, *args, **kwargs)
+            if line == '\e':
+                tmp = tempfile.NamedTemporaryFile(mode='w+', suffix='.py')
+                tmp.write(self._lastcmd)
+                tmp.flush()
+                os.system('%s %s' % (os.environ.get('EDITOR', 'vi'), tmp.name))
+                tmp.seek(0)
+                for line in tmp:
+                    line = line[:-1]
+                    self.push(line)
+                else:
+                    line = ''
+            return line
+
+        def write(self, line, *args, **kwargs):
+            # Suppress that annoying blank line that
+            # interact(banner='') creates. Yes, this is overkill.
+            if line != 'I hate banners!\n':
+                self.write(line, *args, **kwargs)
+            EditableConsole.write = InteractiveConsole.write
+
+    return EditableConsole(*args, **kwargs)
+
 def source(obj):
     """Display the source code of an object.
 
@@ -354,6 +392,7 @@ if __name__ == '__main__':
     finally:
         del sys
 
+    # Install source()
     try:
         import __builtin__
     except ImportError:
@@ -362,3 +401,11 @@ if __name__ == '__main__':
         __builtin__.source = source
     finally:
         del __builtin__
+
+    # Enable the editable console (trying very hard not to taint the namespace)
+    locals().pop('_pythonrc_editable_console')(
+        locals=locals()).interact(banner='I hate banners!')
+
+    # Ensure exiting the editable console exits the real console as well
+    import sys
+    sys.exit()
