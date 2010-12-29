@@ -2,7 +2,8 @@
 
 This script adds the following things:
 
-- Readline bindings, tab completion, and history
+- Readline bindings, tab completion, and history (in ~/.pyhistory,
+  which can be disabled by setting NOHIST in the environment)
 
 - Pretty printing of expression output (with Pygments highlighting)
 
