@@ -39,17 +39,18 @@ def _pythonrc():
     try:
         if sys.platform == 'win32':
             raise ImportError()
-        try:
-            from cStringIO import StringIO
-        except ImportError:
-            from StringIO import StringIO
+        from cStringIO import StringIO
         from pygments import highlight
         from pygments.lexers import PythonLexer, PythonTracebackLexer
         from pygments.formatters import TerminalFormatter
 
         def pphighlight(o, *a, **kw):
             s = pprint.pformat(o, *a, **kw)
-            sys.stdout.write(highlight(s, PythonLexer(), TerminalFormatter()))
+            try:
+                sys.stdout.write(highlight(s, PythonLexer(), TerminalFormatter()))
+            except UnicodeError:
+                sys.stdout.write(s)
+                sys.stdout.write('\n')
 
         _old_excepthook = sys.excepthook
         def excepthook(exctype, value, traceback):
@@ -62,7 +63,10 @@ def _pythonrc():
             try:
                 _old_excepthook(exctype, value, traceback)
                 s = sys.stderr.getvalue()
-                s = highlight(s, PythonTracebackLexer(), TerminalFormatter())
+                try:
+                    s = highlight(s, PythonTracebackLexer(), TerminalFormatter())
+                except UnicodeError:
+                    pass
                 old_stderr.write(s)
             finally:
                 sys.stderr = old_stderr
