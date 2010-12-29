@@ -70,7 +70,7 @@ def _pythonrc_enable_pprint():
 
     try:
         if sys.platform == 'win32':
-            raise ImportError()
+            raise ImportError
         from cStringIO import StringIO
         from pygments import highlight
         from pygments.lexers import PythonLexer, PythonTracebackLexer
@@ -183,6 +183,16 @@ def _pythonrc_enable_pprint():
             pphighlight(value, width=get_width() or 80)
 
     sys.displayhook = pprinthook
+
+def _pythonrc_enable_pprompt():
+    """Colorize PS1 and PS2"""
+    import os
+    import sys
+
+    if (sys.platform != 'win32' and 'TERM' in os.environ and
+        os.environ['TERM'] != 'dumb'):
+        sys.ps1 = '\033[0;32m>>>\033[0m '
+        sys.ps2 = '\033[0;30m...\033[0m '
 
 def _pythonrc_fix_linecache():
     """Add source(obj) that shows the source code for a given object"""
@@ -331,9 +341,11 @@ if __name__ == '__main__':
         try:
             _pythonrc_enable_readline()
             _pythonrc_enable_pprint()
+            _pythonrc_enable_pprompt()
             _pythonrc_fix_linecache()
             del _pythonrc_enable_readline
             del _pythonrc_enable_pprint
+            del _pythonrc_enable_pprompt
             del _pythonrc_fix_linecache
         finally:
             if cwd is not None:
