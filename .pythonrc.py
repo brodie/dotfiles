@@ -12,6 +12,8 @@ This script adds the following things:
 
 - A source() function that displays the source of an arbitrary object
   (in a pager, with Pygments highlighting)
+
+Python 2.3 and newer are supported, including Python 3.x.
 """
 
 def _pythonrc_enable_readline():
