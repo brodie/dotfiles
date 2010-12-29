@@ -1,41 +1,63 @@
-def _pythonrc():
-    # Enable readline, tab completion, and history
+""""Startup script that adds niceties to the interactive interpreter.
+
+This script adds the following things:
+
+- Readline bindings, tab completion, and history
+
+- Pretty printing of expression output (with Pygments highlighting)
+
+- Pygments highlighting of tracebacks
+
+- Function arguments in repr() for callables
+
+- A source() function that displays the source of an arbitrary object
+  (in a pager, with Pygments highlighting)
+"""
+
+def _pythonrc_enable_readline():
+    """Enable readline, tab completion, and history"""
     import sys
+
     try:
         import readline
+        import rlcompleter
     except ImportError:
         sys.stderr.write('readline unavailable - tab completion disabled.\n')
-    else:
-        import rlcompleter
+        return
 
-        old_complete = readline.get_completer()
-        def complete(text, state):
-            if not text:
-                return ('    ', None)[state]
-            else:
-                return old_complete(text, state)
-        readline.parse_and_bind('tab: complete')
-        readline.set_completer(complete)
+    old_complete = readline.get_completer()
+    def complete(text, state):
+        if not text:
+            # Insert four spaces for indentation
+            return ('    ', None)[state]
+        else:
+            return old_complete(text, state)
+    readline.parse_and_bind('tab: complete')
+    readline.set_completer(complete)
 
-        import atexit
-        import os
+    import atexit
+    import os
 
-        if 'NOHIST' not in os.environ:
-            history_path = os.path.expanduser('~/.pyhistory')
+    # "NOHIST= python" will disable history
+    if 'NOHIST' not in os.environ:
+        history_path = os.path.expanduser('~/.pyhistory')
 
-            has_written = [False]
-            def write_history():
-                if not has_written[0]:
-                    readline.write_history_file(history_path)
-                    has_written[0] = True
-            atexit.register(write_history)
+        has_written = [False]
+        def write_history():
+            if not has_written[0]:
+                readline.write_history_file(history_path)
+                has_written[0] = True
+        atexit.register(write_history)
 
-            if os.path.isfile(history_path):
-                readline.read_history_file(history_path)
-            readline.set_history_length(1000)
+        if os.path.isfile(history_path):
+            readline.read_history_file(history_path)
+        readline.set_history_length(1000)
 
-    # Pretty print evaluated expressions
+def _pythonrc_enable_pprint():
+    """Enable pretty printing of evaluated expressions"""
     import pprint
+    import sys
+
     try:
         if sys.platform == 'win32':
             raise ImportError()
@@ -152,10 +174,14 @@ def _pythonrc():
 
     sys.displayhook = pprinthook
 
-    # linecache.updatecache() replacement that actually works with zips
+def _pythonrc_fix_linecache():
+    """Add source(obj) that shows the source code for a given object"""
     import os
     import sys
     from linecache import cache
+
+    # linecache.updatecache() replacement that actually works with zips.
+    # See http://bugs.python.org/issue4223 for more information.
     def updatecache(filename, module_globals=None):
         """Update a cache entry and return its list of lines.
         If something's wrong, print a message, discard the cache entry,
@@ -226,10 +252,14 @@ try:
     except ValueError:
         cwd = None
 
-    # Run the main function and don't let it taint the global namespace
+    # Run installation functions and don't taint the global namespace
     try:
-        _pythonrc()
-        del _pythonrc
+        _pythonrc_enable_readline()
+        _pythonrc_enable_pprint()
+        _pythonrc_fix_linecache()
+        del _pythonrc_enable_readline
+        del _pythonrc_enable_pprint
+        del _pythonrc_fix_linecache
     finally:
         if cwd is not None:
             sys.path.insert(cwd, '')
@@ -237,25 +267,28 @@ finally:
     del sys
 
 def source(obj):
-    """Displays the source code of an object.
+    """Display the source code of an object.
 
     Applies syntax highlighting if Pygments is available.
     """
-
+    import os
     import sys
-
     from inspect import findsource, getmodule, getsource, getsourcefile
+    from pydoc import pager
+
     try:
         # Check to see if the object is defined in a shared library, which
         # findsource() doesn't do properly (see issue4050)
         if not getsourcefile(obj):
-            raise TypeError()
+            raise TypeError
         s = getsource(obj)
     except TypeError:
         sys.stderr.write("Source code unavailable (maybe it's part of "
                          "a C extension?)\n")
         return
 
+    # Detect the module's file encoding. We could use
+    # tokenize.detect_encoding(), but it's only available in Python 3.
     import re
     enc = 'ascii'
     for line in findsource(getmodule(obj))[0][:2]:
@@ -269,8 +302,9 @@ def source(obj):
             s = s.decode('ascii', 'replace')
 
     try:
+        # For now, let's assume we'll never have a proper terminal on win32
         if sys.platform == 'win32':
-            raise ImportError()
+            raise ImportError
         from pygments import highlight
         from pygments.lexers import PythonLexer
         from pygments.formatters import TerminalFormatter
@@ -278,8 +312,8 @@ def source(obj):
     except (ImportError, UnicodeError):
         pass
 
-    import os
-    from pydoc import pager
+    # Display the source code in the pager, and try to convince less not to
+    # escape color control codes.
     has_lessopts = 'LESS' in os.environ
     lessopts = os.environ.get('LESS', '')
     try:
@@ -294,5 +328,10 @@ def source(obj):
         else:
             os.environ.pop('LESS', None)
 
-import __builtin__
+try:
+    import __builtin__
+except ImportError:
+    import builtins as __builtin__
+
 __builtin__.source = source
+del __builtin__
