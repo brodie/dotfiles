@@ -243,29 +243,6 @@ def _pythonrc_fix_linecache():
     import linecache
     linecache.updatecache = updatecache
 
-# Make sure modules in the current directory can't interfere
-import sys
-try:
-    try:
-        cwd = sys.path.index('')
-        sys.path.pop(cwd)
-    except ValueError:
-        cwd = None
-
-    # Run installation functions and don't taint the global namespace
-    try:
-        _pythonrc_enable_readline()
-        _pythonrc_enable_pprint()
-        _pythonrc_fix_linecache()
-        del _pythonrc_enable_readline
-        del _pythonrc_enable_pprint
-        del _pythonrc_fix_linecache
-    finally:
-        if cwd is not None:
-            sys.path.insert(cwd, '')
-finally:
-    del sys
-
 def source(obj):
     """Display the source code of an object.
 
@@ -328,10 +305,38 @@ def source(obj):
         else:
             os.environ.pop('LESS', None)
 
-try:
-    import __builtin__
-except ImportError:
-    import builtins as __builtin__
+if __name__ == '__main__':
+    __doc__ = None
 
-__builtin__.source = source
-del __builtin__
+    # Make sure modules in the current directory can't interfere
+    import sys
+    try:
+        try:
+            cwd = sys.path.index('')
+            sys.path.pop(cwd)
+        except ValueError:
+            cwd = None
+
+        # Run installation functions and don't taint the global namespace
+        try:
+            _pythonrc_enable_readline()
+            _pythonrc_enable_pprint()
+            _pythonrc_fix_linecache()
+            del _pythonrc_enable_readline
+            del _pythonrc_enable_pprint
+            del _pythonrc_fix_linecache
+        finally:
+            if cwd is not None:
+                sys.path.insert(cwd, '')
+            del cwd
+    finally:
+        del sys
+
+    try:
+        import __builtin__
+    except ImportError:
+        import builtins as __builtin__
+    try:
+        __builtin__.source = source
+    finally:
+        del __builtin__
