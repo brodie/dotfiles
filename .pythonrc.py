@@ -15,6 +15,13 @@ This script adds the following things:
   (in a pager, with Pygments highlighting)
 
 Python 2.3 and newer are supported, including Python 3.x.
+
+Note: The default versions of Python that ship with Mac OS X don't
+come with readline. To get readline support, you can try a stand-alone
+readline library[1], or you can use a different Python distribution
+(like the one from MacPorts).
+
+[1]: http://pypi.python.org/pypi/readline
 """
 
 def _pythonrc_enable_readline():
