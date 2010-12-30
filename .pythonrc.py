@@ -355,6 +355,7 @@ def source(obj):
 
 if __name__ == '__main__':
     __doc__ = None
+    del __file__
 
     # Make sure modules in the current directory can't interfere
     import sys
