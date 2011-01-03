@@ -6,23 +6,9 @@
 (add-to-list 'default-frame-alist '(height . 42))
 
 ; Color theme
+(add-to-list 'custom-theme-load-path "~/.emacs.d/themes")
+(load-theme 'brodie)
 (add-to-list 'load-path "~/.emacs.d/plugins")
-(require 'color-theme) ; load color themes
-(color-theme-initialize)
-(setq color-theme-is-global nil)
-(add-hook 'window-setup-hook
-          (lambda ()
-            (when window-system
-              (color-theme-brodie))))
-(add-hook 'after-make-frame-functions
-          (lambda (frame)
-            (select-frame frame)
-            (if (window-system frame)
-                (progn
-                  (color-theme-brodie)
-                  (tool-bar-mode -1)
-		  (scroll-bar-mode -1))
-              (color-theme-default))))
 
 ; Mouse wheel scrolling in xterm
 (add-hook 'server-switch-hook
@@ -37,36 +23,15 @@
 					   (interactive)
 					   (scroll-up 1))))))
 
-; Set PATH/exec-path based on the shell's configuration
-(defun set-path-from-shell ()
-  (if (get-buffer "*set-path-from-shell*")
-      (kill-buffer "*set-path-from-shell*"))
-  (call-process-shell-command "zsh -c 'echo $PATH'" nil
-                              "*set-path-from-shell*")
-  (with-current-buffer "*set-path-from-shell*"
-    (let ((output (buffer-substring (point-min) (- (point-max) 1)))
-          (emacs-path (nth 0 (last exec-path))))
-      (setenv "PATH" (concat output emacs-path))
-      (setq exec-path `(,@(split-string output ":") ,emacs-path))
-      (kill-buffer "*set-path-from-shell*"))))
-(set-path-from-shell)
-
 ; Plugins
 (require 'sudo) ; open/save files with sudo
 (require 'flymake-point) ; shows errors in the minibuffer when highlighted
-(require 'revbufs)
-(autoload 'yas/minor-mode "yasnippet-bundle" nil t) ; like TextMate snippets
-(autoload 'js2-mode "js2" nil t)
-(autoload 'rst-mode "rst" nil t) ; restructured text mode
+;(autoload 'js2-mode "js2" nil t)
+;(autoload 'rst-mode "rst" nil t) ; restructured text mode
 (autoload 'markdown-mode "markdown-mode" nil t)
-(autoload 'pod-mode "pod-mode" nil t)
-(autoload 'po-mode "po-mode" nil t)
 (autoload 'css-mode "css-mode" nil t)
-(autoload 'rainbow-paren-mode "rainbow-parens" nil t)
 
 ; org-mode
-(require 'org-install)
-(add-to-list 'auto-mode-alist '("\\.org$" . org-mode))
 (define-key global-map "\C-cl" 'org-store-link)
 (define-key global-map "\C-ca" 'org-agenda)
 (setq org-log-done t)
@@ -75,15 +40,7 @@
                              "~/Documents/home.org"))
 
 ; File/mode associations
-(add-to-list 'auto-mode-alist '("\\.js$" . js2-mode))
-(add-to-list 'auto-mode-alist '("\\.rst$" . rst-mode))
-(add-to-list 'auto-mode-alist '("\\.md$" . markdown-mode))
-(add-to-list 'auto-mode-alist '("\\.text$" . markdown-mode))
-(add-to-list 'auto-mode-alist '("\\.pod$" . pod-mode))
-(add-to-list 'auto-mode-alist '("\\.po\\'\\|\\.\\." . po-mode))
-(add-to-list 'auto-mode-alist '("\\.css$\\|\\.css\\.dtml$" . css-mode))
-(add-to-list 'auto-mode-alist '("\\.pt$" . html-mode))
-(add-to-list 'auto-mode-alist '("\\.m$" . objc-mode))
+(add-to-list 'auto-mode-alist '("\\.md$\\|\\.text$" . markdown-mode))
 
 ; Indentation settings
 (setq-default indent-tabs-mode nil) ; disable tab character insertion
@@ -98,12 +55,9 @@
                         80 84 88 92 96 100 104 108 112 116 120))
 
 ; Other settings
-
 (setq server-kill-new-buffers nil) ; preserve new buffers when closing clients
-(setq server-temp-file-regexp
-      (substitute-in-file-name "^$TMPDIR/.*"))
-(when (fboundp 'set-fringe-style)
-  (set-fringe-style 'none)) ; disable fringes
+(setq server-temp-file-regexp (substitute-in-file-name "^$TMPDIR/.*"))
+(when (fboundp 'set-fringe-style) (set-fringe-style 'none)) ; disable fringes
 (setq-default show-trailing-whitespace t)
 (setq-default rst-level-face-base-color nil)
 (setq longlines-show-hard-newlines t)
