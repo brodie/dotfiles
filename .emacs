@@ -1,9 +1,10 @@
 ; Set up GUI-related stuff as soon as possible
 (menu-bar-mode -1)
-(add-to-list 'default-frame-alist '(background-color . "black"))
-(add-to-list 'default-frame-alist '(alpha 92 92))
-(add-to-list 'default-frame-alist '(width . 80))
-(add-to-list 'default-frame-alist '(height . 42))
+(when window-system
+  (add-to-list 'default-frame-alist '(background-color . "black"))
+  (add-to-list 'default-frame-alist '(alpha 92 92))
+  (add-to-list 'default-frame-alist '(width . 80))
+  (add-to-list 'default-frame-alist '(height . 42)))
 
 ; Color theme
 (add-to-list 'custom-theme-load-path "~/.emacs.d/themes")
