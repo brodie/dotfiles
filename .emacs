@@ -49,6 +49,7 @@
 (setq c-default-style "bsd") ; brackets go on a separate line
 (setq c-basic-offset 4)
 (setq-default c-indent-level 4)
+(setq-default js-indent-level 2)
 ; line up args on separate lines with opening parens
 (setq c-offsets-alist
       '((arglist-intro c-lineup-arglist-intro-after-paren)))
@@ -85,6 +86,11 @@
 (setq uniquify-separator ":")
 (setq uniquify-after-kill-buffer-p t)
 (setq uniquify-ignore-buffers-re "^\\*")
+(setq js-auto-indent-flag nil)
+(setq js2-highlight-level 3)
+(setq js2-mirror-mode nil)
+(setq js2-language-version 150)
+(setq js2-rebind-eol-bol-keys nil)
 
 ; Disable the fringe for all frames
 (add-to-list 'default-frame-alist '(left-fringe . 0))
@@ -146,9 +152,44 @@
              (define-key css-mode-map (kbd "RET") 'newline-and-indent)
              (define-key css-mode-map (kbd "DEL") 'delete-backward-indent)
              (define-key css-mode-map (kbd "M-RET") 'hs-toggle-hiding)))
+(add-hook 'js-mode-hook
+          '(lambda ()
+             (hs-minor-mode 1)
+             (define-key js-mode-map (kbd "RET") 'newline-and-indent)
+             (define-key js-mode-map (kbd "DEL") 'delete-backward-indent)
+             (define-key js-mode-map (kbd "M-RET") 'hs-toggle-hiding)))
 (add-hook 'ido-setup-hook
           '(lambda ()
              (define-key ido-completion-map (kbd "SPC") 'self-insert-command)))
+
+; Fix js2-mode's completely braindead indentation
+(defun my-js2-indent-function ()
+  (interactive)
+  (save-restriction
+    (widen)
+    (let* ((inhibit-point-motion-hooks t)
+           (parse-status (save-excursion (syntax-ppss (point-at-bol))))
+           (offset (- (current-column) (current-indentation)))
+           (indentation (js--proper-indentation parse-status))
+           node)
+      (save-excursion
+        (back-to-indentation)
+        ;; align consecutive declarations in a var statement
+        (setq node (js2-node-at-point))
+        (when (and node
+                   (= js2-NAME (js2-node-type node))
+                   (= js2-VAR (js2-node-type (js2-node-parent node))))
+          (setq indentation (+ 4 indentation))))
+
+      (indent-line-to indentation)
+      (when (> offset 0) (forward-char offset)))))
+
+(add-hook 'js2-mode-hook
+          '(lambda ()
+             (require 'js)
+             (set (make-local-variable 'indent-line-function)
+                  'my-js2-indent-function)
+             (define-key js2-mode-map (kbd "RET") 'newline-and-indent)))
 
 ; Extra bindings for various terminals
 (global-set-key (kbd "M-[ h") 'beginning-of-line)

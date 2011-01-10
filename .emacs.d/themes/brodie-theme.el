@@ -7,6 +7,8 @@
   'brodie
   '(isearch ((t (:background "pink"))))
   '(lazy-highlight ((t (:background "dark blue"))))
+  '(js2-error ((t (:background "red"))))
+  '(js2-warning ((t (:background "red"))))
   '(font-lock-comment-face ((t (:foreground "red"))))
   '(font-lock-string-face ((t (:foreground "green"))))
   '(font-lock-keyword-face ((t (:foreground "cyan" :bold t))))
