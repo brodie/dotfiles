@@ -4,6 +4,7 @@ export LANG='en_US.UTF-8'
 
 # Options
 
+export WORKON_HOME="$HOME/Documents/Envs"
 export ACK_COLOR_MATCH='red' \
        ACK_COLOR_FILENAME='magenta' \
        ACK_PAGER='less' \
@@ -17,8 +18,7 @@ export ACK_COLOR_MATCH='red' \
        PYTHONSTARTUP="$HOME/.pythonrc.py" \
        TZ='Australia/Sydney' \
        VIRTUALENV_USE_DISTRIBUTE=1 \
-       VISUAL='emacsclient -nw' \
-       WORKON_HOME="$HOME/Documents/Envs"
+       VISUAL='emacsclient -nw'
 
 [[ -n "$(command -v virtualenvwrapper.sh)" ]] && source virtualenvwrapper.sh
 
@@ -204,6 +204,9 @@ _prompt_vcs()
     vcs_dir
     if [[ "$vcs_dir_type" == hg ]]
     then
+        #local b=$(cat "$vcs_dir_path/.hg/bookmarks.current" 2>/dev/null ||
+        #          cat "$vcs_dir_path/.hg/branch" 2>/dev/null ||
+        #          echo default)
         local b=$(cat "$vcs_dir_path/.hg/branch" 2>/dev/null || echo default)
         echo -n " %{$fg[green]%}$b"
         if [[ -f "$vcs_dir_path/.hg/patches/status" ]]

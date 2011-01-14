@@ -4,8 +4,8 @@ export PATH="/usr/local/sbin:/usr/local/bin:$PATH"
 [[ -d /usr/local/mysql/bin ]] && export PATH="/usr/local/mysql/bin:$PATH"
 [[ -d /sw/bin ]] && export PATH="/sw/sbin:/sw/bin:$PATH"
 [[ -d /opt/local/bin ]] && export PATH="/opt/local/sbin:/opt/local/bin:$PATH"
-[[ -d /opt/local/lib/postgresql84/bin ]] && \
- export PATH="/opt/local/lib/postgresql84/bin:$PATH"
+[[ -d /opt/local/lib/postgresql90/bin ]] && \
+ export PATH="/opt/local/lib/postgresql90/bin:$PATH"
 [[ -d /opt/local/Library/Frameworks/Python.framework/Versions/2.7/bin ]] && \
  export PATH="/opt/local/Library/Frameworks/Python.framework/Versions/2.7/bin:$PATH"
 #[[ -d /Applications/MacPorts/Emacs.app/Contents/MacOS/bin ]] && \

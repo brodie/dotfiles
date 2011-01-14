@@ -8,8 +8,8 @@ path=(/usr/local/sbin /usr/local/bin $path)
 [[ -d /usr/local/mysql/bin ]] && path=(/usr/local/mysql/bin $path)
 [[ -d /sw/bin ]] && path=(/sw/sbin /sw/bin $path)
 [[ -d /opt/local/bin ]] && path=(/opt/local/sbin /opt/local/bin $path)
-[[ -d /opt/local/lib/postgresql84/bin ]] && \
- path=(/opt/local/lib/postgresql84/bin $path)
+[[ -d /opt/local/lib/postgresql90/bin ]] && \
+ path=(/opt/local/lib/postgresql90/bin $path)
 [[ -d /opt/local/Library/Frameworks/Python.framework/Versions/2.7/bin ]] && \
  path=(/opt/local/Library/Frameworks/Python.framework/Versions/2.7/bin $path)
 #[[ -d /Applications/MacPorts/Emacs.app/Contents/MacOS/bin ]] && \
