@@ -16,7 +16,7 @@ export ACK_COLOR_MATCH='red' \
        PIP_RESPECT_VIRTUALENV=true \
        PIP_VIRTUALENV_BASE="$WORKON_HOME" \
        PYTHONSTARTUP="$HOME/.pythonrc.py" \
-       TZ='Australia/Sydney' \
+       TZ='America/Los_Angeles' \
        VIRTUALENV_USE_DISTRIBUTE=1 \
        VISUAL='emacsclient -nw'
 
