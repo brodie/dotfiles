@@ -15,6 +15,7 @@ p4merge.executable=/Applications/p4merge.app/Contents/MacOS/p4merge
 ;emacsclient.args = --eval "(ediff-merge-with-ancestor \"$local\" \"$other\" \"$base\" nil \"$output\")"
 vimdiff.args = $local $other $base -c 'windo set nomodifiable | 2winc h | set modifiable'
 vimdiff.priority = -1
+vimdiff.premerge = keep
 
 [extensions]
 bookmarks =
@@ -53,7 +54,7 @@ slog = log --style ~/.hgext/map-cmdline.slog
 sglog = glog --style ~/.hgext/map-cmdline.sglog
 qexport = export -r qbase:qtip
 qst = qseries -v
-top = !"$HG" log --template '{author|person}\n' | sed 's/"//g' | sort | uniq -c | sort -rn | head -n `expr "$1" \| 10`
+top = !"$HG" log -M --template '{author|person}\n' | sed 's/"//g' | sort | uniq -c | sort -rn | head -n `expr "$1" \| 10`
 
 [bookmarks]
 track.current = True
