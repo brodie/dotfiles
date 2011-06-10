@@ -1,21 +1,10 @@
 [ui]
 ignore = ~/.hgignore
-ssh = ssh -q -C
+ssh = ssh -C
 
 [diff]
 git = True
 showfunc = True
-
-[merge-tools]
-p4merge.args=$base $local $other $output
-p4merge.gui=True
-p4merge.diffargs=$parent $child
-p4merge.executable=/Applications/p4merge.app/Contents/MacOS/p4merge
-
-;emacsclient.args = --eval "(ediff-merge-with-ancestor \"$local\" \"$other\" \"$base\" nil \"$output\")"
-vimdiff.args = $local $other $base -c 'windo set nomodifiable | 2winc h | set modifiable'
-vimdiff.priority = -1
-vimdiff.premerge = keep
 
 [extensions]
 bookmarks =
@@ -37,9 +26,6 @@ rebase =
 record =
 schemes =
 transplant =
-involving = ~/.hgext/involving.py
-;remotebranches = ~/.hgext/hg_remotebranches.py
-;hgsubversion =
 
 [alias]
 bm = bookmark
