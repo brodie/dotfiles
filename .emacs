@@ -1,10 +1,25 @@
 ; Set up GUI-related stuff as soon as possible
 (menu-bar-mode -1)
 (when window-system
+  (tool-bar-mode -1)
+  (scroll-bar-mode -1)
   (add-to-list 'default-frame-alist '(background-color . "black"))
-  (add-to-list 'default-frame-alist '(alpha 92 92))
-  (add-to-list 'default-frame-alist '(width . 80))
-  (add-to-list 'default-frame-alist '(height . 42)))
+  (add-to-list 'default-frame-alist '(width . 162))
+  (add-to-list 'default-frame-alist '(height . 60))
+
+  ; Set PATH/exec-path based on the shell's configuration
+  (defun set-path-from-shell ()
+    (if (get-buffer "*set-path-from-shell*")
+        (kill-buffer "*set-path-from-shell*"))
+    (call-process-shell-command "zsh -c 'echo $PATH'" nil
+                                "*set-path-from-shell*")
+    (with-current-buffer "*set-path-from-shell*"
+      (let ((output (buffer-substring (point-min) (- (point-max) 1)))
+            (emacs-path (nth 0 (last exec-path))))
+        (setenv "PATH" (concat output emacs-path))
+        (setq exec-path `(,@(split-string output ":") ,emacs-path))
+        (kill-buffer "*set-path-from-shell*"))))
+  (set-path-from-shell))
 
 ; Color theme
 (add-to-list 'custom-theme-load-path "~/.emacs.d/themes")
@@ -91,6 +106,12 @@
 (setq js2-mirror-mode nil)
 (setq js2-language-version 150)
 (setq js2-rebind-eol-bol-keys nil)
+(setq dabbrev-case-distinction nil)
+
+; ropemacs stuff
+(setq ropemacs-guess-project t)
+(setenv "PYTHONPATH" (concat (expand-file-name "~/.emacs.d/python") ":"
+                             (getenv "PYTHONPATH")))
 
 ; Disable the fringe for all frames
 (add-to-list 'default-frame-alist '(left-fringe . 0))
@@ -137,6 +158,9 @@
 
 (add-hook 'python-mode-hook
           '(lambda ()
+             (require 'pymacs)
+             (pymacs-load "ropemacs" "rope-")
+             (ropemacs-mode 1)
              (hs-minor-mode 1)
              (define-key python-mode-map (kbd "RET") 'newline-maybe-indent)
              (define-key python-mode-map (kbd "M-RET") 'hs-toggle-hiding)))
@@ -200,6 +224,7 @@
 (global-set-key (kbd "C-x M-s") 'sudo-unset-ro-or-save)
 (global-set-key (kbd "C-x M-f") 'sudo-find-file)
 (global-set-key (kbd "C--") 'undo)
+(global-set-key (kbd "C-<tab>") 'dabbrev-expand)
 (when (fboundp 'ns-toggle-fullscreen)
   (global-set-key (kbd "s-<return>") 'ns-toggle-fullscreen))
 (when window-system
