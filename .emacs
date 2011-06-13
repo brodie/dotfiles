@@ -110,8 +110,9 @@
 
 ; ropemacs stuff
 (setq ropemacs-guess-project t)
-(setenv "PYTHONPATH" (concat (expand-file-name "~/.emacs.d/python") ":"
-                             (getenv "PYTHONPATH")))
+(let (path (getenv "PYTHONPATH"))
+     (setenv "PYTHONPATH" (concat (expand-file-name "~/.emacs.d/python")
+                                  (if path (concat path-separator path)))))
 
 ; Disable the fringe for all frames
 (add-to-list 'default-frame-alist '(left-fringe . 0))
