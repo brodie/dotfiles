@@ -65,6 +65,7 @@
 (setq c-basic-offset 4)
 (setq-default c-indent-level 4)
 (setq-default js-indent-level 2)
+(setq-default css-indent-offset 2)
 ; line up args on separate lines with opening parens
 (setq c-offsets-alist
       '((arglist-intro c-lineup-arglist-intro-after-paren)))
