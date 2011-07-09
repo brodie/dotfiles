@@ -46,6 +46,7 @@
 ;(autoload 'rst-mode "rst" nil t) ; restructured text mode
 (autoload 'markdown-mode "markdown-mode" nil t)
 (autoload 'css-mode "css-mode" nil t)
+(autoload 'coffee-mode "coffee-mode" nil t)
 
 ; org-mode
 (define-key global-map "\C-cl" 'org-store-link)
@@ -57,6 +58,7 @@
 
 ; File/mode associations
 (add-to-list 'auto-mode-alist '("\\.md$\\|\\.text$" . markdown-mode))
+(add-to-list 'auto-mode-alist '("\\.coffee$" . coffee-mode))
 
 ; Indentation settings
 (setq-default indent-tabs-mode nil) ; disable tab character insertion
@@ -184,6 +186,9 @@
              (define-key js-mode-map (kbd "RET") 'newline-and-indent)
              (define-key js-mode-map (kbd "DEL") 'delete-backward-indent)
              (define-key js-mode-map (kbd "M-RET") 'hs-toggle-hiding)))
+(add-hook 'coffee-mode-hook
+          '(lambda ()
+             (set (make-local-variable 'tab-width) 2)))
 (add-hook 'ido-setup-hook
           '(lambda ()
              (define-key ido-completion-map (kbd "SPC") 'self-insert-command)))
