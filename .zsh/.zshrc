@@ -230,4 +230,7 @@ source "$ZDOTDIR/.zkbd/$TERM-$VENDOR-$OSTYPE"
 [[ -n "${key[Control-Right]}" ]] && bindkey "${key[Control-Right]}" \
                                             forward-word
 
-source virtualenvwrapper_lazy.sh
+if (( $+commands[virtualenvwrapper_lazy.sh] ))
+then
+    source virtualenvwrapper_lazy.sh
+fi
