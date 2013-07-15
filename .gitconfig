@@ -1,18 +1,21 @@
 [user]
 	name = Brodie Rao
-	email = brodie@bitheap.org
+	email = brodie@sf.io
 [alias]
 	ci = commit
 	dc = diff --cached
-	df = diff
-	head = show HEAD
-	glog = log --decorate --graph --all
-	slog = log --pretty=oneline
-	sglog = log --decorate --graph --all --pretty=oneline
 	st = status
+	in = log ..@{upstream}
+	out = log @{upstream}..
 [color]
 	ui = auto
 [core]
 	excludesfile = ~/.gitignore
-[diff]
-	renames = copies
+[sendemail]
+	from = Brodie Rao <brodie@sf.io>
+	smtpencryption = tls
+	smtpserver = smtp.gmail.com
+	smtpuser = brodie@sf.io
+	smtpserverport = 587
+[push]
+	default = simple
