@@ -119,3 +119,8 @@ elif [[ -f /etc/bash_completion ]]
 then
     . /etc/bash_completion
 fi
+
+if [[ -n "$(command -v virtualenvwrapper_lazy.sh)" ]]
+then
+    . virtualenvwrapper_lazy.sh
+fi
