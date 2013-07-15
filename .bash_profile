@@ -1,23 +1,15 @@
 #!/usr/bin/env bash
 
 export PATH="/usr/local/sbin:/usr/local/bin:$PATH"
-[[ -d /usr/local/mysql/bin ]] && export PATH="/usr/local/mysql/bin:$PATH"
-[[ -d /sw/bin ]] && export PATH="/sw/sbin:/sw/bin:$PATH"
-[[ -d /opt/local/bin ]] && export PATH="/opt/local/sbin:/opt/local/bin:$PATH"
-[[ -d /opt/local/lib/postgresql90/bin ]] && \
- export PATH="/opt/local/lib/postgresql90/bin:$PATH"
-[[ -d /opt/local/Library/Frameworks/Python.framework/Versions/2.7/bin ]] && \
- export PATH="/opt/local/Library/Frameworks/Python.framework/Versions/2.7/bin:$PATH"
-#[[ -d /Applications/MacPorts/Emacs.app/Contents/MacOS/bin ]] && \
-# export PATH="/Applications/MacPorts/Emacs.app/Contents/MacOS/bin:$PATH"
-[[ -d /usr/X11R6/bin ]] && export PATH="$PATH:/usr/X11R6/bin"
-[[ -d /usr/local/X11R6/bin ]] && export PATH="$PATH:/usr/local/X11R6/bin"
-export PATH="$HOME/.bin:$PATH"
+[[ -d "$HOME/.bin" ]] && export PATH="$HOME/.bin:$PATH"
+[[ -d /usr/local/share/python3 ]] && \
+ export PATH="$PATH:/usr/local/share/python3"
+[[ -d /usr/local/share/pypy ]] && export PATH="$PATH:/usr/local/share/pypy"
+[[ -d /usr/local/share/npm/bin ]] && export PATH="$PATH:/usr/local/share/npm"
 
-[[ -d /usr/X11R6/man ]] && export MANPATH="$MANPATH:/usr/X11R6/man"
-[[ -d /usr/share/man ]] && export MANPATH="/usr/share/man:$MANPATH"
-[[ -d /usr/local/share/man ]] && export MANPATH="/usr/local/share/man:$MANPATH"
-[[ -d /usr/local/man ]] && export MANPATH="/usr/local/man:$MANPATH"
-[[ -d /opt/local/share/man ]] && export MANPATH="/opt/local/share/man:$MANPATH"
+if [[ -d /usr/local/lib/node_modules ]]
+then
+    export NODE_PATH=/usr/local/lib/node_modules
+fi
 
-. "$HOME/.bashrc"
+. ~/.bashrc
