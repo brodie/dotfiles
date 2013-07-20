@@ -107,7 +107,7 @@ zstyle -e ':completion:*' completer '
         reply=(_ignored _correct _approximate _complete)
     fi'
 zstyle ':completion:*match:*' original only
-zstyle -e ':completion:*:approximate:*' max-errors 1 numeric
+zstyle ':completion:*:approximate:*' max-errors 1 numeric
 zstyle ':completion:*:functions' ignored-patterns '_*'
 
 # Prompt
