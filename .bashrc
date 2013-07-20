@@ -4,7 +4,7 @@ shopt -s checkhash \
          checkwinsize \
          cmdhist \
          extglob \
-         histappend \
+         histappend
 
 HISTCONTROL=ignoreboth
 HISTFILESIZE=5000
