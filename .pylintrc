@@ -1,9 +1,5 @@
 [MASTER]
-ignore=CVS
-ignore=.hg
-ignore=.git
-ignore=.svn
-ignore=_darcs
+ignore=CVS,.hg,.git,.svn,_darcs
 
 [MESSAGES CONTROL]
 # The design check gives mostly useless advice.
