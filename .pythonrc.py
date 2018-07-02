@@ -24,6 +24,27 @@ readline library[1], or you can use a different Python distribution
 [1]: http://pypi.python.org/pypi/readline
 """
 
+# TODO: Disable this stuff for Python 3.4 where readline and rlcompleter are
+#       imported by site.py by default.
+# TODO: Make NOHIST or something like it available for 3.4+.
+# TODO: Make filename the same as 3.4's (~/.python_history). Use same code
+#       from stdlib site.py to generate the path.
+# TODO: Maybe get rid of source()? Or simplify it by better using inspect()?
+# TODO: Implement library to make inspect.getsource() and similar things work
+#       on non-pure Python code.
+# TODO: Maybe implement that in Python itself and submit a patch?
+# TODO: Make use of __text_signature__ when available? Or use what uses it?
+#       Then test that os.access() has a signature when doing
+#       os.access<ENTER>.
+# TODO: Do something about Pygments not being available always. Bundle it?
+#       Or just install it on this machine?
+# TODO: Better or alternate mechanism for NOHIST? Maybe something that works
+#       if you forgot to set it? Like a special exit() function that
+#       de-registers the atexit function for writing history maybe? (Which
+#       would need a special implementation for 3.4+ vs. older).
+# TODO: Make sure everything is correct re: bytes vs. unicode on Python 3?
+#       Should we use bytes only? Not worry about locale? Use unicode only?
+#       Let Python deal with it somehow? Unicode with errors encoded? ???
 def _pythonrc_enable_readline():
     """Enable readline, tab completion, and history"""
     import sys
@@ -74,12 +95,16 @@ def _pythonrc_enable_pprint():
         from cStringIO import StringIO
         from pygments import highlight
         from pygments.lexers import PythonLexer, PythonTracebackLexer
-        from pygments.formatters import TerminalFormatter
+        from pygments.formatters import Terminal256Formatter
+
+        lexer = PythonLexer()
+        tblexer = PythonTracebackLexer()
+        formatter = Terminal256Formatter(style='paraiso-light')
 
         def pphighlight(o, *a, **kw):
             s = pprint.pformat(o, *a, **kw)
             try:
-                sys.stdout.write(highlight(s, PythonLexer(), TerminalFormatter()))
+                sys.stdout.write(highlight(s, lexer, formatter))
             except UnicodeError:
                 sys.stdout.write(s)
                 sys.stdout.write('\n')
@@ -96,7 +121,7 @@ def _pythonrc_enable_pprint():
                 _old_excepthook(exctype, value, traceback)
                 s = sys.stderr.getvalue()
                 try:
-                    s = highlight(s, PythonTracebackLexer(), TerminalFormatter())
+                    s = highlight(s, tblexer, formatter)
                 except UnicodeError:
                     pass
                 old_stderr.write(s)
@@ -312,6 +337,8 @@ def source(obj):
                          "a C extension?)\n")
         return
 
+    # TODO: Maybe make this print line by line when not using Pygments? Or
+    #       maybe that's dumb? Maybe at least one iterate over the lines once?
     # Detect the module's file encoding. We could use
     # tokenize.detect_encoding(), but it's only available in Python 3.
     import re
@@ -332,8 +359,10 @@ def source(obj):
             raise ImportError
         from pygments import highlight
         from pygments.lexers import PythonLexer
-        from pygments.formatters import TerminalFormatter
-        s = highlight(s, PythonLexer(), TerminalFormatter())
+        from pygments.formatters import Terminal256Formatter
+        lexer = PythonLexer()
+        formatter = Terminal256Formatter(style='paraiso-light')
+        s = highlight(s, lexer, formatter)
     except (ImportError, UnicodeError):
         pass
 
