@@ -12,12 +12,12 @@ HISTFILESIZE=5000
 export ACK_PAGER='less' \
        ALTERNATE_EDITOR='nano' \
        BROWSER='open' \
-       EDITOR='vim' \
+       EDITOR='nvim' \
        GREP_COLOR='auto' \
        LESS='-iR' \
        PAGER='less' \
        PYTHONSTARTUP="$HOME/.pythonrc.py" \
-       VISUAL='vim' \
+       VISUAL='nvim' \
        WORKON_HOME="$HOME/Documents/Envs"
 
 if [[ "$TERM" != dumb ]]
@@ -28,12 +28,6 @@ then
     then
         eval "$(dircolors -b)"
         alias ls='ls --color=auto'
-    elif [[ -n "$(command -v gdircolors)" ]]
-    then
-        eval "$(gdircolors -b)"
-        export CLICOLOR=1 \
-               LSCOLORS=ExGxFxdaCxDaDaHbadabec
-        alias ls='gls --color=auto'
     else
         export CLICOLOR=1 \
                LSCOLORS=ExGxFxdaCxDaDaHbadabec
@@ -64,14 +58,16 @@ then
            LESS_TERMCAP_ue=$reset_color \
            LESS_TERMCAP_us=$fg_green
 
+    unset reset_color bold_color fg_blue bg_blue fg_yellow fg_green
+
     alias ag='ag --pager "$PAGER"'
 fi
 
 alias tm='tmux a -d'
-ec()
-{
-    [[ -n "$@" ]] && mvim --remote-silent $@ || open -a MacVim
-}
+#ec()
+#{
+#    [[ -n "$@" ]] && mvim --remote-silent $@ || open -a MacVim
+#}
 #alias ec='subl -n'
 #alias ec='emacsclient -nw'
 beep()

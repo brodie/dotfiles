@@ -1,6 +1,7 @@
 #!/usr/bin/env zsh
 
 setopt NO_clobber \
+       combiningchars \
        extended_history \
        hist_allow_clobber \
        hist_expire_dups_first \
@@ -21,12 +22,12 @@ SAVEHIST=5000
 export ACK_PAGER='less' \
        ALTERNATE_EDITOR='nano' \
        BROWSER='open' \
-       EDITOR='vim' \
+       EDITOR='nvim' \
        GREP_COLOR='auto' \
        LESS='-iR' \
        PAGER='less' \
        PYTHONSTARTUP="$HOME/.pythonrc.py" \
-       VISUAL='vim' \
+       VISUAL='nvim' \
        WORKON_HOME="$HOME/Documents/Envs"
 
 if [[ "$TERM" != dumb ]]
@@ -38,12 +39,6 @@ then
     then
         eval "$(dircolors -b)"
         alias ls='ls --color=auto'
-    elif (( $+commands[gdircolors] ))
-    then
-        eval "$(gdircolors -b)"
-        export CLICOLOR=1 \
-               LSCOLORS=ExGxFxdaCxDaDaHbadabec
-        alias ls='gls --color=auto'
     else
         export CLICOLOR=1 \
                LSCOLORS=ExGxFxdaCxDaDaHbadabec
@@ -70,16 +65,19 @@ then
            LESS_TERMCAP_us="${fg_bold[green]}" \
 
     alias ag='ag --pager "$PAGER"'
+    #rg() { command rg --pretty $@ | "$PAGER" }
 fi
 
 alias tm='tmux a -d'
-ec() { [[ -n "$@" ]] && mvim --remote-silent $@ || open -a MacVim }
+#ec() { [[ -n "$@" ]] && mvim --remote-silent $@ || open -a MacVim }
 #alias ec='subl -n'
 #alias ec='emacsclient -nw'
+alias nv=nvim
+alias vim=nvim
+alias vimdiff='nvim -d'
 beep() { echo -n '\a' }
 
 # Completion
-
 autoload -Uz compinit && compinit
 
 # Formatting
@@ -98,17 +96,19 @@ zstyle ':completion:*' use-cache on
 zstyle ':completion:*' squeeze-slashes true
 zstyle ':completion:*' matcher-list '' 'm:{a-zA-Z}={A-Za-z}' \
                                     'r:|[._-]=* r:|=*' 'l:|=* r:|=*'
-zstyle -e ':completion:*' completer '
-    if [[ $_last_try != "$HISTNO$BUFFER$CURSOR" ]]
-    then
-        _last_try="$HISTNO$BUFFER$CURSOR"
-        reply=(_complete _match _prefix)
-    else
-        reply=(_ignored _correct _approximate _complete)
-    fi'
+#zstyle -e ':completion:*' completer '
+#    if [[ $_last_try != "$HISTNO$BUFFER$CURSOR" ]]
+#    then
+#        _last_try="$HISTNO$BUFFER$CURSOR"
+#        reply=(_complete _match _prefix)
+#    else
+#        reply=(_ignored _correct _approximate _complete)
+#    fi'
+zstyle ':completion:*' completer _complete _match _approximate
 zstyle ':completion:*match:*' original only
 zstyle ':completion:*:approximate:*' max-errors 1 numeric
-zstyle ':completion:*:functions' ignored-patterns '_*'
+#zstyle ':completion:*:functions' ignored-patterns '_*'
+zstyle ':completion:*:functions' ignored-patterns '(_*|pre(cmd|exec))'
 
 # Prompt
 
@@ -234,3 +234,8 @@ if (( $+commands[virtualenvwrapper_lazy.sh] ))
 then
     source virtualenvwrapper_lazy.sh
 fi
+
+#if (( $+commands[rustc] ))
+#then
+#     export RUST_SRC_PATH="$(rustc --print sysroot)/lib/rustlib/src/rust/src"
+#fi
