@@ -7,15 +7,9 @@
 	st = status
 	in = log ..@{upstream}
 	out = log @{upstream}..
-[color]
-	ui = auto
-[core]
-	excludesfile = ~/.gitignore
+[diff]
+	renames = copies
 [sendemail]
-	from = Brodie Rao <brodie@sf.io>
-	smtpencryption = tls
-	smtpserver = smtp.gmail.com
-	smtpuser = brodie@sf.io
-	smtpserverport = 587
-[push]
-	default = simple
+	smtpServer = /usr/local/bin/msmtp
+[transfer]
+	fsckObjects = true
