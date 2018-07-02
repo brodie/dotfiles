@@ -4,8 +4,8 @@
   (tool-bar-mode -1)
   (scroll-bar-mode -1)
   (add-to-list 'default-frame-alist '(background-color . "black"))
-  (add-to-list 'default-frame-alist '(width . 162))
-  (add-to-list 'default-frame-alist '(height . 60))
+  (add-to-list 'default-frame-alist '(width . 80))
+  (add-to-list 'default-frame-alist '(height . 50))
 
   ; Set PATH/exec-path based on the shell's configuration
   (defun set-path-from-shell ()
@@ -23,7 +23,7 @@
 
 ; Color theme
 (add-to-list 'custom-theme-load-path "~/.emacs.d/themes")
-(load-theme 'brodie)
+(load-theme 'monokai t)
 (add-to-list 'load-path "~/.emacs.d/plugins")
 
 ; Mouse wheel scrolling in xterm
@@ -77,7 +77,7 @@
 ; Other settings
 (setq server-kill-new-buffers nil) ; preserve new buffers when closing clients
 (setq server-temp-file-regexp (substitute-in-file-name "^$TMPDIR/.*"))
-(when (fboundp 'set-fringe-style) (set-fringe-style 'none)) ; disable fringes
+;(when (fboundp 'set-fringe-style) (set-fringe-style 'none)) ; disable fringes
 (setq-default show-trailing-whitespace t)
 (setq-default rst-level-face-base-color nil)
 (setq longlines-show-hard-newlines t)
@@ -95,6 +95,7 @@
 (ido-mode t) ; fancy file navigation
 (setq ido-enable-flex-matching t)
 (setq mac-option-modifier 'meta) ; option is alt
+(setq mac-command-modifier 'control) ; command is control
 ; make sentence navigation more useful
 (setq sentence-end-double-space nil)
 (setq sentence-end "[.?!][]\"')]\\($\\|\t\\| \\)[ \t\n]")
@@ -166,32 +167,98 @@
              (pymacs-load "ropemacs" "rope-")
              (ropemacs-mode 1)
              (hs-minor-mode 1)
+             (set (make-local-variable 'fill-column) 78)
              (define-key python-mode-map (kbd "RET") 'newline-maybe-indent)
              (define-key python-mode-map (kbd "M-RET") 'hs-toggle-hiding)))
 (add-hook 'c-mode-common-hook
           '(lambda ()
              (hs-minor-mode 1)
+             (set (make-local-variable 'fill-column) 78)
              (define-key c-mode-base-map (kbd "RET") 'newline-and-indent)
              (define-key c-mode-base-map (kbd "DEL") 'delete-backward-indent)
              (define-key c-mode-base-map (kbd "M-RET") 'hs-toggle-hiding)))
 (add-hook 'css-mode-hook
           '(lambda ()
              (hs-minor-mode 1)
+             (set (make-local-variable 'fill-column) 78)
              (define-key css-mode-map (kbd "RET") 'newline-and-indent)
              (define-key css-mode-map (kbd "DEL") 'delete-backward-indent)
              (define-key css-mode-map (kbd "M-RET") 'hs-toggle-hiding)))
 (add-hook 'js-mode-hook
           '(lambda ()
              (hs-minor-mode 1)
+             (set (make-local-variable 'fill-column) 78)
              (define-key js-mode-map (kbd "RET") 'newline-and-indent)
              (define-key js-mode-map (kbd "DEL") 'delete-backward-indent)
              (define-key js-mode-map (kbd "M-RET") 'hs-toggle-hiding)))
 (add-hook 'coffee-mode-hook
           '(lambda ()
+             (set (make-local-variable 'fill-column) 78)
              (set (make-local-variable 'tab-width) 2)))
 (add-hook 'ido-setup-hook
           '(lambda ()
              (define-key ido-completion-map (kbd "SPC") 'self-insert-command)))
+(add-hook 'django-html-mode-hook-blah
+          '(lambda ()
+             (define-key sgml-mode-map (kbd "RET") 'newline-and-indent)
+
+             (setq django-html-tag-re
+               (concat
+                django-html-open-block
+                "\\s *\\(end\\)?\\(\\sw+\\)[^%]*"
+                django-html-close-block))
+
+             (defun django-html-indent-in ()
+               (let (new-indent
+                     (pos (line-number-at-pos)))
+                 (save-excursion
+                   (previous-line)
+                   (while (and (save-excursion
+                                 (beginning-of-line)
+                                 (re-search-forward
+                                  "^\\s-*$" (line-end-position) t))
+                               (/= (line-number-at-pos) 1))
+                     (previous-line))
+                   (when (and (/= (line-number-at-pos) pos)
+                              (save-excursion
+                                (beginning-of-line)
+                                (and (re-search-forward
+                                      (concat "^\\s-*" django-html-tag-re)
+                                      (line-end-position)
+                                      t)
+                                     (not (match-string 1))
+                                     (member (match-string 2)
+                                             django-html-closable-tags))))
+                     (setq new-indent (+ (current-indentation)
+                                         sgml-basic-offset))))
+                 (when new-indent
+                   (indent-line-to new-indent))))
+
+             (defadvice sgml-indent-line (around my-sgml-indent-line activate)
+               (when (/= (line-number-at-pos) 1)
+                 (let (open-tag-pos
+                       open-tag-indent)
+                   (save-excursion
+                     (beginning-of-line)
+                     (when (and (save-excursion
+                                  (re-search-forward
+                                   (concat "^\\s-*" django-html-tag-re)
+                                   (line-end-position)
+                                   t))
+                                (match-string 1)
+                                (django-html-find-open-tag))
+                       (setq open-tag-pos (line-number-at-pos))
+                       (setq open-tag-indent (current-indentation))))
+                   (save-excursion
+                     (if open-tag-pos
+                         (progn
+                           (indent-line-to open-tag-indent))
+                       (progn
+                         ad-do-it
+                         (django-html-indent-in))))
+                   (when (< (current-column) (current-indentation))
+                     (beginning-of-line)
+                     (forward-char (current-indentation))))))))
 
 ; Fix js2-mode's completely braindead indentation
 (defun my-js2-indent-function ()
@@ -278,3 +345,16 @@
 ; Hide uninteresting files
 (eval-after-load "dired" '(require 'dired-x))
 (add-hook 'dired-mode-hook (lambda () (dired-omit-mode 1)))
+(custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(custom-safe-themes (quote ("71efabb175ea1cf5c9768f10dad62bb2606f41d110152f4ace675325d28df8bd" default)))
+ '(safe-local-variable-values (quote ((encoding . utf-8) (Encoding . utf-8)))))
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ )
